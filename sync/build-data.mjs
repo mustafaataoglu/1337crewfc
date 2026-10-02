@@ -385,7 +385,7 @@ const out = { updatedAt: prev?.hash === hash ? prev.updatedAt : new Date().toISO
 if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
 const DURUM = new URL('./durum-sync.json', OUTDIR)
-const yazar = { yeni: yazarDurum.yazildi, yukseltilen: yazarDurum.yukseltilen, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, durdu: yazarDurum.durdu, tukenen: yazarDurum.tukenen, atlanan: yazarDurum.atlanan, hatalar: yazarDurum.hata.slice(0, 5) }
+const yazar = { yeni: yazarDurum.yazildi, yukseltilen: yazarDurum.yukseltilen, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, durdu: yazarDurum.durdu, tukenen: yazarDurum.tukenen, atlanan: yazarDurum.atlanan, dogrulama: yazarDurum.dogrulama, bekleyen: yazarDurum.bekleyen, hatalar: yazarDurum.hata.slice(0, 5) }
 // Yalnızca kalıcı durum karşılaştırılır (hata metni, model ve sayılar her tur değişir; her tur commit olmasın)
 const yazarOzu = y => JSON.stringify([y?.gemini, y?.openrouter, y?.durdu, [...(y?.tukenen ?? [])].sort()])
 const eskiDurum = existsSync(DURUM) ? JSON.parse(readFileSync(DURUM, 'utf8')) : null

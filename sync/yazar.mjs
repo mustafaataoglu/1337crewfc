@@ -20,7 +20,8 @@ const GEMINI = process.env.GEMINI_API_KEY
 const OPENROUTER = process.env.OPENROUTER_API_KEY
 const BIR_CALISMADA_EN_FAZLA = 6 // her 15 dakikada en fazla bu kadar yeni yazı (ücretsiz kota)
 const ESKI_EN_FAZLA = 2 // bir turda en fazla kaç eski maç DENENİR (başarılı ya da değil) — kota önce güncel yazılara
-const EN_FAZLA_ISTEK = 20 // bir turdaki toplam HTTP isteği (tekrar denemeler dahil)
+const EN_FAZLA_ISTEK = 24 // bir turdaki toplam HTTP isteği (tekrar denemeler ve doğrulama dahil)
+const DENETIM_EN_FAZLA = 2 // doğrulayıcıdan önce kaydedilmiş yazılardan bir turda en fazla kaçı denetlenir
 const RED_SINIR = 3 // bir yazı art arda bu kadar tur reddedilirse...
 const RED_BEKLE = 6 * 3600e3 // ...bu kadar süre denenmez (bilgisi değişirse hemen denenir)
 const SURE = 5 * 60e3 // yazarın bir turda harcayabileceği en uzun süre (sağlayıcılar cevap vermezse tur uzamasın)
@@ -29,7 +30,7 @@ const BASLA = Date.now()
 export const yazilar = existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : {}
 delete yazilar._red // eski sürümde sayaç burada tutuluyordu
 const RED = existsSync(RED_FILE) ? JSON.parse(readFileSync(RED_FILE, 'utf8')) : {}
-export const durum = { yazildi: 0, eski: 0, hata: [], model: null, istek: 0, durdu: { gemini: false, openrouter: false }, tukenen: [], reddedilen: [], atlanan: 0, yukseltilen: 0 }
+export const durum = { yazildi: 0, eski: 0, hata: [], model: null, istek: 0, durdu: { gemini: false, openrouter: false }, tukenen: [], reddedilen: [], atlanan: 0, yukseltilen: 0, bekleyen: 0, bekleyenDogrulandi: 0, denetim: 0, dogrulama: { yapildi: 0, reddetti: 0 } }
 
 // ---------- metin yardımcıları
 const TR = { 'İ': 'I', 'I': 'I', 'ı': 'I', 'Ş': 'S', 'ş': 'S', 'Ğ': 'G', 'ğ': 'G', 'Ü': 'U', 'ü': 'U', 'Ö': 'O', 'ö': 'O', 'Ç': 'C', 'ç': 'C', 'Â': 'A', 'â': 'A' }
@@ -60,7 +61,7 @@ const SERBEST = new Set(['EFENDILIG', 'EFENDI', 'SEZONU', 'SEZON', 'LIGI', 'LIG'
 // Büyük harfle yazılsa da ek alabilen kökler ("Sezonunda", "Yolunda", "Kupasında")
 const EKLI_KOK = ['SEZON', 'LIG', 'KUPA', 'YOL', 'FINAL', 'HAFTA', 'EFENDI', 'GRUP', 'PLAYOFF']
 // Cümle başında büyük harfle yazılan sıradan kelimeler (ad değildir): tam kelime ya da (uzun kökler için) ek almış hali
-const CUMLE_BASI = new Set(['BU', 'BUNA', 'BUNUNLA', 'BOYLE', 'AYNI', 'EV', 'IC', 'IKI', 'UC', 'DORT', 'BES', 'BIR', 'HER', 'TUM', 'ILK', 'SON', 'EN', 'YINE', 'DAHA', 'OYSA', 'GECEN', 'MAC', 'MACI', 'MACIN', 'MACTA', 'MACTAN', 'MACA', 'GOL', 'GOLU', 'GOLLER', 'GOLLERI', 'GOLLERINI', 'GOLLERLE', 'MVP', 'LIGDE', 'TEK', 'HEM', 'OTE', 'ORTA', 'SADECE', 'YALNIZCA', 'AMA', 'BUNUN', 'KALAN', 'OTEKI', 'UCUNCU', 'ATILAN', 'HAT', 'TRICK'])
+const CUMLE_BASI = new Set(['BU', 'BUNA', 'BUNUNLA', 'BOYLE', 'AYNI', 'EV', 'IC', 'IKI', 'UC', 'DORT', 'BES', 'BIR', 'HER', 'TUM', 'ILK', 'SON', 'EN', 'YINE', 'DAHA', 'OYSA', 'GECEN', 'MAC', 'MACI', 'MACIN', 'MACTA', 'MACTAN', 'MACA', 'GOL', 'GOLU', 'GOLLER', 'GOLLERI', 'GOLLERINI', 'GOLLERLE', 'MVP', 'LIGDE', 'TEK', 'HEM', 'OTE', 'ORTA', 'SADECE', 'YALNIZCA', 'AMA', 'BUNUN', 'KALAN', 'OTEKI', 'UCUNCU', 'ATILAN', 'HAT', 'TRICK', 'BOYLELIKLE', 'DOLAYISIYLA', 'NETICEDE', 'NITEKIM', 'KISACASI', 'HATTA', 'ZIRA', 'OYLEKI', 'SONUNDA', 'NETICE'])
 const CUMLE_BASI_KOK = ['TAKIM', 'KARSILASMA', 'MUCADELE', 'ASIST', 'SKOR', 'SONUC', 'DEVRE', 'YARI', 'RAKIP', 'RAKIB', 'DEPLASMAN', 'SAHA', 'SEZON', 'HAFTA', 'PUAN', 'SIRA', 'TABLO', 'ONCEKI', 'OYUNCU', 'KALECI', 'GALIBIYET', 'MAGLUBIYET', 'BERABERLIK', 'KAYIT', 'TARAF', 'ANCAK', 'AYRICA', 'BOYLECE', 'SONRA', 'ONCE', 'IKINCI', 'BIRINCI', 'SIRADAKI', 'DEGERLI', 'GOL', 'KONUK', 'TOPLAM', 'ARDINDAN', 'UZATMA', 'PENALTI', 'FRIKIK', 'KAFA', 'KONTRA', 'HUCUM', 'SAVUNMA', 'DEFANS', 'DIGER', 'USTELIK', 'OZELLIKLE', 'FAKAT', 'EKIP', 'EKIB', 'MUSABAKA', 'YENILGI', 'YENILGIDE']
 const siradanMi = w => { const n = norm(kok(w)); return CUMLE_BASI.has(n) || CUMLE_BASI_KOK.some(r => n.startsWith(r) && n.length - r.length <= 6) }
 const bilgiKelimeleri = bilgi => new Set(JSON.stringify(bilgi).split(/[^A-Za-z0-9ÇĞİÖŞÜçğıöşüÂâ]+/).map(norm).filter(Boolean))
@@ -156,15 +157,15 @@ const ONE = String.raw`1337(?:\s*Crew\s*FC)?`
 const SAHIP_1337 = new RegExp(`${ONE}['’](n[iı]n|in)\\s+(kendi\\s+|iç\\s+)?(sahas|evi|ev\\s+sahipliğ)`, 'i')
 const kelimeler = c => parcala(c).map(w => ({ ham: w, n: norm(kok(w)), ekli: /['’]/.test(w) }))
 const kacir = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-// Takım adının ardından gelip onu bir ad öbeğinin parçası yapan kelimeler ("1337 Crew FC karşısında", "Baston Villa maçını",
-// "1337 Crew FC savunmasını", "Baston Villa ile"). Ardından virgül geliyorsa takım yine öznedir ("Baston Villa, …").
-const TUMLEC = /^(karşısında|karşısına|karşısındaki|karşı|ile|ilen|önünde|tarafından|arasında|arasındaki|lehine|aleyhine|adına)$/i
-// İyelik eki almış baş ad: "Baston Villa maçını / savunmasını / deplasmanında / sahasında" (ama "deplasmanda", "sahadan" değil)
+// Takım adının ardından gelip onu bir ad öbeğinin parçası yapan kelimeler ("1337 Crew FC karşısında", "Baston Villa ile").
+// Ardından virgül geliyorsa takım yine öznedir ("Baston Villa, …").
+const TUMLEC = /^(karşısında|karşısına|karşısındaki|karşı|ile|ilen|önünde|tarafından|arasında|arasındaki|lehine|aleyhine|adına|ve)$/i
+// İyelik eki almış baş ad: "Baston Villa maçını / savunmasını / deplasmanında" (ama "deplasmanda", "sahadan" değil)
 const IYELIK = /^(maç|mücadele|karşılaşma|deplasman|savunma|kale|taraftar|seyirci|saha|ekib|takım|forma|oyuncu|kadro|hücum|engel|cephe|tribün|golcü)(ler|lar)?s?[ıiuü](n(da|de|dan|den|a|e|ı|i|u|ü|ın|in|un|ün|la|le)?)?$/i
-// Ek almamış iyelik ("maçı") belirsizdir: yan cümlenin başındaki takımın ardından gelince nesnedir ("1337 Crew FC maçı 3-1 kaybetti")
-const YALIN_IYELIK = /^\p{L}+[ıiuü]$/u
+// Yan cümle başındaki takımın ardından gelince belirsizdir, özne sayılır: "1337 Crew FC maçı 3-1 kaybetti", "1337 Crew FC sahasında 1-3 yenildi"
+const BASTA_OZNE = /^(\p{L}+[^n\s][ıiuü]|sahas[ıi]nda|sahas[ıi]ndan|evinde|evinden)$/iu
 /**
- * Takımın metindeki anılışları: { bas, son, ek, sonraki, virgul, ozne, tamlayan, belirtme }.
+ * Takımın metindeki anılışları: { bas, son, ek, sonraki, virgul, basta, ozne, tamlayan, belirtme }.
  * Tam ad ya da FC/SK gibi genel ekler olmadan; "1337 Crew FC" için tek başına "1337" de sayılır.
  */
 function takimAnis(c, ad) {
@@ -180,20 +181,44 @@ function takimAnis(c, ad) {
       const son = mt.index + mt[0].length, ek = (mt[1] ?? '').toLocaleLowerCase('tr')
       const sm = c.slice(son).match(/^\s*(,?)\s*(\p{L}+)?/u)
       const virgul = !!sm?.[1], sonraki = sm?.[2] ?? ''
-      const basta = !/[\p{L}\d]/u.test(c.slice(0, mt.index))
-      const birlesik = TUMLEC.test(sonraki) || (IYELIK.test(sonraki) && !(basta && YALIN_IYELIK.test(sonraki)))
+      // yan cümle başı ("ev sahibi / konuk / lider" öneki olabilir)
+      const basta = !/[\p{L}\d]/u.test(c.slice(0, mt.index).replace(/(ev\s+sahibi|konuk|lider|rakip)\s*$/iu, ''))
+      const tire = /^\s*[-–—]\s*\S/.test(c.slice(son)) // "Baston Villa - 1337 Crew FC maçı"
+      const birlesik = tire || TUMLEC.test(sonraki) || (IYELIK.test(sonraki) && !(basta && BASTA_OZNE.test(sonraki)))
       out.push({ bas: mt.index, son, ek, sonraki, virgul, basta, ozne: !ek && (virgul || !birlesik), tamlayan: /^n?[ıiuü]n$/.test(ek), belirtme: /^[yn]?[ıiuü]$/.test(ek) })
     }
   }
   return out.sort((a, b) => a.bas - b.bas)
 }
+// Takım adı yerine geçen özne öbekleri ("konuk ekip maçı kazandı"); kime ait olduğu m.us'tan çözülür
+const OZNE_OBEK = /(?<![\p{L}'’])(ev\s+sahibi(?:\s+(?:ekip|takım|taraf))?|konuk\s+(?:ekip|takım|taraf)|konuklar|misafir\s+(?:ekip|takım)|deplasman\s+ekibi|rakip\s+(?:ekip|takım))(?![\p{L}'’])(?!\s+(?:ekib|takım|taraf)\p{L})/giu
+const OBEK_TAMLAYAN = /(ev\s+sahibi\s+(?:ekibin|takımın)|ev\s+sahibinin|konuk\s+(?:ekibin|takımın)|konukların|rakibinin|rakibin|rakip\s+(?:ekibin|takımın))$/iu
+const obekBizMi = (s, m) => /^(ev\s+sahibi)/i.test(s) ? m.us === 'home' : /^(konuk|misafir|deplasman)/i.test(s) ? m.us === 'away' : false
+/** Özne öbeklerinin anılışları (ardından bir takım adı geliyorsa öbek o adın ön ekidir, sayılmaz) */
+function obekAnis(c, m, takimlar) {
+  const out = []
+  for (const mt of c.matchAll(new RegExp(OZNE_OBEK.source, 'giu'))) {
+    const son = mt.index + mt[0].length
+    if (takimlar.some(a => a.bas >= son && /^\s*$/.test(c.slice(son, a.bas)))) continue
+    out.push({ bas: mt.index, son, ek: '', ozne: true, obek: true, biz: obekBizMi(mt[0], m) })
+  }
+  return out
+}
+
 // Yer sözünün ardından ortaç + rakip geliyorsa söz rakibi niteler: "kendi sahasında oynayan Baston Villa"
 const ORTAC = /^\s*(\p{L}+(?:yan|yen|an|en|dığı|diği|duğu|düğü|tığı|tiği))\s+/iu
 const rakibeBagli = (sonra, rakipAd) => { const o = sonra.match(ORTAC); return !!o && takimAnis(sonra.slice(o[0].length), rakipAd).some(a => a.bas === 0) }
+// Yer sözünün ardından ortaç + sonuç adı geliyorsa söz önceki maça aittir: "deplasmanda aldığı 2-0'lık yenilgi"
+const oncekiMacaBagli = sonra => /^\s*\p{L}+(dığı|diği|duğu|düğü|tığı|tiği|tuğu|tüğü)\s+(\S+\s+){0,2}(yenilgi|galibiyet|beraberlik|mağlubiyet|zafer|puan)/iu.test(sonra)
 const BIRINCI_YER = /(kendi\s+sahas\p{L}*|iç\s+saha\p{L}*|(?<!\p{L})sahas[ıi]nda(?!\p{L})|(?<!\p{L})evinde(?!\p{L})|(taraftar|seyirci)\p{L}*\s+önünde)/iu
 // Yalnızca çekimli fiiller: "ev sahipliği yaptığı/yapan" ortaçtır, kimin ev sahibi olduğunu söylemez
 const AGIRLADI = /(ağırla(dı|yacak|yor|r|mış)|konuk\s+e(tti|decek|diyor|der|miş)|misafir\s+e(tti|decek|diyor|der)|ev\s+sahipliği\s+yap(tı|acak|ıyor|ar|mış))(?!\p{L})/iu
-const pencereAl = (c, bas) => c.slice(bas).split(/;|\s(?:ve|ise|ancak|fakat|ama|oysa)\s|(?<=\p{L}ken)(?!\p{L})/iu)[0].slice(0, 110)
+const KONUK_OLDU = /((?<!\p{L})deplasmanda(?!\p{L})|deplasmana\s+çık(tı|acak|ıyor|ar)(?!\p{L})|konu(k|ğu)\s+ol(du|acak|uyor|ur|muş)(?!\p{L})|misafiri\s+ol(du|acak|uyor|ur)(?!\p{L}))/iu
+/** 1337'nin ardından ilk bağlaca, "-ken"e ya da virgülden sonra gelen yeni özneye kadar */
+function pencereAl(c, bas, kesimler = []) {
+  const kes = Math.min(c.length, ...kesimler.filter(x => x > bas))
+  return c.slice(bas, kes).split(/;|\s(?:ve|ise|ancak|fakat|ama|oysa)\s|(?<=\p{L}ken)(?!\p{L})/iu)[0].slice(0, 110)
+}
 
 /** Saha yanlış mı? Deplasman maçında 1337'yi ev sahibi, iç saha maçında deplasmanda gösteren cümle. Belirsizse yanlış sayılmaz. */
 function sahaYanlis(t, m, oncekiRakip = null) {
@@ -205,33 +230,45 @@ function sahaYanlis(t, m, oncekiRakip = null) {
     const oncekiVar = !!oncekiRakip && takimAnis(c, oncekiRakip).length > 0
     const bizHepsi = takimAnis(c, '1337 Crew FC'), biz = bizHepsi.filter(a => a.ozne)
     const rakip = takimAnis(c, rakipAd)
-    const basta = rakip.find(a => a.bas <= c.search(/\S/) + 1 && a.ozne) // cümle rakiple başlıyor, rakip özne
-    // rakip-başı penceresi: arada 1337 anılıyorsa ("Bordreaux JB, 1337 Crew FC'nin ev sahipliği…") o kısım 1337'ye aittir
+    // virgülden sonra yeni özne (rakip ya da "konuk ekip") 1337'nin penceresini keser
+    const kesimler = [...rakip.filter(a => a.ozne), ...obekAnis(c, m, [...rakip, ...bizHepsi])].filter(a => /,\s*$/.test(c.slice(0, a.bas))).map(a => a.bas)
+    const basta = rakip.find(a => a.basta && a.ozne) // cümle rakiple başlıyor, rakip özne
+    // rakip-başı penceresi: arada 1337 özne ya da tamlayan olarak anılıyorsa ("Bordreaux JB, 1337 Crew FC'nin ev sahipliği…") o kısım 1337'ye aittir
     const bastaPencere = basta ? c.slice(basta.son, Math.min(basta.son + 100, ...bizHepsi.filter(a => a.bas > basta.son && (a.ozne || a.tamlayan)).map(a => a.bas))) : ''
     if (m.us === 'away') {
       if (new RegExp(`ev\\s+sahibi\\s+${ONE}`, 'i').test(c) || SAHIP_1337.test(c)) return true
-      if (bizHepsi.some(a => !a.ek && /^\s+(kendi\s+)?(sahas[ıi]nda|evinde)(?!\p{L})/u.test(c.slice(a.son)))) return true
+      if (bizHepsi.some(a => !a.ek && /^\s+(kendi\s+)?(sahas[ıi]nda|evinde)(?!\p{L})/u.test(c.slice(a.son)))) return true // "1337 Crew FC sahasında"
       if (new RegExp(`${ONE},?\\s+(ev\\s+sahibi\\s+(olarak|olduğu|olacağı|konumunda|sıfatıyla)|ev\\s+sahipliği\\s+yap(tı|acak|ıyor|ar)(?!\\p{L}))`, 'iu').test(c)) return true
       if (!oncekiVar) for (const a of biz) {
-        const p = pencereAl(c, a.son)
+        const p = pencereAl(c, a.son, kesimler)
         const y = p.match(BIRINCI_YER)
         if (y) {
           const once = p.slice(0, y.index), sonra = p.slice(y.index + y[0].length)
-          const rakipSahibi = takimAnis(once, rakipAd).some(x => x.tamlayan) || /(rakib\p{L}*|ev\s+sahibi|deplasman|konuk\s+ol|konuğu)/iu.test(once)
-          if (!rakipSahibi && !rakibeBagli(sonra, rakipAd)) return true
+          // yer sözü rakibe ait: tamlayan ("X'in sahasında"), ekli nesne ("X'i evinde yendi"), eksiz izafet ("X sahasında")
+          const sonRakip = takimAnis(once, rakipAd).filter(x => /^\s*(kendi\s+)?$/iu.test(once.slice(x.son))).at(-1)
+          const rakipSahibi = !!sonRakip || takimAnis(once, rakipAd).some(x => x.tamlayan) || /(rakib\p{L}*|ev\s+sahibi|deplasman|konuk\s+ol|konuğu)/iu.test(once)
+          if (!rakipSahibi && !rakibeBagli(sonra, rakipAd) && !oncekiMacaBagli(sonra)) return true
         }
         const ag = p.match(AGIRLADI)
         if (ag && !takimAnis(p.slice(0, ag.index), rakipAd).some(x => x.tamlayan) && !/kendisine\s*$/i.test(p.slice(0, ag.index))) return true
       }
-      if (basta && /^\s*,?\s*deplasmanda(?!\p{L})/iu.test(bastaPencere) && !rakibeBagli(bastaPencere.replace(/^\s*,?\s*deplasmanda/i, ''), '1337 Crew FC')) return true
+      // rakip özne ve konuk/deplasmanda: "Baston Villa, … 1337 Crew FC'ye konuk oldu"
+      if (basta) {
+        const y = bastaPencere.match(KONUK_OLDU)
+        if (y && !rakibeBagli(bastaPencere.slice(y.index + y[0].length), '1337 Crew FC') && !oncekiMacaBagli(bastaPencere.slice(y.index + y[0].length))) return true
+      }
     } else {
       if (new RegExp(`ev\\s+sahibi\\s+${rakipAd.split(/[\s\-–—\/]+/).map(kacir).join('[\\s\\-–—/]+')}`, 'iu').test(c)) return true
-      if (rakip.some(a => a.tamlayan && /^\s*(kendi\s+|iç\s+)?(sahas|evi|ev\s+sahipliğ)/iu.test(c.slice(a.son)) && !/^\s*ev\s+sahipliği\s+yap(an|tığı|acağı)/iu.test(c.slice(a.son)))) return true
+      // "X'in sahasında / X'in ev sahipliği yaptığı", "X sahasında", "X deplasmanına çıktı / X deplasmanında"
+      if (rakip.some(a => a.tamlayan && /^\s*(kendi\s+|iç\s+)?(sahas|evi|ev\s+sahipliğ)/iu.test(c.slice(a.son)))) return true
       if (rakip.some(a => !a.ek && /^\s+(kendi\s+)?(sahas[ıi]nda|evinde)(?!\p{L})/u.test(c.slice(a.son)) && !rakibeBagli(c.slice(a.son).replace(/^\s+(kendi\s+)?(sahas[ıi]nda|evinde)/u, ''), '1337 Crew FC'))) return true
+      if (rakip.some(a => (!a.ek || a.tamlayan) && /^\s+deplasman(ın)?(a|da|dan)(?!\p{L})/u.test(c.slice(a.son)))) return true
       if (!oncekiVar) for (const a of biz) {
-        const p = pencereAl(c, a.son)
-        const y = p.match(/((?<!\p{L})deplasmanda(?!\p{L})|deplasmana\s+çık(tı|acak|ıyor|ar)(?!\p{L})|konu(k|ğu)\s+ol(du|acak|uyor|ur|muş)(?!\p{L})|misafiri\s+ol(du|acak|uyor|ur)(?!\p{L}))/iu)
-        if (y && !rakibeBagli(p.slice(y.index + y[0].length), rakipAd) && !/^deplasmanda\s+(ağırla|konuk\s+e)/i.test(p.slice(y.index))) return true
+        const p = pencereAl(c, a.son, kesimler)
+        const y = p.match(KONUK_OLDU)
+        if (!y) continue
+        const sonra = p.slice(y.index + y[0].length)
+        if (!rakibeBagli(sonra, rakipAd) && !oncekiMacaBagli(sonra) && !/^deplasmanda\s+(ağırla|konuk\s+e)/i.test(p.slice(y.index))) return true
       }
       if (basta) {
         if (AGIRLADI.test(bastaPencere)) return true
@@ -245,66 +282,78 @@ function sahaYanlis(t, m, oncekiRakip = null) {
 
 // Sonuç sözleri. "bir puan kazandı", "moral kazandı", "iki puan kaybetti", "galibiyeti kaçırdı", "yenilgi serisine son verdi" sonuç bildirmez.
 const KAZAN = new RegExp([
-  String.raw`mağlup\s+(etti|ederek|edecek|etmişti|ederken|edip)`, String.raw`(?<!\p{L})yen(di|erek|mişti|erken|ip)(?!\p{L})`,
+  String.raw`mağlup\s+(etti|ederek|edecek|etmişti|ederken|edip)`, String.raw`(?<!\p{L})yen(di|erek|mişti|erken|ip)(?!\p{L})`, String.raw`alt\s+et(ti|erek|ip)`,
   String.raw`(?<!(bir|1)\s+puan[ıi]?\s|puan\s|moral\s|güven\s|özgüven\s|ivme\s|deneyim\s|tecrübe\s|avantaj\s|zaman\s)kazan(dı|arak|ırken|ıp)(?!\p{L})`,
   String.raw`galip\s+(geldi|gelerek|gelirken|gelip|ayrıldı|ayrılarak|çıktı|çıkarak)`,
-  String.raw`galibiyet\p{L}*(\s+[^\s.,;]+){0,5}?\s+(aldı|alarak|elde\s+etti|kazandı|imza\s+attı|uzandı|uzanarak|ulaştı|ulaşarak)(?!\p{L})`,
+  String.raw`galibiyet\p{L}*(\s+[^\s.,;]+){0,5}?\s+(aldı|alarak|elde\s+etti|kazandı|imza\s+attı|uzandı|uzanarak|ulaştı|ulaşarak|kutladı|ekledi)(?!\p{L})`,
   String.raw`galibiyet\p{L}*\s+(sevinci\s+yaşa|hanesine\s+yazdır|sahibi\s+ol)\p{L}*`, String.raw`galibiyet(le|iyle)(?!\p{L})`,
   String.raw`üstün\s+gel(di|erek|irken)`, String.raw`üstünlük\s+kur(du|arak)`, String.raw`zafer\p{L}*\s+(kazandı|elde\s+etti|imza\s+attı|ulaştı|uzandı)`, String.raw`zafer(le|iyle)(?!\p{L})`, String.raw`üstünlüğü(yle|nü\s+kur\p{L}*)(?!\p{L})`,
   String.raw`(yenilgiye|mağlubiyete)\s+uğrat(tı|arak)(?!\p{L})`, String.raw`(mağlup\s+etme|yenme|kazanma)\p{L}*\s+(başardı|bildi)`,
-  String.raw`(3|üç)\s+puan\p{L}*\s+(aldı|alarak|kazandı|hanesine\s+yazdır(dı|arak)|topladı|cebine\s+koydu|getirdi|döndü|ayrıldı)`,
+  String.raw`(3|üç)\s+puan\p{L}*\s+(aldı|alarak|kazandı|hanesine\s+yazdır(dı|arak)|topladı|cebine\s+koydu|getirdi|döndü|ayrıldı|kaptı|çıkardı|sahibi\s+oldu)`,
+  String.raw`gülen\s+taraf\s+ol(du|arak)`, String.raw`şans\s+tanıma(dı|yarak)`, String.raw`kârlı\s+çık(tı|arak)`,
 ].join('|'), 'iu')
 const KAYBET = new RegExp([
   String.raw`mağlup\s+(oldu|olarak|olurken|olup|ayrıldı|edildi|edilerek)`, String.raw`mağlubiyet\p{L}*\s+(aldı|alarak|yaşadı)`, String.raw`mağlubiyet(le|iyle)(?!\p{L})`,
   String.raw`(yenilgiye|mağlubiyete)\s+(uğra(dı|yarak|mıştı)|uğratıl(dı|arak))(?!\p{L})`, String.raw`yenilgi\p{L}*\s+(aldı|alarak|yaşadı)`, String.raw`yenilgi(yle|siyle)(?!\p{L})`,
-  String.raw`(?<!\p{L})yenil(di|erek|irken|mişti|ip)(?!\p{L})`, String.raw`yenik\s+düş(tü|erek|üp)`,
+  String.raw`(?<!\p{L})yenil(di|erek|irken|mişti|ip)(?!\p{L})`, String.raw`yenik\s+(düş(tü|erek|üp)|ayrıldı|döndü|kaldı)`, String.raw`alt\s+edil(di|erek)`, String.raw`diz\s+çök(tü|erek)`,
   String.raw`(?<!puan[ıi]?\s|puanları\s)kaybet(ti|erek|ip)(?!\p{L})`, String.raw`boyun\s+eğ(di|erek)`, String.raw`teslim\s+ol(du|arak)`,
-  String.raw`puansız\s+(döndü|kaldı|ayrıldı)`, String.raw`puan\s+çıkara(madı|mayarak)`, String.raw`eli\s+boş\s+(döndü|ayrıldı|kaldı)`, String.raw`kaybeden\s+taraf\s+ol(du|arak)`,
+  String.raw`puansız\s+(döndü|kaldı|ayrıldı)`, String.raw`puan\s+(çıkara|ala)(madı|mayarak)`, String.raw`eli\s+boş\s+(döndü|ayrıldı|kaldı)`, String.raw`kaybeden\s+taraf\s+ol(du|arak)`,
+  String.raw`yenilgi\p{L}*\s+(önleyeme|engelleyeme)(di|yerek)`, String.raw`mağlubiyet\p{L}*\s+kurtulama(dı|yarak)`,
   String.raw`hezimet\p{L}*\s+(yaşadı|aldı)`, String.raw`hezimetle(?!\p{L})`,
 ].join('|'), 'iu')
 const BERABER = new RegExp([
   String.raw`berabere\s+kal(dı|arak|ırken|ıp)`, String.raw`beraberlik(le|iyle)(?!\p{L})`, String.raw`beraberliğ\p{L}*\s+(aldı|alarak)`, String.raw`puanları\s+paylaş(tı|arak|ıp)`,
   String.raw`yenişe(medi|meyerek)`, String.raw`beraberliğe\s+razı\s+(oldu|kaldı)`, String.raw`(bir|1)\s+puan\p{L}*\s+(aldı|alarak|kazandı|topladı|yetindi|döndü)`,
 ].join('|'), 'iu')
+// "kazanamadı / galibiyete uzanamadı": galibiyet değil (beraberlik ya da yenilgi olabilir)
+const GALIBIYET_DEGIL = /(kazanama(dı|yarak)|galibiyet\p{L}*\s+(uzana|ulaşa|ala)ma(dı|yarak)|galip\s+gele(medi|meyerek))(?!\p{L})/iu
 // Nesnesi rakip olmalı: "Baston Villa'yı geride bıraktı / devirdi / geçti" (ama "haftayı geride bıraktı", "öne geçti" değil)
 const KAZAN_NESNE = /(geride\s+bırak(tı|arak|ıp)|devir(di|erek|ip)|geç(ti|erek)|geçme\p{L}*\s+(başardı|bildi)|engel\p{L}*\s+(\S+\s+){0,2}aş(tı|arak))(?!\p{L})/iu
+// Takımı niteleyen sonuç ortaçları: "Baston Villa'yı 2-0 yenen 1337 Crew FC"
+const ORTAC_SONUC = [['G', /(?<!\p{L})(yenen|mağlup\s+eden|alt\s+eden|kazanan|galip\s+(gelen|ayrılan|çıkan))\s+$/iu], ['M', /(?<!\p{L})(yenilen|kaybeden|mağlup\s+(olan|ayrılan)|yenik\s+(düşen|ayrılan)|boyun\s+eğen|puansız\s+kalan)\s+$/iu], ['B', /(?<!\p{L})(berabere\s+kalan|puanları\s+paylaşan)\s+$/iu]]
 const SONUC = [['G', KAZAN], ['M', KAYBET], ['B', BERABER]]
 const TERS = { G: 'M', M: 'G', B: 'B' }
 const SONUC_ADI = /^(galibiyet|yenilgi|mağlubiyet|beraberlik|zafer|üstünlü[kğ]|hezimet)/i
+// Tamlayan ile sonuç adı arasına girebilecek nitelemeler: skor, sıfat, "-daki" ("1337 Crew FC'nin deplasmandaki 2-0'lık net galibiyeti").
+// "sahasında / evinde" giremez: "X'in sahasında galibiyet aldı" sonucu X'e değil özneye bağlar.
+const ARA_SOZ = /^\s*((\d+\s*[-–—]\s*\d+['’]?\p{L}*|net|farklı|rahat|büyük|kritik|önemli|tarihi|ilk|deplasman|iç\s+saha|\p{L}+(daki|deki|taki|teki))\s+){0,3}$/iu
 // Ardındaki kelime olumsuzsa ("galibiyetle tanışamadı", "yenilgiyle tanışmadı") sonuç bildirmez
-const OLUMSUZ = /^\s*\p{L}*?(?:[ae]?m[ae](?:d[ıi]|z|y[ae]|m[ıi]ş|s[ıi]n))/iu
+const OLUMSUZ = /^\s*\p{L}*?(?:[ae]?m[ae](?:d[ıi]|z|y[ae]|m[ıi]ş|s[ıi]n))/u
 
 /**
- * Cümleyi yan cümlelere böl ve her birinin öznesini bul. Sınırlar: "-ken" zarf-fiili, ama/fakat/ancak/oysa, ";",
- * "ve" + yeni özne, "X ise". Öznesi olmayan yan cümle öncekinin öznesini devralır ("-ken" özneyi değiştirmez).
+ * Cümleyi yan cümlelere böl ve her birinin öznesini bul. Sınırlar: "-ken", "-ınca", ama/fakat/ancak/oysa, ";", ":",
+ * "ve" ya da virgül + yeni özne, "X ise". Öznesi olmayan yan cümle öncekinin öznesini devralır ("-ken" özneyi değiştirmez).
  */
-function yanCumleler(c, rakipAd) {
-  const anis = [...takimAnis(c, '1337 Crew FC').map(a => ({ ...a, biz: true })), ...takimAnis(c, rakipAd).map(a => ({ ...a, biz: false }))].sort((a, b) => a.bas - b.bas)
+function yanCumleler(c, m, rakipAd) {
+  const takimlar = [...takimAnis(c, '1337 Crew FC').map(a => ({ ...a, biz: true })), ...takimAnis(c, rakipAd).map(a => ({ ...a, biz: false }))]
+  const anis = [...takimlar, ...obekAnis(c, m, takimlar)].sort((a, b) => a.bas - b.bas)
   const sinir = new Set([0, c.length])
-  for (const mt of c.matchAll(/\p{L}+ken(?!\p{L})/gu)) sinir.add(mt.index + mt[0].length)
-  for (const mt of c.matchAll(/;|\s(?:ama|fakat|ancak|oysa)\s/giu)) sinir.add(mt.index)
+  for (const mt of c.matchAll(/\p{L}+(ken|[ıiuü]nc[ae])(?!\p{L})/gu)) sinir.add(mt.index + mt[0].length)
+  for (const mt of c.matchAll(/[;:]|\s(?:ama|fakat|ancak|oysa)\s/giu)) sinir.add(mt.index)
   for (const a of anis) {
-    if (a.ozne && /^ise$/i.test(a.sonraki)) sinir.add(a.bas)
+    if (a.ek) continue
     const once = c.slice(0, a.bas)
-    if (a.ozne && /\sve\s+$/i.test(once)) sinir.add(once.search(/\sve\s+$/i))
+    if (/^ise$/i.test(a.sonraki ?? '')) sinir.add(a.bas)
+    if ((a.obek || a.ozne) &&/(\sve|,)\s*$/i.test(once)) sinir.add(once.search(/(\sve|,)\s*$/i))
   }
   const s = [...sinir].sort((a, b) => a - b)
   const out = []
   let ozne = null
   for (let i = 0; i + 1 < s.length; i++) {
-    const [b, e] = [s[i], s[i + 1]]
-    const parcaMetin = c.slice(b, e)
-    const kendi = [...takimAnis(parcaMetin, '1337 Crew FC').map(a => ({ ...a, biz: true })), ...takimAnis(parcaMetin, rakipAd).map(a => ({ ...a, biz: false }))].sort((x, y) => x.bas - y.bas)
+    const metin = c.slice(s[i], s[i + 1])
+    const kTakim = [...takimAnis(metin, '1337 Crew FC').map(a => ({ ...a, biz: true })), ...takimAnis(metin, rakipAd).map(a => ({ ...a, biz: false }))]
+    const kendi = [...kTakim, ...obekAnis(metin, m, kTakim)].sort((x, y) => x.bas - y.bas)
     ozne = kendi.find(a => a.ozne) ?? ozne
-    out.push({ metin: parcaMetin, bas: b, anis: kendi, ozne })
+    out.push({ metin, bas: s[i], anis: kendi, ozne })
   }
   return out
 }
 
 /**
  * Sonucun yönü. Her sonuç sözünün sahibi yan cümlenin öznesidir ("Baston Villa, 1337 Crew FC karşısında 2-0 kazandı" → Baston Villa);
- * sonuç adı doğrudan bir tamlayana bağlıysa ("1337 Crew FC'nin 2-0'lık galibiyetiyle") o takımdır. 1337'ninse beklenen sonuç, rakibinse tersi.
- * Sahibi belli değilse (ör. "Ev sahibi ekip kazandı") yanlış sayılmaz.
+ * sonuç adı doğrudan bir tamlayana bağlıysa ("1337 Crew FC'nin 2-0'lık galibiyetiyle") o takımdır; ortaç takımı niteliyorsa
+ * ("yenen 1337 Crew FC") o takımdır. 1337'ninse beklenen sonuç, rakibinse tersi. Sahibi belli değilse yanlış sayılmaz —
+ * kalan kalıpları doğrulayıcı model denetler.
  */
 function sonucYanlis(t, m, rakipAd) {
   if (m.forfeit || !m.result) return false
@@ -312,26 +361,45 @@ function sonucYanlis(t, m, rakipAd) {
   for (const c0 of cumleler(t)) {
     if (oncekiMac(c0) && !/(ardından|sonra)/i.test(c0)) continue
     const c = buMac(c0)
-    // "kazanan taraf X oldu", "X lehine sonuçlandı", "kaybeden taraf X"
     for (const [ad, biz] of [['1337 Crew FC', true], [rakipAd, false]]) {
       for (const a of takimAnis(c, ad)) {
         const once = c.slice(0, a.bas), sonra = c.slice(a.son)
-        const tur = /kazanan\s+(taraf|ekip|takım)\s+$/i.test(once) || /^\s+lehine\s+(sonuçlan|bit|tamamlan)/i.test(sonra) ? 'G' : /kaybeden\s+(taraf|ekip|takım)\s+$/i.test(once) ? 'M' : null
+        // "kazanan taraf X oldu", "maçın galibi … X oldu", "X lehine sonuçlandı"
+        let tur = /^\s+(\d+\s*[-–—]\s*\d+['’]?\p{L}*\s+)?lehine\s+(\S+\s+){0,2}(sonuçlan|bit|tamamlan|sona\s+er|kapan)/iu.test(sonra) ? 'G' : null
+        if (!tur && /^\s*oldu/i.test(sonra)) {
+          const on = once.slice(-70)
+          tur = /(galibi|kazananı|kazanan(\s+taraf)?|galip\s+(gelen|çıkan)(\s+taraf)?|gülen\s+taraf)(?![\p{L}])[^.;:]*$/iu.test(on) ? 'G' : /(kaybeden(\s+taraf)?|mağlup\s+olan(\s+taraf)?|yenilen\s+taraf)(?![\p{L}])[^.;:]*$/iu.test(on) ? 'M' : null
+        }
+        // sonuç ortacı takımı niteliyor
+        if (!tur) for (const [t2, re] of ORTAC_SONUC) if (re.test(once)) { tur = t2; break }
         if (tur && tur !== beklenen({ biz })) return true
       }
     }
-    for (const yan of yanCumleler(c, rakipAd)) {
+    for (const yan of yanCumleler(c, m, rakipAd)) {
       // ortaçlı yan cümleler ("rakibin kazandığı maçta") ve "galibiyetsiz/yenilgisiz" sonuç bildirmez
       const metin = yan.metin.replace(/\S+(dığı|diği|duğu|düğü|tığı|tiği|tuğu|tüğü)\S*/giu, x => ' '.repeat(x.length)).replace(/(galibiyetsiz|yenilgisiz)\S*/giu, x => ' '.repeat(x.length))
-      for (const [tur, re] of [...SONUC, ['G', KAZAN_NESNE]]) {
+      for (const [tur, re] of [...SONUC, ['G', KAZAN_NESNE], ['¬G', GALIBIYET_DEGIL]]) {
         for (const mt of metin.matchAll(new RegExp(re.source, 'giu'))) {
-          if (OLUMSUZ.test(metin.slice(mt.index + mt[0].length))) continue
-          if (re === KAZAN_NESNE && !yan.anis.some(a => a.belirtme || (!a.ek && /^engel/i.test(a.sonraki)))) continue
-          // sonuç adının hemen önünde (araya en çok skor girerek) tamlayan takım varsa sahibi odur
-          const tamlayan = SONUC_ADI.test(mt[0]) && yan.anis.find(a => a.tamlayan && /^\s*(\d+\s*[-–—]\s*\d+['’]?\p{L}*\s+)?$/u.test(metin.slice(a.son, mt.index)))
-          const sahip = tamlayan || yan.ozne
+          const sonra = metin.slice(mt.index + mt[0].length)
+          if (OLUMSUZ.test(sonra)) continue
+          if (re === KAZAN_NESNE && !yan.anis.some(a => a.belirtme || (!a.ek && /^engel/i.test(a.sonraki ?? '')))) continue
+          // "… galibiyetiyle biten maçta": sahibi belirtilmemiş sonuç adı maçı niteler
+          let sahip = null
+          if (SONUC_ADI.test(mt[0])) {
+            const once = metin.slice(0, mt.index)
+            const ara = a => metin.slice(a.son, mt.index)
+            sahip = yan.anis.filter(a => a.tamlayan && a.son <= mt.index && ARA_SOZ.test(ara(a))).at(-1) ?? null
+            // "rakibinin / ev sahibi ekibin 4-1'lik galibiyeti": araya en çok 3 kelime (skor, niteleme) girebilir
+            const kel = once.trimEnd().split(/\s+/)
+            let ob = null
+            for (let n = 0; n <= 3 && !ob && n < kel.length; n++) ob = kel.slice(0, kel.length - n).join(' ').match(OBEK_TAMLAYAN)
+            if (!sahip && ob) sahip = { biz: /^rakib|^rakip/i.test(ob[0]) ? false : obekBizMi(ob[0], m) }
+            if (!sahip && /^\s*(biten|sonuçlanan|sona\s+eren|tamamlanan|kapanan)/iu.test(sonra)) continue
+          }
+          sahip ??= yan.ozne
           if (!sahip) continue
-          if (tur !== beklenen(sahip)) return true
+          const b = beklenen(sahip)
+          if (tur === '¬G' ? b === 'G' : tur !== b) return true
         }
       }
     }
@@ -400,6 +468,7 @@ function golcuYanlis(t, kisiler) {
         if (ws[z.son - 1].ekli) continue
         for (let k = z.son; k < z.son + 4 && k < ws.length; k++) {
           if (DUR.test(ws[k].ham) || baskasi(ad, k)) break
+          if (/^asist/i.test(ws[k].ham)) break // "X bir asist kaydetti", "asiste imza attı"
           if (GOL_FIILI.test(ws[k].ham)) return `golcü yanlış (${ad})`
         }
       }
@@ -441,10 +510,14 @@ async function geminiModelleri() {
   } catch (e) { geminiModeller = []; durum.hata.push('Gemini model listesi: ' + e.message) }
   return geminiModeller
 }
-async function geminiYaz(model, sistem, istek) {
+// ayar.json: doğrulayıcı için (sıcaklık 0, JSON yanıt)
+async function geminiYaz(model, sistem, istek, ayar = {}) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST', headers: { 'x-goog-api-key': GEMINI, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: sistem }] }, contents: [{ role: 'user', parts: [{ text: istek }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 4096 } }),
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: sistem }] }, contents: [{ role: 'user', parts: [{ text: istek }] }],
+      generationConfig: { temperature: ayar.json ? 0 : 0.4, maxOutputTokens: 4096, ...(ayar.json ? { responseMimeType: 'application/json' } : {}) },
+    }),
     signal: AbortSignal.timeout(90000),
   })
   const j = await r.json().catch(() => ({}))
@@ -453,11 +526,11 @@ async function geminiYaz(model, sistem, istek) {
 }
 
 const OR_TERCIH = ['openrouter/free', 'google/gemma-4-31b-it:free', 'qwen/qwen3.8-27b:free']
-async function openrouterYaz(model, sistem, istek) {
+async function openrouterYaz(model, sistem, istek, ayar = {}) {
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${OPENROUTER}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://1337crewfc.com', 'X-Title': '1337 Crew FC' },
-    body: JSON.stringify({ model, temperature: 0.4, max_tokens: 500, messages: [{ role: 'system', content: sistem }, { role: 'user', content: istek }] }),
+    body: JSON.stringify({ model, temperature: ayar.json ? 0 : 0.4, max_tokens: ayar.json ? 800 : 500, messages: [{ role: 'system', content: sistem }, { role: 'user', content: istek }] }),
     signal: AbortSignal.timeout(60000),
   })
   const j = await r.json().catch(() => ({}))
@@ -472,6 +545,39 @@ async function denemeler(sadeceGemini = false) {
   return d
 }
 const modelHata = {} // bu turda modelin geçici hata sayısı
+const geciciHata = model => { if ((modelHata[model] = (modelHata[model] ?? 0) + 1) >= 2) durum.tukenen.push(model) }
+
+/** Modele bir istek atar; hata olursa sağlayıcıyı/modeli bu tur için işaretler. Metni ya da null döndürür. */
+async function cagir(d, sistem, istek, ayar = {}) {
+  if (durum.durdu[d.ad] || durum.tukenen.includes(d.model) || durum.istek >= EN_FAZLA_ISTEK) return null
+  if (Date.now() - BASLA > SURE) { if (!durum.hata.includes('süre doldu')) durum.hata.push('süre doldu'); return null }
+  try {
+    durum.istek++
+    let r = await d.fn(d.model, sistem, istek, ayar)
+    // Ücretsiz modeller yoğunken "high demand / overloaded" der: 20 sn bekleyip bir kez daha dene
+    if (r.hata && /high demand|overloaded|unavailable|try again/i.test(r.hata) && durum.istek < EN_FAZLA_ISTEK && Date.now() - BASLA < SURE - 60e3) {
+      await new Promise(x => setTimeout(x, 20000))
+      durum.istek++
+      r = await d.fn(d.model, sistem, istek, ayar)
+    }
+    if (r.hata) {
+      durum.hata.push(`${d.model}: ${r.hata}`.slice(0, 160))
+      if ([401, 402, 403].includes(r.kod) || (r.kod === 400 && /key|auth|permission|credit|billing/i.test(r.hata))) durum.durdu[d.ad] = true
+      else if (r.kod === 429 || r.kod === 404 || /quota|RESOURCE_EXHAUSTED|rate.?limit|not found/i.test(r.hata)) durum.tukenen.push(d.model)
+      else geciciHata(d.model)
+      return null
+    }
+    const metin = (r.metin ?? '').trim()
+    // Boş yanıt (akıl yürüten model jetonları bitirdi) red değil, model hatasıdır
+    if (!metin) { durum.hata.push(`${d.model}: boş yanıt`); geciciHata(d.model); return null }
+    return metin
+  } catch (e) {
+    durum.hata.push(`${d.model}: ${e.message}`.slice(0, 160))
+    if (/abort|timeout/i.test(e.name + e.message)) durum.tukenen.push(d.model)
+    else geciciHata(d.model)
+    return null
+  }
+}
 
 const SISTEM = `Amatör futbol takımı 1337 Crew FC'nin kulüp sitesi için kısa Türkçe yazılar yazıyorsun.
 Kurallar:
@@ -484,6 +590,39 @@ Kurallar:
 - Takımdan "1337 Crew FC" ya da "1337" diye, üçüncü şahısla bahset. Asla "biz", "bizim", "-ımız" ya da "kazandık, sıradayız" gibi birinci çoğul şahıs kullanma.
 - Rakip takımın adını bilgide yazıldığı gibi tam yaz.
 - Skoru her zaman ev sahibi önce gelecek şekilde "X-Y" biçiminde yaz.`
+
+// Doğrulayıcı: yazıyı başka bir model bilgilerle karşılaştırır. Kurallar dilin her kalıbını yakalayamaz; anlamı bu adım denetler.
+const DOGRULAYICI = `Amatör futbol takımı 1337 Crew FC'nin kulüp sitesi için yapay zekâyla yazılmış kısa Türkçe metinleri, verilen bilgilerle karşılaştırıp OLGU HATALARINI buluyorsun.
+Hata sayılanlar:
+1. Sonuç: metin bilgideki sonuçtan farklı bir sonuç söylüyor (kazanan, kaybeden ya da berabere). "sonuc1337" 1337 Crew FC'nin sonucudur. Skor ev sahibi önce yazılır.
+2. Saha: metin ev sahibi takımı ya da maçın kimin sahasında oynandığını bilgideki "saha"/"evSahibi" ile çelişecek biçimde yazıyor.
+3. Skor yanlış ya da ters.
+4. Kişiler: golcü listesinde olmayan birine gol yazılması, gol sayısının yanlış verilmesi, asist ya da MVP bilgisinin yanlış verilmesi, rakibin golcüsünün adının verilmesi.
+5. Tarih, gün, saat, hafta, puan, sıra, averaj, maç sayısı ya da önceki karşılaşmalar bilgiyle çelişiyor.
+6. Bilgide olmayan kişi, olay ya da ayrıntı uydurulmuş (gol dakikası, penaltı, kart, sakatlık, taraftar, hava, teknik direktör sözü vb.).
+7. Takımdan birinci çoğul şahısla söz ediliyor ("biz", "kazandık", "takımımız").
+Hata SAYILMAYANLAR: üslup, kelime seçimi, cümle yapısı, bilgilerle çelişmeyen genel nitelemeler ("zorlu maç", "puanları paylaştı").
+Yalnızca şu JSON'u döndür: {"hatalar": ["kısa açıklama", ...]}. Hata yoksa {"hatalar": []}.`
+const jsonAl = s => { try { const m = String(s).replace(/```(json)?/gi, '').match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null } catch { return null } }
+
+/**
+ * Metni bilgilerle karşılaştırır: { hatalar, model } ya da (doğrulayıcı yoksa / kota bittiyse) null.
+ * Yazandan farklı bir model tercih edilir: önce başka bir Gemini modeli, sonra OpenRouter, en son yazanın kendisi.
+ */
+async function dogrulaAI(bilgi, metin, yazan) {
+  const sira = (await denemeler()).map(d => ({ d, p: d.model === yazan ? 2 : d.ad === 'gemini' ? 0 : 1 })).sort((a, b) => a.p - b.p).map(x => x.d)
+  for (const d of sira) {
+    const cevap = await cagir(d, DOGRULAYICI, `Bilgiler:\n${JSON.stringify(bilgi, null, 1)}\n\nMetin:\n${metin}`, { json: true })
+    if (cevap == null) continue
+    const j = jsonAl(cevap)
+    if (!j || !Array.isArray(j.hatalar)) { durum.hata.push(`${d.model}: doğrulama yanıtı okunamadı`); geciciHata(d.model); continue }
+    durum.dogrulama.yapildi++
+    const hatalar = j.hatalar.map(x => String(x).trim()).filter(Boolean)
+    if (hatalar.length) durum.dogrulama.reddetti++
+    return { hatalar, model: d.model }
+  }
+  return null
+}
 
 /** Ortak kontroller + yazıya özel kontrol. Sorun yoksa null, varsa sebep. */
 function kontrol(metin, bilgi, dogrula) {
@@ -504,23 +643,68 @@ function redKaydet() {
   mkdirSync(new URL('./cache/', import.meta.url), { recursive: true })
   writeFileSync(RED_FILE, JSON.stringify(RED))
 }
+function redArtir(anahtar, k) {
+  if (TASLAK) return
+  for (const x of Object.keys(RED)) if (x !== k && x.startsWith(anahtar + ':')) delete RED[x]
+  RED[k] = { sayi: (RED[k]?.sayi ?? 0) + 1, zaman: new Date().toISOString() }
+}
+/** Doğrulanmış yazıyı kaydet; aynı yazının eski sürümlerini ve red sayacını temizle */
+function kesinlestir(anahtar, k, kayit) {
+  if (TASLAK) return
+  yazilar[k] = { ...kayit, dogrulandi: true }
+  for (const x of Object.keys(yazilar)) if (x !== k && x.startsWith(anahtar + ':')) delete yazilar[x]
+  for (const x of Object.keys(RED)) if (x.startsWith(anahtar + ':')) delete RED[x]
+}
 
-/** Yazıyı döndürür (önceden yazılmışsa kayıttan); yazamazsa null. */
+/**
+ * Yazıyı döndürür (önceden yazılmışsa kayıttan); yazamazsa null.
+ * Akış: model yazar → kurallar (ucuz ön eleme) → doğrulayıcı model (anlam) → kayıt. Doğrulayıcıya ulaşılamazsa yazı
+ * "doğrulama bekliyor" olarak saklanır, sitede gösterilmez; sonraki turda önce o doğrulanır (yeniden yazdırmaktan ucuz).
+ */
 async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true }) {
   const k = `${anahtar}:${ozet(bilgi)}`
   if (KAPALI) return null
   // Bir kerelik geçiş: anahtarın hesaplanma biçimi değiştiyse eski kaydı yeni anahtara taşı
   if (eskiBilgi && !yazilar[k]) { const ek = `${anahtar}:${ozet(eskiBilgi)}`; if (yazilar[ek]) { yazilar[k] = yazilar[ek]; delete yazilar[ek] } }
-  let kayitli = null
+  let kayitli = null, bekleyen = null, eskiKayit = false
   if (!TASLAK && yazilar[k]) {
+    const kayit = yazilar[k]
     // Kayıtlı yazı da güncel kurallardan geçmeli; geçmezse kullanılmaz (silinmez: yenisi yazılınca yerini alır)
-    const sebep = kontrol(yazilar[k].metin, bilgi, dogrula)
-    if (!sebep) kayitli = { metin: yazilar[k].metin, model: yazilar[k].model }
-    else durum.hata.push(`${anahtar.slice(0, 40)}: kayıtlı yazı kurallardan geçmedi (${sebep})`)
+    const sebep = kontrol(kayit.metin, bilgi, dogrula)
+    if (sebep) durum.hata.push(`${anahtar.slice(0, 40)}: kayıtlı yazı kurallardan geçmedi (${sebep})`)
+    else if (kayit.dogrulandi === false) bekleyen = kayit
+    else { kayitli = { metin: kayit.metin, model: kayit.model }; eskiKayit = kayit.dogrulandi === undefined }
+  }
+  const butceVar = () => ACIK && durum.istek < EN_FAZLA_ISTEK && (oncelikli || durum.eski < ESKI_EN_FAZLA)
+  // 1) Doğrulama bekleyen yazı
+  if (bekleyen) {
+    if (!butceVar()) return null
+    if (!oncelikli) durum.eski++
+    const v = await dogrulaAI(bilgi, bekleyen.metin, bekleyen.model)
+    if (!v) return null
+    if (!v.hatalar.length) { kesinlestir(anahtar, k, { ...bekleyen, dogrulayan: v.model }); durum.bekleyenDogrulandi++; return { metin: bekleyen.metin, model: bekleyen.model } }
+    durum.reddedilen.push({ anahtar, model: bekleyen.model, sebep: 'doğrulayıcı: ' + v.hatalar.join('; '), metin: bekleyen.metin })
+    durum.hata.push(`${bekleyen.model}: doğrulayıcı reddetti (${v.hatalar[0]})`.slice(0, 160))
+    if (!TASLAK) delete yazilar[k]
+    redArtir(anahtar, k)
+  }
+  // 2) Doğrulayıcıdan önceki sürümde kaydedilmiş yazı: boş kapasite varsa bir kez denetlenir. Denetimde düşerse
+  //    yeniden yazdırılır; doğrulanmış yenisi gelene kadar eskisi sitede kalır (doğrulayıcı yanılırsa site boş kalmasın).
+  let yeniden = kayitli && !!yazilar[k]?.denetim
+  if (kayitli && eskiKayit && !yeniden && butceVar() && durum.istek < EN_FAZLA_ISTEK / 2 && durum.denetim < DENETIM_EN_FAZLA) {
+    durum.denetim++
+    const v = await dogrulaAI(bilgi, kayitli.metin, kayitli.model)
+    if (v && !v.hatalar.length && !TASLAK) yazilar[k] = { ...yazilar[k], dogrulandi: true, dogrulayan: v.model }
+    else if (v) {
+      durum.reddedilen.push({ anahtar, model: kayitli.model, sebep: 'denetim: ' + v.hatalar.join('; '), metin: kayitli.metin })
+      durum.hata.push(`${anahtar.slice(0, 40)}: kayıtlı yazı denetimde düştü (${v.hatalar[0]})`.slice(0, 160))
+      if (!TASLAK) yazilar[k] = { ...yazilar[k], denetim: { hatalar: v.hatalar, zaman: new Date().toISOString() } }
+      yeniden = true
+    }
   }
   // Yükseltme: Gemini dışı bir modelin yazdığı öncelikli yazı, Gemini müsaitse Gemini'ye yeniden yazdırılır
   const yukselt = kayitli && oncelikli && GEMINI && !/^gemini/.test(kayitli.model ?? '') && !durum.durdu.gemini
-  if (kayitli && !yukselt) return kayitli
+  if (kayitli && !yukselt && !yeniden) return kayitli
   if (!ACIK) return kayitli
   if (durum.yazildi >= BIR_CALISMADA_EN_FAZLA || durum.istek >= EN_FAZLA_ISTEK) return kayitli
   if (!oncelikli && durum.eski >= ESKI_EN_FAZLA) return kayitli
@@ -530,51 +714,33 @@ async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true
   const tam = `${istek}\n\nBilgiler:\n${JSON.stringify(bilgi, null, 1)}`
   let reddedildi = false
   for (const d of await denemeler(!!yukselt)) {
-    if (durum.durdu[d.ad] || durum.tukenen.includes(d.model) || durum.istek >= EN_FAZLA_ISTEK) continue
-    if (Date.now() - BASLA > SURE) { durum.hata.push('süre doldu'); break }
-    try {
-      durum.istek++
-      let r = await d.fn(d.model, SISTEM, tam)
-      // Ücretsiz modeller yoğunken "high demand / overloaded" der: 20 sn bekleyip bir kez daha dene
-      if (r.hata && /high demand|overloaded|unavailable|try again/i.test(r.hata) && durum.istek < EN_FAZLA_ISTEK && Date.now() - BASLA < SURE - 60e3) {
-        await new Promise(x => setTimeout(x, 20000))
-        durum.istek++
-        r = await d.fn(d.model, SISTEM, tam)
-      }
-      if (r.hata) {
-        durum.hata.push(`${d.model}: ${r.hata}`.slice(0, 160))
-        if ([401, 402, 403].includes(r.kod) || (r.kod === 400 && /key|auth|permission|credit|billing/i.test(r.hata))) durum.durdu[d.ad] = true
-        else if (r.kod === 429 || r.kod === 404 || /quota|RESOURCE_EXHAUSTED|rate.?limit|not found/i.test(r.hata)) durum.tukenen.push(d.model)
-        else if ((modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
-        continue
-      }
-      const metin = temizle(r.metin)
-      if (!metin) {
-        durum.hata.push(`${d.model}: boş yanıt`)
-        if ((modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
-        continue
-      }
-      const sebep = kontrol(metin, bilgi, dogrula)
-      if (sebep) { reddedildi = true; durum.reddedilen.push({ anahtar, model: d.model, sebep, metin }); durum.hata.push(`${d.model}: reddedildi (${sebep})`); continue }
-      if (!TASLAK) {
-        yazilar[k] = { metin, model: d.model, zaman: new Date().toISOString() }
-        for (const x of Object.keys(yazilar)) if (x !== k && x.startsWith(anahtar + ':')) delete yazilar[x]
-        for (const x of Object.keys(RED)) if (x.startsWith(anahtar + ':')) delete RED[x]
-      }
-      durum.yazildi++
-      if (yukselt) durum.yukseltilen++
-      durum.model = d.model
-      return { metin, model: d.model }
-    } catch (e) {
-      durum.hata.push(`${d.model}: ${e.message}`.slice(0, 160))
-      if (/abort|timeout/i.test(e.name + e.message) || (modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
+    const ham = await cagir(d, SISTEM, tam)
+    if (ham == null) continue
+    const metin = temizle(ham)
+    const sebep = kontrol(metin, bilgi, dogrula)
+    if (sebep) { reddedildi = true; durum.reddedilen.push({ anahtar, model: d.model, sebep, metin }); durum.hata.push(`${d.model}: reddedildi (${sebep})`); continue }
+    const kayit = { metin, model: d.model, zaman: new Date().toISOString() }
+    const v = await dogrulaAI(bilgi, metin, d.model)
+    if (!v) {
+      // Doğrulayıcı yok: yükseltmede eski yazı kalır; yoksa yazı doğrulama beklemeye alınır (sitede gösterilmez)
+      if (!kayitli && !TASLAK) yazilar[k] = { ...kayit, dogrulandi: false }
+      durum.yazildi++; durum.bekleyen++
+      return kayitli
     }
+    if (v.hatalar.length) {
+      reddedildi = true
+      durum.reddedilen.push({ anahtar, model: d.model, sebep: 'doğrulayıcı: ' + v.hatalar.join('; '), metin })
+      durum.hata.push(`${d.model}: doğrulayıcı reddetti (${v.hatalar[0]})`.slice(0, 160))
+      continue
+    }
+    kesinlestir(anahtar, k, { ...kayit, dogrulayan: v.model })
+    durum.yazildi++
+    if (yukselt) durum.yukseltilen++
+    durum.model = d.model
+    return { metin, model: d.model }
   }
-  // Model metin yazdı ama kontrolden geçemedi: kalıcı sayaç (kota/yoğunluk hataları sayılmaz)
-  if (reddedildi && !TASLAK) {
-    for (const x of Object.keys(RED)) if (x !== k && x.startsWith(anahtar + ':')) delete RED[x]
-    RED[k] = { sayi: (RED[k]?.sayi ?? 0) + 1, zaman: new Date().toISOString() }
-  }
+  // Model metin yazdı ama kurallardan ya da doğrulayıcıdan geçemedi: kalıcı sayaç (kota/yoğunluk hataları sayılmaz)
+  if (reddedildi) redArtir(anahtar, k)
   return kayitli
 }
 
@@ -619,7 +785,12 @@ export async function onizlemeYaz(next, table, done) {
     sonMac1337: done[0] ? `${done[0].home.name} ${done[0].home.score}-${done[0].away.score} ${done[0].away.name}` : null,
   }
   const rows = [row, us].filter(Boolean)
-  const sayilar = { puan: rows.map(r => r.points), sira: rows.map(r => r.rank), mac: [...rows.map(r => r.played), h2h.length], averaj: rows.map(r => Math.abs(r.gd)) }
+  // izinli sayılar: tablo değerleri, galibiyetin 3 puanı, iki takım arasındaki puan farkı, önceki karşılaşmaların dağılımı
+  const dagilim = ['G', 'B', 'M'].map(r => h2h.filter(m => m.result === r).length)
+  const sayilar = {
+    puan: [...rows.map(r => r.points), 3, ...(row && us ? [Math.abs(row.points - us.points)] : [])], sira: rows.map(r => r.rank),
+    mac: [...rows.map(r => r.played), h2h.length, ...dagilim], averaj: rows.map(r => Math.abs(r.gd)),
+  }
   return yaz({
     anahtar: `onizleme:${next.id}`, bilgi, istek: 'Bu maç için kısa bir maç önü yazısı yaz.',
     dogrula: x => !adVar(x, t.name) ? 'rakip adı yok' : sahaYanlis(x, next, done[0] ? opp(done[0]).name : null) ? 'saha yanlış' : sayiYanlis(x, bilgi, sayilar),
