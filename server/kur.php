@@ -38,7 +38,8 @@ if ($tamam) {
     $isleyici = '';
     if (preg_match_all('/^[ \t]*(?:AddHandler|SetHandler|AddType\s+application\/x-httpd-(?:ea-)?php)[^\n]*$/mi', (string)@file_get_contents("$kok/.htaccess"), $mm))
         $isleyici = "# cPanel PHP işleyicisi (eski .htaccess'ten korundu)\n" . implode("\n", $mm[0]) . "\n";
-    @file_put_contents("$kok/_veri_isleyici.tmp", $isleyici);
+    if (!is_dir("$kok/_veri")) @mkdir("$kok/_veri", 0755);
+    if ($isleyici !== '' || !file_exists("$kok/_veri/php-isleyici.txt")) @file_put_contents("$kok/_veri/php-isleyici.txt", $isleyici);
     $tasinan = 0;
     if (!is_dir($eski)) @mkdir($eski, 0755);
     @file_put_contents("$eski/.htaccess", $kapali);
@@ -54,7 +55,6 @@ if ($tamam) {
     // 3) Veri klasörü ve panel anahtarı
     $veri = "$kok/_veri";
     if (!is_dir($veri)) @mkdir($veri, 0755);
-    if (file_exists("$kok/_veri_isleyici.tmp")) { @rename("$kok/_veri_isleyici.tmp", "$veri/php-isleyici.txt"); }
     @file_put_contents("$veri/.htaccess", $kapali);
     @mkdir("$veri/oylar", 0755);
     $anahtarDosya = "$veri/panel-anahtari.txt";
