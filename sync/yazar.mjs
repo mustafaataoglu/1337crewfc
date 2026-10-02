@@ -107,7 +107,9 @@ async function yaz(anahtar, bilgi, istek, dogrula) {
     if (durum.durdu[d.ad] || durum.istek >= EN_FAZLA_ISTEK) continue
     durum.istek++
     try {
-      const r = await d.fn(d.model, SISTEM, tam)
+      let r = await d.fn(d.model, SISTEM, tam)
+      // Ücretsiz modeller yoğunken "high demand / overloaded" der: 20 sn bekleyip bir kez daha dene
+      if (r.hata && /high demand|overloaded|unavailable|try again/i.test(r.hata)) { await new Promise(x => setTimeout(x, 20000)); r = await d.fn(d.model, SISTEM, tam) }
       if (r.hata) {
         durum.hata.push(`${d.model}: ${r.hata}`.slice(0, 160))
         if ([400, 401, 402, 403].includes(r.kod) && /key|auth|permission|credit|quota|billing/i.test(r.hata)) durum.durdu[d.ad] = true
@@ -133,7 +135,6 @@ const skorVar = (t, m) => t.replace(/\s*[–—-]\s*/g, '-').includes(`${m.home.
 const adVar = (t, ad) => norm(t).includes(norm(ad.split(' ')[0]))
 function sahaYanlis(t, m) {
   if (m.us === 'away' && /(1337(\s*Crew\s*FC)?['’]?\s*(n[iı]n|in)?\s+(kendi\s+)?(sahas[ıi]nda|evinde))|iç sahada|evinde ağırlad/i.test(t)) return true
-  if (m.us === 'home' && /1337(\s*Crew\s*FC)?,?\s+[^.]{0,40}deplasman/i.test(t)) return true
   return false
 }
 
