@@ -6,7 +6,9 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
 const FILE = new URL('./yazilar.json', import.meta.url)
-const KEY = process.env.OPENROUTER_API_KEY
+// Yayın kapalı: ücretsiz modeller uydurma bilgi yazdı (golcü, saha, uyruk). Kalite doğrulanana kadar kalıp metinler kullanılır.
+const YAYINDA = process.env.YAZAR_YAYINDA === '1'
+const KEY = YAYINDA ? process.env.OPENROUTER_API_KEY : undefined
 // Türkçe için tercih sırası; listede olmayan ya da artık ücretsiz olmayan model atlanır
 // openrouter/free o an müsait ücretsiz modele yönlendirir (en güvenilir); diğerleri yedek
 const TERCIH = ['openrouter/free', 'google/gemma-4-31b-it:free', 'qwen/qwen3.8-27b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'google/gemma-4-26b-a4b-it:free']
@@ -41,6 +43,7 @@ const ozet = o => createHash('sha1').update(JSON.stringify(o)).digest('hex').sli
 /** Yazıyı döndürür (önceden yazılmışsa kayıttan); yazamazsa null. `dogrula` metni kabul etmezse yazı kullanılmaz. */
 export async function yaz(anahtar, bilgi, istek, dogrula) {
   const k = `${anahtar}:${ozet(bilgi)}`
+  if (!YAYINDA) return null
   if (yazilar[k]) return yazilar[k].metin
   if (!KEY || durum.durdu || durum.yazildi >= BIR_CALISMADA_EN_FAZLA || durum.istek >= EN_FAZLA_ISTEK) return null
   for (const model of await ucretsizModeller()) {
