@@ -1,32 +1,27 @@
 {
  "rapor:baston-villa-1337-Crew-FC-2026-09-28T230000000Z:908dc552c3": {
-  "metin": "EfendiLig 2026-2027 Sezonu 2. haftasında 1337 Crew FC, 28 Eylül 2026 tarihinde deplasmanda Baston Villa ile karşılaştı. Mücadele 2-0 Baston Villa üstünlüğüyle sona erdi ve 1337 Crew FC sahadan mağlubiyetle ayrıldı. Karşılaşmanın en değerli oyuncusu Baston Villa oyuncusu Mehdi Çapar oldu.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-02T19:37:54.351Z"
+  "metin": "EfendiLig 2026-2027 Sezonu 2. haftasında 1337 Crew FC, 28 Eylül 2026 tarihinde deplasmanda Baston Villa ile karşılaştı. Ev sahibi ekibin 2-0 kazandığı mücadelede 1337 Crew FC sahadan mağlubiyetle ayrıldı. Maçın MVP'si Baston Villa oyuncusu Mehdi Çapar oldu.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:41:14.441Z"
  },
  "rapor:AC-Nevizade-1337-Crew-FC-2026-09-21T210000000Z:8a67546754": {
-  "metin": "EfendiLig 2026-2027 Sezonu ilk haftasında 1337 Crew FC, deplasmanda karşılaştığı AC Nevizade ile 3-3 berabere kaldı. 1337 Crew FC adına golleri Kemal Sezer Şahin, Mustafa Ataoğlu ve Akif Kaymak atarken, asistleri Selçuk Özaydın, Kemal Sezer Şahin ve Mustafa Ataoğlu yaptı. Mücadelenin en değerli oyuncusu ise Kemal Sezer Şahin seçildi.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-02T19:38:02.161Z"
+  "metin": "EfendiLig 2026-2027 Sezonu 1. haftasında 21 Eylül 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda AC Nevizade ile 3-3 berabere kaldı. Karşılaşmada 1337 Crew FC'nin gollerini Kemal Sezer Şahin, Mustafa Ataoğlu ve Akif Kaymak atarken; asistleri Selçuk Özaydın, Kemal Sezer Şahin ve Mustafa Ataoğlu yaptı. Maçın en değerli oyuncusu (MVP) 1337 oyuncusu Kemal Sezer Şahin seçildi.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:44:44.131Z"
  },
  "rapor:Buyuk-Avlu-1337-Crew-FC-2026-06-09T220000000Z:d33d54c464": {
-  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 5. haftasında 1337 Crew FC, 9 Haziran 2026 tarihinde deplasmanda Büyük Avlu ile karşılaştı. Ev sahibi Büyük Avlu'nun 2-1 kazandığı mücadelede 1337 Crew FC sahadan mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Kemal Sezer Şahin'in asistinde Oğuzhan Göktepe attı.",
-  "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:39:19.459Z"
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 5. haftasında 1337 Crew FC, 9 Haziran 2026 tarihinde deplasmanda Büyük Avlu ile karşılaştı. Karşılaşma Büyük Avlu'nun 2-1'lik üstünlüğüyle sona erdi ve 1337 Crew FC maçtan mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Kemal Sezer Şahin'in asistinde Oğuzhan Göktepe attı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-02T19:45:30.043Z"
  },
  "rapor:1337-Crew-FC-Football-Brothers-United-2026-06-02T210000000Z:07b4315d81": {
-  "metin": "Aman Ali Rıza Bey ATK Ligi 4. haftasında 1337 Crew FC, 2 Haziran 2026 tarihinde sahasında Football Brothers United ile karşılaştı. Hükmen sonuçlanan maçı 1337 Crew FC 3-0 kazandı.",
-  "model": "gemini-3.7-flash",
-  "zaman": "2026-10-02T19:39:27.223Z"
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 4. haftasında 2 Haziran 2026 tarihinde ev sahibi 1337 Crew FC ile Football Brothers United arasında oynanması gereken maç hükmen sonuçlandı. 1337 Crew FC bu mücadeleden 3-0'lık galibiyetle ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:45:39.055Z"
  },
  "rapor:Cicek-Spor-1337-Crew-FC-2026-05-12T230000000Z:682816077c": {
-  "metin": "Aman Ali Rıza Bey ATK Ligi 3. haftasında 1337 Crew FC, 12 Mayıs 2026 tarihinde deplasmanda Çiçek Spor ile karşılaştı. Ev sahibi Çiçek Spor karşısında sahadan 1-0 mağlup ayrılan 1337 Crew FC, bu karşılaşmada gol bulamadı.",
-  "model": "gemini-3.7-flash",
-  "zaman": "2026-10-02T19:39:30.765Z"
- },
- "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-05-06T210000000Z:ad7e8c396a": {
-  "metin": "Aman Ali Rıza Bey ATK Ligi 2. haftasında 1337 Crew FC, 6 Mayıs 2026 tarihinde sahasında Fire Dryer FC ile 1-1 berabere kaldı. 1337 Crew FC'nin maçtaki golünü Yasin Kayran'ın asistinde Yamaç Yaman kaydetti.",
-  "model": "gemini-3.7-flash",
-  "zaman": "2026-10-02T19:39:55.245Z"
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 3. haftasında 1337 Crew FC, 12 Mayıs 2026 tarihinde deplasmanda Çiçek Spor ile karşılaştı. Ev sahibi Çiçek Spor'un 1-0 kazandığı mücadele sonucunda 1337 Crew FC sahadan mağlubiyetle ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:45:49.113Z"
  }
 }
