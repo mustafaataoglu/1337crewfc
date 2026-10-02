@@ -32,7 +32,13 @@ adim('Klasöre yazma izni', is_writable($kok));
 if ($tamam) {
     // 2) Eski siteyi taşı (silme)
     $eski = "$kok/_eski_site";
-    $koru = ['kur.php', '_eski_site', '_veri', 'cgi-bin', '.well-known', 'error_log'];
+    // .user.ini / php.ini cPanel'in PHP ayarlarıdır, yerinde kalmalı
+    $koru = ['kur.php', '_eski_site', '_veri', 'cgi-bin', '.well-known', 'error_log', '.user.ini', 'php.ini'];
+    // cPanel PHP sürümünü .htaccess içindeki AddHandler/SetHandler satırlarıyla seçebilir: bunları sakla
+    $isleyici = '';
+    if (preg_match_all('/^[ \t]*(?:AddHandler|SetHandler|AddType\s+application\/x-httpd-(?:ea-)?php)[^\n]*$/mi', (string)@file_get_contents("$kok/.htaccess"), $mm))
+        $isleyici = "# cPanel PHP işleyicisi (eski .htaccess'ten korundu)\n" . implode("\n", $mm[0]) . "\n";
+    @file_put_contents("$kok/_veri_isleyici.tmp", $isleyici);
     $tasinan = 0;
     if (!is_dir($eski)) @mkdir($eski, 0755);
     @file_put_contents("$eski/.htaccess", $kapali);
@@ -48,6 +54,7 @@ if ($tamam) {
     // 3) Veri klasörü ve panel anahtarı
     $veri = "$kok/_veri";
     if (!is_dir($veri)) @mkdir($veri, 0755);
+    if (file_exists("$kok/_veri_isleyici.tmp")) { @rename("$kok/_veri_isleyici.tmp", "$veri/php-isleyici.txt"); }
     @file_put_contents("$veri/.htaccess", $kapali);
     @mkdir("$veri/oylar", 0755);
     $anahtarDosya = "$veri/panel-anahtari.txt";
@@ -72,7 +79,10 @@ if ($tamam) {
                 if ($goreli === '' || strpos($goreli, '..') !== false || strpos($goreli, '_veri/') === 0) continue;
                 $hedef = "$kok/$goreli";
                 if (!is_dir(dirname($hedef))) @mkdir(dirname($hedef), 0755, true);
-                if (file_put_contents($hedef, $z->getFromIndex($i)) !== false) $sayi++;
+                $icerik = $z->getFromIndex($i);
+                // Kök .htaccess'e korunan PHP işleyici satırlarını en başa ekle
+                if ($goreli === '.htaccess') $icerik = (string)@file_get_contents("$veri/php-isleyici.txt") . $icerik;
+                if (file_put_contents($hedef, $icerik) !== false) $sayi++;
             }
             $z->close();
         }

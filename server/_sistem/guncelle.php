@@ -68,6 +68,7 @@ function crew_durum_yaz(array $ek = []): array {
 
 /** GitHub'da yeni sürüm varsa indirip kurar. $zorla: aralık beklemeden kontrol et. */
 function crew_guncelle(bool $zorla = false): array {
+    @set_time_limit(180);
     $d = crew_veri_dizini();
     $kilit = fopen("$d/guncelle.lock", 'c');
     if (!$kilit || !flock($kilit, LOCK_EX | LOCK_NB)) return ['sonuc' => 'baska-islem-suruyor'];
@@ -126,6 +127,8 @@ function crew_ac(string $zipYolu) {
         $hedef = "$kok/$goreli";
         if (!is_dir(dirname($hedef))) @mkdir(dirname($hedef), 0755, true);
         $icerik = $z->getFromIndex($i);
+        // Kurulumda korunan cPanel PHP işleyici satırları her güncellemede .htaccess'in başında kalır
+        if ($goreli === '.htaccess' && $icerik !== false) $icerik = (string)@file_get_contents(crew_veri_dizini() . '/php-isleyici.txt') . $icerik;
         if ($icerik === false || file_put_contents("$hedef.yeni", $icerik) === false || !rename("$hedef.yeni", $hedef)) {
             $z->close();
             return "Yazılamadı: $goreli";
