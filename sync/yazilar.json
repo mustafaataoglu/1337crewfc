@@ -3,5 +3,35 @@
   "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu’nun 1. haftasında 21 Eylül 2026 tarihinde AC Nevizade’nin ev sahipliğinde oynanan maçta 3-3 beraber kaldı. Deplasman takımı olarak sahaya çıkan 1337, Kemal Sezer Şahin, Mustafa Ataoğlu ve Akif Kaymak’ın attığı gollerle sıkı bir mücadele sergiledi. Maçın en değerli oyuncusu Kemal Sezer Şahin seçildi.",
   "model": "openrouter/free",
   "zaman": "2026-10-02T19:15:56.254Z"
+ },
+ "rapor:baston-villa-1337-Crew-FC-2026-09-28T230000000Z:04abc8f6a2": {
+  "metin": "EfendiLig 2026-2027 Sezonu 2. haftasında 1337 Crew FC, Baston Villa'ya deplasman yaptı ve 2-0 mağlubiyetle ayrıldı. Ev sahibi takımın gollerini İngiliz futbolcu Mehdi Çapar attı. 1337, deplasman sahasında oynanan maçta goller bulamadı ve sezonun ikinci mağlubiyetini yaşadı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:17:09.356Z"
+ },
+ "rapor:Buyuk-Avlu-1337-Crew-FC-2026-06-09T220000000Z:75d706b407": {
+  "metin": "Büyük Avlu 2-1 1337 Crew FC, 2026-06-09 tarihinde Aman Ali Rıza Bey ATK Ligi 5. hafta maçında karşılaştı. Oğuzhan Göktepe, Kemal Sezer Şahin'in asistinde 1337 Crew FC'ye golü kazandı. Maç 1337'nin sahasında oynandı ve 1337 Crew FC mağlubiyetle ayrıldı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:17:11.955Z"
+ },
+ "rapor:1337-Crew-FC-Football-Brothers-United-2026-06-02T210000000Z:80bf529e7a": {
+  "metin": "1337 Crew FC, Aman Ali Rıza Bey ATK Ligi 4. haftasında evinde Football Brothers United'ı 3-0 mağlendi. Maç hükmen sonuçlandı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:17:16.902Z"
+ },
+ "rapor:Cicek-Spor-1337-Crew-FC-2026-05-12T230000000Z:abce86c606": {
+  "metin": "1337 Crew FC, Aman Ali Rıza Bey ATK Ligi 3. haftada Çiçek Spor karşısında deplasmanda 1-0 mağlup oldu. Maçın tek golü ev sahibi takımdan gelirken 1337 hiçbir ağ bulamadı. Takım bir sonraki haftada toparlanmak üzere sahaya çıkacak.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:17:25.900Z"
+ },
+ "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-05-06T210000000Z:5db54d9e4e": {
+  "metin": "1337 Crew FC, 2026-05-06 tarihinde Aman Ali Rıza Bey ATK Ligi 2. haftasında Fire Dryer FC'ya 1-1 beraberlikle karşıladı. Yamaç Yaman'ın golü ve Yasin Kayran'ın asistiyle 1337 Crew FC sahada skor sağladı. Maç sonunda 1-1 skorla beraberlik sonucu elde edildi.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:17:52.190Z"
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2026-04-21T230000000Z:1b211a49b1": {
+  "metin": "1337 Crew FC, The Wall SK’ya konduğu 7. haftaki Play-Off maçında 3-3 beraberlik elde etti. Yasin Kayran’ın iki golü ve Bahadır Oğuz’un bir golüyle 1337, Oğuzhan Uygur ve Erdal Gürses’in asistleriyle değerlendi. Maç, 21 Nisan 2026’da oynanmıştır.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:18:05.610Z"
  }
 }
