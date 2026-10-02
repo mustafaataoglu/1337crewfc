@@ -4,11 +4,6 @@
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-02T19:41:14.441Z"
  },
- "rapor:AC-Nevizade-1337-Crew-FC-2026-09-21T210000000Z:8a67546754": {
-  "metin": "EfendiLig 2026-2027 Sezonu 1. haftasında 21 Eylül 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda AC Nevizade ile 3-3 berabere kaldı. Karşılaşmada 1337 Crew FC'nin gollerini Kemal Sezer Şahin, Mustafa Ataoğlu ve Akif Kaymak atarken; asistleri Selçuk Özaydın, Kemal Sezer Şahin ve Mustafa Ataoğlu yaptı. Maçın en değerli oyuncusu (MVP) 1337 oyuncusu Kemal Sezer Şahin seçildi.",
-  "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:44:44.131Z"
- },
  "rapor:Buyuk-Avlu-1337-Crew-FC-2026-06-09T220000000Z:d33d54c464": {
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 5. haftasında 1337 Crew FC, 9 Haziran 2026 tarihinde deplasmanda Büyük Avlu ile karşılaştı. Karşılaşma Büyük Avlu'nun 2-1'lik üstünlüğüyle sona erdi ve 1337 Crew FC maçtan mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Kemal Sezer Şahin'in asistinde Oğuzhan Göktepe attı.",
   "model": "gemini-3.8-flash",
@@ -29,16 +24,6 @@
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-02T19:48:09.626Z"
  },
- "rapor:The-Wall-SK-1337-Crew-FC-2026-04-28T210000000Z:bee479961b": {
-  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 1. haftasında 28 Nisan 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda The Wall SK ile karşılaştı. Rakibini 2-3 mağlup eden 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Kemal Sezer Şahin attı. Karşılaşmadaki asistler ise Yasin Kayran, Kemal Sezer Şahin ve Oğuzhan Uygur'dan geldi.",
-  "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:48:17.304Z"
- },
- "rapor:The-Wall-SK-1337-Crew-FC-2026-04-21T230000000Z:ebb657b0a4": {
-  "metin": "Play-Off 7. haftasında 21 Nisan 2026 tarihinde 1337 Crew FC, ev sahibi The Wall SK ile 3-3 berabere kaldı. Deplasmanda oynayan 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Bahadır Oğuz kaydetti. Karşılaşmada asistleri ise Oğuzhan Uygur ve Erdal Gürses yaptı.",
-  "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:48:26.576Z"
- },
  "rapor:1337-Crew-FC-AKUT-Futbol-2026-04-15T210000000Z:b396c15dbd": {
   "metin": "1337 Crew FC, Play-Off 6. haftasında ev sahibi olduğu AKUT Futbol maçını 3-0 kazandı. Maç hükmen sonuçlandı.",
   "model": "openrouter/free",
@@ -49,32 +34,10 @@
   "model": "openrouter/free",
   "zaman": "2026-10-02T19:48:34.072Z"
  },
- "_red": {
-  "rapor:Football-Brothers-United-1337-Crew-FC-2026-03-24T220000000Z:bf7dbed709": {
-   "sayi": 1,
-   "zaman": "2026-10-02T20:18:59.094Z"
-  },
-  "rapor:Dikilitas-Galaxy-FC-1337-Crew-FC-2026-03-04T210000000Z:85f0aec6a0": {
-   "sayi": 1,
-   "zaman": "2026-10-02T20:19:52.088Z"
-  },
-  "rapor:1337-Crew-FC-Calypso-33-2026-02-24T230000000Z:3672cb84cd": {
-   "sayi": 1,
-   "zaman": "2026-10-02T20:20:05.753Z"
-  },
-  "rapor:Son-Baski-FK-1337-Crew-FC-2026-02-17T230000000Z:66620e4e6a": {
-   "sayi": 1,
-   "zaman": "2026-10-02T20:20:08.394Z"
-  },
-  "rapor:1337-Crew-FC-AC-Nevizade-2026-02-09T220000000Z:f44cc0b7a8": {
-   "sayi": 1,
-   "zaman": "2026-10-02T20:20:13.637Z"
-  }
- },
  "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:3ffd45794b": {
-  "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu 3. haftada 7 Ekim 2026 Çarşamba günü 21:00'de evinde Bordreaux JB'yi ağırlıyor. Ev sahibi takım olarak mücadele eden 1337, sezon başında 2 maçta 1 puan toplayıp averajı -2'ye düşmüş durumda. Rakip takım ise 2 maçta 4 puanle 1. sırada yer alıyor.",
-  "model": "openrouter/free",
-  "zaman": "2026-10-02T20:18:48.022Z"
+  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında ev sahibi 1337 Crew FC, 2026-10-07 Çarşamba günü saat 21:00'de iç sahada Bordreaux JB ile karşılaşacak. Oynadığı 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC, 2 maçta 4 puan ve 10 averajla 1. sırada bulunan rakibini konuk edecek. İki takım arasındaki kayıtlı 3 maçta 1337 Crew FC'nin galibiyeti bulunmazken, Bordreaux JB 2 galibiyet aldı ve 1 karşılaşma beraberlikle sonuçlandı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-02T20:55:35.252Z"
  },
  "rapor:1337-Crew-FC-GoodFellas-FC-2026-03-10T220000000Z:91ffbde8a2": {
   "metin": "1337 Crew FC, 1337 iç sahada, 1-4 skorla GoodFellas FC'yi mağlub etti. Altay Tuğberk Yücel gol attı ve Kemal Sezer Şahin asist sağladı.",
@@ -85,5 +48,25 @@
   "metin": "1337 Crew FC ev sahibi 1337 iç sahada GoodFellas FC'ya karşı 0-4 skorla mağlubiyetle maçı bitirdi. GoodFellas FC, 14. hafta EfendiLig 2025-2026 sezonu maçında 4 golü elde etti.",
   "model": "openrouter/free",
   "zaman": "2026-10-02T20:20:38.961Z"
+ },
+ "rapor:AC-Nevizade-1337-Crew-FC-2026-09-21T210000000Z:a069f0c75f": {
+  "metin": "EfendiLig 2026-2027 Sezonu 1. haftasında 21 Eylül 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda AC Nevizade ile 3-3 berabere kaldı. Karşılaşmada 1337 Crew FC'nin gollerini Kemal Sezer Şahin, Mustafa Ataoğlu ve Akif Kaymak atarken; asistleri Selçuk Özaydın, Kemal Sezer Şahin ve Mustafa Ataoğlu yaptı. Maçın en değerli oyuncusu (MVP) 1337 oyuncusu Kemal Sezer Şahin seçildi.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:44:44.131Z"
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2026-04-28T210000000Z:c9d9f4789d": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 1. haftasında 28 Nisan 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda The Wall SK ile karşılaştı. Rakibini 2-3 mağlup eden 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Kemal Sezer Şahin attı. Karşılaşmadaki asistler ise Yasin Kayran, Kemal Sezer Şahin ve Oğuzhan Uygur'dan geldi.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:48:17.304Z"
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2026-04-21T230000000Z:4aa6d3c955": {
+  "metin": "Play-Off 7. haftasında 21 Nisan 2026 tarihinde 1337 Crew FC, ev sahibi The Wall SK ile 3-3 berabere kaldı. Deplasmanda oynayan 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Bahadır Oğuz kaydetti. Karşılaşmada asistleri ise Oğuzhan Uygur ve Erdal Gürses yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:48:26.576Z"
+ },
+ "rapor:Football-Brothers-United-1337-Crew-FC-2026-03-24T220000000Z:bf7dbed709": {
+  "metin": "1337 Crew FC, Play-Off 4. haftasında 2026-03-24 tarihinde deplasmanda karşılaştığı Football Brothers United'a 4-1 mağlup oldu. Mücadelede 1337 Crew FC'nin golünü Mustafa Ataoğlu'nun asistinde Yasin Enes Aksu kaydetti.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-02T20:55:43.677Z"
  }
 }
