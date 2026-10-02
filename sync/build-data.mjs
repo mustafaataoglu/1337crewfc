@@ -6,7 +6,7 @@ const here = p => new URL(p, import.meta.url)
 import { createRequire } from 'node:module'
 const sharp = createRequire(new URL('../web/package.json', import.meta.url))('sharp')
 import { createHash } from 'node:crypto'
-import { yaz, kaydet, durum as yazarDurum } from './yazar.mjs'
+import { raporYaz, onizlemeYaz, kaydet, durum as yazarDurum } from './yazar.mjs'
 import { mkdirSync } from 'node:fs'
 
 // ---- forma renkleri: görseldeki baskın 1-2 renk ve Türkçe adı
@@ -316,43 +316,22 @@ if (usRow && done[0] && table[0]) feed.push({ id: 'tbl-' + done[0].id, kind: 'ta
 const ORDER = { birthday: -1, preview: 0, vote: 1, video: 2, table: 3, milestone: 4, report: 5, streak: 6 }
 feed.sort((a, b) => b.date.localeCompare(a.date) || ORDER[a.kind] - ORDER[b.kind])
 
-// ---- yapay zekâ yazıları (OpenRouter ücretsiz modelleri; anahtar yoksa kalıp metinler kalır)
-const skorVar = (t, m) => t.replace(/\s*[–—-]\s*/g, '-').includes(`${m.home.score}-${m.away.score}`)
-const adVar = (t, ad) => norm(t).includes(norm(ad.split(' ')[0]))
-const raporBilgi = m => ({
-  yarisma: m.compLabel, hafta: m.week ?? null, tarih: m.date, evSahibi: m.home.name, deplasman: m.away.name,
-  skor: `${m.home.score}-${m.away.score}`, sonuc1337: m.result === 'G' ? 'galibiyet' : m.result === 'B' ? 'beraberlik' : 'mağlubiyet',
-  saha: m.us === 'home' ? '1337 iç sahada' : '1337 deplasmanda', hukmen: !!m.forfeit,
-  golculer1337: (m.scorers ?? []).map(x => x.n > 1 ? `${x.name} (${x.n})` : x.name),
-  asistler1337: (m.assisters ?? []).map(x => x.name),
-  mvp: m.mvp ? `${m.mvp.name} (${m.mvp.ours ? '1337' : 'rakip'})` : null,
-})
+// ---- yapay zekâ yazıları (Gemini, yoksa OpenRouter; doğrulanmayan yazı kullanılmaz, kalıp metin kalır)
 // Önce bu sezon, sonra yeniden eskiye: kota yetmezse en önemli maçlar önce yazılır
 const buSezon = m => !!cur.label && m.seasonShort === short(cur.label)
 const sira = [...done].sort((a, b) => (buSezon(b) - buSezon(a)) || b.date.localeCompare(a.date))
 for (const m of sira) {
-  const t = opp(m)
-  const metin = await yaz(`rapor:${m.id}`, raporBilgi(m), m.forfeit ? 'Bu maç hükmen sonuçlandı; bunu belirten 1-2 cümlelik kısa bir not yaz.' : 'Bu maç için kısa bir maç raporu yaz.', x => skorVar(x, m) && adVar(x, t.name))
-  if (metin) {
-    m.rapor = metin
+  const r = await raporYaz(m)
+  if (r) {
+    m.rapor = r.metin
     const f = feed.find(x => x.id === 'rep-' + m.id)
-    if (f) f.body = metin
+    if (f) f.body = r.metin
   }
 }
 if (next) {
-  const t = opp(next), row = table.find(r => r.code === t.code), us = table.find(r => r.us)
-  const h2h = done.filter(m => opp(m).code === t.code)
-  const bilgi = {
-    mac: `${next.home.name} - ${next.away.name}`, yarisma: next.compLabel, hafta: next.week ?? null, tarih: next.date, saat: next.time,
-    saha: next.us === 'home' ? '1337 iç sahada' : '1337 deplasmanda',
-    rakip: t.name, rakipSira: row ? `${row.rank}. sıra, ${row.played} maçta ${row.points} puan, averaj ${row.gd}` : null,
-    sira1337: us ? `${us.rank}. sıra, ${us.played} maçta ${us.points} puan, averaj ${us.gd}` : null,
-    aramizdakiMaclar: h2h.length ? `${h2h.length} maç: ${h2h.filter(m => m.result === 'G').length} 1337 galibiyeti, ${h2h.filter(m => m.result === 'B').length} beraberlik, ${h2h.filter(m => m.result === 'M').length} ${t.name} galibiyeti` : 'daha önce karşılaşmadılar',
-    sonMac1337: done[0] ? `${done[0].home.name} ${done[0].home.score}-${done[0].away.score} ${done[0].away.name}` : null,
-  }
-  const metin = await yaz(`onizleme:${next.id}`, bilgi, 'Bu maç için kısa bir maç önü yazısı yaz.', x => adVar(x, t.name))
+  const r = await onizlemeYaz(next, table, done)
   const f = feed.find(x => x.id === 'pre-' + next.id)
-  if (metin && f) { f.body = metin; next.onizleme = metin }
+  if (r && f) { f.body = r.metin; next.onizleme = r.metin }
 }
 kaydet()
 console.log('yazar:', yazarDurum.yazildi, 'yeni yazı', yazarDurum.model ?? '', yazarDurum.hata.slice(0, 3).join(' | '))
