@@ -90,21 +90,15 @@ function crew_guncelle(bool $zorla = false): array {
         if (time() - $son < ($zorla ? 60 : CREW_KONTROL_ARALIGI)) return ['sonuc' => 'erken'];
         file_put_contents("$d/son-kontrol", (string)time());
 
+        $yerel = trim((string)@file_get_contents(crew_kok() . '/surum.txt'));
+        // Zorla (GitHub'dan gelen "güncellen" sinyali): raw önbelleği gecikebileceği için doğrudan arşive bak
+        if ($zorla) return crew_arsivden($d, $yerel);
         $uzak = crew_http('https://raw.githubusercontent.com/' . CREW_REPO . '/' . CREW_DAL . '/site/surum.txt?t=' . time(), 10);
         if ($uzak === null) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => 'GitHub surum.txt okunamadı']);
         $uzak = trim($uzak);
         if (!preg_match('/^[0-9a-f]{12}$/', $uzak)) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => 'GitHub beklenmeyen cevap verdi']);
-        $yerel = trim((string)@file_get_contents(crew_kok() . '/surum.txt'));
-        if ($uzak === $yerel && !$zorla) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'guncel']);
-
-        $zip = crew_http('https://codeload.github.com/' . CREW_REPO . '/zip/refs/heads/' . CREW_DAL, 90);
-        if ($zip === null) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => 'Arşiv indirilemedi']);
-        $tmp = "$d/guncelleme.zip";
-        file_put_contents($tmp, $zip);
-        $sonuc = crew_ac($tmp);
-        @unlink($tmp);
-        if ($sonuc !== true) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => $sonuc]);
-        return crew_durum_yaz(['sonKontrol' => date('c'), 'sonGuncelleme' => date('c'), 'sonuc' => 'guncellendi', 'hata' => null]);
+        if ($uzak === $yerel) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'guncel']);
+        return crew_arsivden($d, $yerel);
     } catch (Throwable $e) {
         error_log('guncelle: ' . $e->getMessage());
         return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => $e->getMessage()]);
@@ -114,8 +108,21 @@ function crew_guncelle(bool $zorla = false): array {
     }
 }
 
+/** Ana dalın arşivini indirip site/ klasörünü açar; arşivdeki sürüm yereldekiyle aynıysa dokunmaz */
+function crew_arsivden(string $d, string $yerel): array {
+        $zip = crew_http('https://codeload.github.com/' . CREW_REPO . '/zip/refs/heads/' . CREW_DAL, 90);
+        if ($zip === null) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => 'Arşiv indirilemedi']);
+        $tmp = "$d/guncelleme.zip";
+        file_put_contents($tmp, $zip);
+        $sonuc = crew_ac($tmp, $yerel);
+        @unlink($tmp);
+        if ($sonuc === 'ayni') return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'guncel']);
+        if ($sonuc !== true) return crew_durum_yaz(['sonKontrol' => date('c'), 'sonuc' => 'hata', 'hata' => $sonuc]);
+        return crew_durum_yaz(['sonKontrol' => date('c'), 'sonGuncelleme' => date('c'), 'sonuc' => 'guncellendi', 'hata' => null]);
+}
+
 /** Arşivdeki <depo>-<dal>/site/ içeriğini web köküne açar. Önce geçici klasöre, sonra yerine taşır. */
-function crew_ac(string $zipYolu) {
+function crew_ac(string $zipYolu, string $yerel = '') {
     if (!class_exists('ZipArchive')) return 'Sunucuda ZipArchive yok';
     $z = new ZipArchive();
     if ($z->open($zipYolu) !== true) return 'Arşiv açılamadı';
@@ -132,6 +139,7 @@ function crew_ac(string $zipYolu) {
         }
     }
     if (!$dosyalar || !isset($dosyalar['index.html']) || !isset($dosyalar['surum.txt'])) { $z->close(); return 'Arşivde site/ eksik'; }
+    if ($yerel !== '' && trim((string)$z->getFromIndex($dosyalar['surum.txt'])) === $yerel) { $z->close(); return 'ayni'; }
     // Önce assets ve veri, en son index.html ve surum.txt yazılır (yarım güncelleme görünmesin)
     uksort($dosyalar, function ($a, $b) {
         $son = ['index.html' => 2, 'surum.txt' => 3, 'index.php' => 1];

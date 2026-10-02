@@ -10,6 +10,7 @@ header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-cache');
 header('Content-Length: ' . strlen($sayfa));
 header('Connection: close');
+header('X-LiteSpeed-Cache-Control: no-cache');
 echo $sayfa;
 
 // Ziyaretçiyi bekletmeden bağlantıyı kapat, kontrolü arka planda yap

@@ -5,10 +5,17 @@ Options -Indexes
 RewriteEngine On
 RewriteRule ^(_sistem|_veri|_eski_site)(/|$) - [F,L]
 
-# Veri dosyası her zaman taze okunsun; hash'li asset'ler uzun süre önbellekte kalsın
+# Sunucunun LiteSpeed önbelleği kapalı: sayfa ve veri her zaman güncel gelsin
+<IfModule LiteSpeed>
+  CacheLookup off
+</IfModule>
+
+# Sayfa ve veri dosyaları tarayıcıda saklanmasın (her açılışta sunucuya sorulsun);
+# adında sürüm parmak izi olan JS/CSS dosyaları ise uzun süre önbellekte kalabilir
 <IfModule mod_headers.c>
-  <FilesMatch "^(veri|durum-sync)\.json$">
-    Header set Cache-Control "no-cache"
+  <FilesMatch "^(index\.(html|php)|veri\.json|durum-sync\.json|surum\.txt)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+    Header set X-LiteSpeed-Cache-Control "no-cache"
   </FilesMatch>
   <FilesMatch "^durum\.json$">
     Header set Cache-Control "no-store"
@@ -20,4 +27,6 @@ RewriteRule ^(_sistem|_veri|_eski_site)(/|$) - [F,L]
   ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType text/css "access plus 1 year"
   ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType text/html "access plus 0 seconds"
 </IfModule>

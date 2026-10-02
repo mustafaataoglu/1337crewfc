@@ -58,7 +58,7 @@ async function geminiModelleri() {
 async function geminiYaz(model, sistem, istek) {
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST', headers: { 'x-goog-api-key': GEMINI, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: sistem }] }, contents: [{ role: 'user', parts: [{ text: istek }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 2048 } }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: sistem }] }, contents: [{ role: 'user', parts: [{ text: istek }] }], generationConfig: { temperature: 0.4, maxOutputTokens: 4096 } }),
     signal: AbortSignal.timeout(90000),
   })
   const j = await r.json()
@@ -116,7 +116,7 @@ async function yaz(anahtar, bilgi, istek, dogrula) {
         continue
       }
       const metin = temizle(r.metin)
-      const sebep = !metin ? 'boş' : metin.length < 40 ? 'çok kısa' : metin.length > 900 ? 'çok uzun' : dogrula(metin)
+      const sebep = !metin ? 'boş' : metin.length < 40 ? 'çok kısa' : metin.length > 900 ? 'çok uzun' : !/[.!?…]$/.test(metin) ? 'yarım kalmış' : dogrula(metin)
       if (sebep) { durum.reddedilen.push({ anahtar, model: d.model, sebep, metin }); durum.hata.push(`${d.model}: reddedildi (${sebep})`); continue }
       if (!TASLAK) {
         yazilar[k] = { metin, model: d.model, zaman: new Date().toISOString() }
