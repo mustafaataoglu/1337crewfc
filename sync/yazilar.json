@@ -49,5 +49,41 @@
   "model": "openrouter/free",
   "zaman": "2026-10-02T19:48:34.072Z"
  },
- "_red": {}
+ "_red": {
+  "rapor:Football-Brothers-United-1337-Crew-FC-2026-03-24T220000000Z:bf7dbed709": {
+   "sayi": 1,
+   "zaman": "2026-10-02T20:18:59.094Z"
+  },
+  "rapor:Dikilitas-Galaxy-FC-1337-Crew-FC-2026-03-04T210000000Z:85f0aec6a0": {
+   "sayi": 1,
+   "zaman": "2026-10-02T20:19:52.088Z"
+  },
+  "rapor:1337-Crew-FC-Calypso-33-2026-02-24T230000000Z:3672cb84cd": {
+   "sayi": 1,
+   "zaman": "2026-10-02T20:20:05.753Z"
+  },
+  "rapor:Son-Baski-FK-1337-Crew-FC-2026-02-17T230000000Z:66620e4e6a": {
+   "sayi": 1,
+   "zaman": "2026-10-02T20:20:08.394Z"
+  },
+  "rapor:1337-Crew-FC-AC-Nevizade-2026-02-09T220000000Z:f44cc0b7a8": {
+   "sayi": 1,
+   "zaman": "2026-10-02T20:20:13.637Z"
+  }
+ },
+ "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:3ffd45794b": {
+  "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu 3. haftada 7 Ekim 2026 Çarşamba günü 21:00'de evinde Bordreaux JB'yi ağırlıyor. Ev sahibi takım olarak mücadele eden 1337, sezon başında 2 maçta 1 puan toplayıp averajı -2'ye düşmüş durumda. Rakip takım ise 2 maçta 4 puanle 1. sırada yer alıyor.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T20:18:48.022Z"
+ },
+ "rapor:1337-Crew-FC-GoodFellas-FC-2026-03-10T220000000Z:91ffbde8a2": {
+  "metin": "1337 Crew FC, 1337 iç sahada, 1-4 skorla GoodFellas FC'yi mağlub etti. Altay Tuğberk Yücel gol attı ve Kemal Sezer Şahin asist sağladı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T20:19:26.042Z"
+ },
+ "rapor:1337-Crew-FC-GoodFellas-FC-2026-02-03T220000000Z:51583f0f70": {
+  "metin": "1337 Crew FC ev sahibi 1337 iç sahada GoodFellas FC'ya karşı 0-4 skorla mağlubiyetle maçı bitirdi. GoodFellas FC, 14. hafta EfendiLig 2025-2026 sezonu maçında 4 golü elde etti.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T20:20:38.961Z"
+ }
 }
