@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, Lock, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import type { Player, Pos } from '@/types'
-import { squad, fmtDate, upcoming, played, kickoff, POS_LABEL } from '@/lib/site'
+import { squad, fmtDate, upcoming, kickoff, POS_LABEL } from '@/lib/site'
 import { Avatar, SectionTitle } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { hungarian } from '@/lib/assign'
+import VotePanel from '@/pages/VotePanel'
 
 type Slot = { x: number; y: number; g: Pos; label: string }
 const RAW: Record<string, [number, number, Pos, string][]> = {
@@ -173,7 +174,7 @@ export default function Vote() {
         {pick !== null ? (
           <Picker slot={F[f][pick]} current={xi} onChoose={choose} onClose={() => setPick(null)} />
         ) : (
-          <TeamPanel f={f} />
+          <VotePanel F={F} />
         )}
       </div>
     </div>
@@ -220,75 +221,4 @@ function deviceId() {
     if (!id) { id = crypto.randomUUID(); localStorage.setItem('1337-cihaz', id) }
     return id
   } catch { return 'gecici-' + Math.random().toString(36).slice(2) }
-}
-
-type Sonuc = { toplam: number; dizilisler: Record<string, number>; oyuncular: Record<string, number>; mevkiler: Record<string, Record<string, number>> }
-
-// Takım paneli: sonuçlar yalnızca panel anahtarıyla görünür (anahtar kurulumda bir kez gösterilir)
-function TeamPanel({ f }: { f: string }) {
-  // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin
-  const options = [...(upcoming[0] ? [upcoming[0]] : []), ...played.slice(0, 3)]
-  const [mac, setMac] = useState(options[0]?.id)
-  const [key, setKey] = useState(() => { try { return localStorage.getItem('1337-panel') ?? '' } catch { return '' } })
-  const [input, setInput] = useState('')
-  const [res, setRes] = useState<Sonuc | null>(null)
-  const [err, setErr] = useState<string | null>(null)
-  useEffect(() => {
-    if (!key || !mac) return
-    fetch(`api/oy.php?mac=${encodeURIComponent(mac)}`, { headers: { 'X-Panel-Anahtar': key } })
-      .then(r => r.json())
-      .then(j => { if (j.ok) { setRes(j.sonuc); setErr(null) } else { setErr(j.hata ?? 'Anahtar geçersiz'); setRes(null) } })
-      .catch(() => setErr('Sunucuya ulaşılamadı'))
-  }, [key, mac])
-  const save = (e?: React.FormEvent) => { e?.preventDefault(); setKey(input.trim()) }
-  // Anahtar ancak sunucu kabul edince hatırlanır
-  useEffect(() => { if (res && key) { try { localStorage.setItem('1337-panel', key) } catch { /* depolama kapalı */ } } }, [res, key])
-  const top = (o: Record<string, number>) => Object.entries(o).sort((a, b) => b[1] - a[1])
-  return (
-    <section className="rounded-xl border bg-card p-5">
-      <div className="flex items-center gap-2 eyebrow"><Lock className="w-3.5 h-3.5" /> Takım paneli · sadece kulüp görür</div>
-      <h3 className="font-display text-[24px] mt-1">Taraftar ne diyor?</h3>
-      {!res ? (
-        <div className="mt-3">
-          <p className="text-[14px] text-muted-foreground">Sonuçları görmek için takım paneli anahtarını gir.</p>
-          <form onSubmit={save} className="flex gap-2 mt-3">
-            <label htmlFor="panel-anahtar" className="sr-only">Panel anahtarı</label>
-            <input id="panel-anahtar" value={input} onChange={e => setInput(e.target.value)} placeholder="Panel anahtarı" className="flex-1 min-w-0 h-11 px-3 rounded-lg border bg-background" />
-            <button type="submit" className="px-4 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px]">Aç</button>
-          </form>
-          {err && key && <p className="text-[14px] text-loss mt-2">{err}</p>}
-        </div>
-      ) : (
-        <div className="mt-3">
-          <label htmlFor="panel-mac" className="sr-only">Maç</label>
-          <select id="panel-mac" value={mac} onChange={e => setMac(e.target.value)} className="w-full h-10 px-2 rounded-lg border bg-background text-[14px]">
-            {options.map(m => <option key={m.id} value={m.id}>{m.home.name} – {m.away.name} · {fmtDate(m.date)}</option>)}
-          </select>
-          <p className="text-[14px] num mt-3"><b>{res.toplam}</b> oy</p>
-          <div className="mt-3 flex flex-col gap-2.5">
-            {top(res.dizilisler).map(([k, n]) => (
-              <div key={k}>
-                <div className="flex justify-between text-[15px]"><span className={cn('font-display text-[17px]', k === f && 'underline decoration-club decoration-4 underline-offset-4')}>{k}</span><span className="num font-semibold">%{Math.round((n / Math.max(1, res.toplam)) * 100)}</span></div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden mt-1"><div className="h-full bg-club" style={{ width: `${(n / Math.max(1, res.toplam)) * 100}%` }} /></div>
-              </div>
-            ))}
-          </div>
-          <div className="eyebrow mt-5 mb-2">Mevkiye göre en çok seçilenler</div>
-          <div className="grid grid-cols-2 gap-3 text-[14px]">
-            {(['K', 'S', 'O', 'F'] as Pos[]).map(g => (
-              <div key={g}>
-                <div className="font-semibold">{POS_LABEL[g]}</div>
-                <ol className="mt-1">
-                  {top(res.mevkiler[g] ?? {}).slice(0, g === 'K' ? 2 : 5).map(([sl, n]) => (
-                    <li key={sl} className="flex justify-between gap-2"><span className="truncate">{squad.find(p => p.slug === sl)?.name ?? sl}</span><span className="num text-muted-foreground">{n}</span></li>
-                  ))}
-                </ol>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => { setKey(''); setRes(null); try { localStorage.removeItem('1337-panel') } catch { /* */ } }} className="mt-4 text-[13px] underline underline-offset-2 text-muted-foreground">Panelden çık</button>
-        </div>
-      )}
-    </section>
-  )
 }
