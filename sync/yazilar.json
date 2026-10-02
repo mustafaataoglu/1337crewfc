@@ -34,11 +34,6 @@
   "model": "openrouter/free",
   "zaman": "2026-10-02T19:48:34.072Z"
  },
- "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:3ffd45794b": {
-  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında ev sahibi 1337 Crew FC, 2026-10-07 Çarşamba günü saat 21:00'de iç sahada Bordreaux JB ile karşılaşacak. Oynadığı 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC, 2 maçta 4 puan ve 10 averajla 1. sırada bulunan rakibini konuk edecek. İki takım arasındaki kayıtlı 3 maçta 1337 Crew FC'nin galibiyeti bulunmazken, Bordreaux JB 2 galibiyet aldı ve 1 karşılaşma beraberlikle sonuçlandı.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-02T20:55:35.252Z"
- },
  "rapor:1337-Crew-FC-GoodFellas-FC-2026-03-10T220000000Z:91ffbde8a2": {
   "metin": "1337 Crew FC, 1337 iç sahada, 1-4 skorla GoodFellas FC'yi mağlub etti. Altay Tuğberk Yücel gol attı ve Kemal Sezer Şahin asist sağladı.",
   "model": "openrouter/free",
@@ -68,5 +63,10 @@
   "metin": "1337 Crew FC, Play-Off 4. haftasında 2026-03-24 tarihinde deplasmanda karşılaştığı Football Brothers United'a 4-1 mağlup oldu. Mücadelede 1337 Crew FC'nin golünü Mustafa Ataoğlu'nun asistinde Yasin Enes Aksu kaydetti.",
   "model": "gemini-3.7-flash",
   "zaman": "2026-10-02T20:55:43.677Z"
+ },
+ "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:8aee22fd14": {
+  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında 1337 Crew FC, 7 Ekim 2026 Çarşamba günü saat 21:00'de iç sahada Bordreaux JB ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC son maçında Baston Villa'ya 2-0 mağlup olurken, rakip Bordreaux JB ise 2 maçta 4 puan ve +10 averajla 1. sırada bulunuyor. İki takım arasındaki kayıtlı 3 maçta 1337 galibiyet alamazken 1 beraberlik ve 2 Bordreaux JB galibiyeti kaydedildi.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-02T21:29:37.763Z"
  }
 }
