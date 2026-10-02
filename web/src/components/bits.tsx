@@ -125,7 +125,7 @@ export function JerseyBadge({ j, dark }: { j: Jersey; dark?: boolean }) {
 export function kitNote(m: Match) {
   const o = m.us === 'home' ? m.home : m.away
   if (!o.jersey) return null
-  if (m.us === 'home' && o.jersey.kind === 'away') return `İç sahada oynamamıza rağmen deplasman formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyoruz.`
-  if (m.us === 'away' && o.jersey.kind === 'home') return `Deplasmanda iç saha formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyoruz.`
+  if (m.us === 'home' && o.jersey.kind === 'away') return `1337 Crew FC iç sahada oynamasına rağmen deplasman formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyor.`
+  if (m.us === 'away' && o.jersey.kind === 'home') return `1337 Crew FC deplasmanda iç saha formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyor.`
   return null
 }

@@ -12,7 +12,7 @@ function report(m: Match) {
   const parts = [`1337 Crew FC, ${m.compLabel}${m.week ? ` ${m.week}. hafta` : ''} maçında ${where} ${t.name} karşısında ${o.score}–${t.score} ${verb}.`]
   if (m.scorers?.length) parts.push(`Goller: ${m.scorers.map(x => x.name + (x.n > 1 ? ` (${x.n})` : '')).join(', ')}.`)
   if (m.assisters?.length) parts.push(`Asistler: ${m.assisters.map(x => x.name + (x.n > 1 ? ` (${x.n})` : '')).join(', ')}.`)
-  if (m.mvp) parts.push(m.mvp.ours ? `Maçın MVP'si bizden: ${m.mvp.name}.` : `Maçın MVP'si rakipten ${m.mvp.name} oldu.`)
+  if (m.mvp) parts.push(m.mvp.ours ? `Maçın MVP'si 1337 Crew FC'den ${m.mvp.name}.` : `Maçın MVP'si rakipten ${m.mvp.name} oldu.`)
   const v = m.videos
   if (v.some(x => x.kind === 'highlight')) parts.push('Maçın hem tamamı hem özeti aşağıda.')
   else if (v.length > 1) parts.push(`Maç YouTube'a ${v.length} parça halinde yüklendi.`)
@@ -82,8 +82,8 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
           <SectionTitle>Maç önü</SectionTitle>
           <div className="grid sm:grid-cols-3 gap-3">
             <Box label="Rakibin sırası" value={oppRow ? `${oppRow.rank}.` : '–'} sub={oppRow ? `${oppRow.points} puan · averaj ${oppRow.gd > 0 ? '+' : ''}${oppRow.gd}` : ''} />
-            <Box label="Bizim sıramız" value={usRow ? `${usRow.rank}.` : '–'} sub={usRow ? `${usRow.points} puan · averaj ${usRow.gd > 0 ? '+' : ''}${usRow.gd}` : ''} />
-            <Box label="Aramızdaki maçlar" value={h2h.length ? `${hw}G ${hd}B ${hl}M` : 'İlk maç'} sub={h2h.length ? `${h2h.length} maç` : 'Daha önce karşılaşmadık'} />
+            <Box label="1337'nin sırası" value={usRow ? `${usRow.rank}.` : '–'} sub={usRow ? `${usRow.points} puan · averaj ${usRow.gd > 0 ? '+' : ''}${usRow.gd}` : ''} />
+            <Box label="Önceki karşılaşmalar" value={h2h.length ? `${hw}G ${hd}B ${hl}M` : 'Kayıt yok'} sub={h2h.length ? `${h2h.length} maç` : 'Kayıtlı karşılaşma yok'} />
           </div>
         </section>
         </>

@@ -270,6 +270,8 @@ const kickoffMs = m => new Date(`${m.date}T${/^\d\d:\d\d$/.test(m.time ?? '') ? 
 const next = matches.filter(m => m.status !== 'done' && kickoffMs(m) > Date.now()).sort((a, b) => kickoffMs(a) - kickoffMs(b))[0]
 const feedDay = done => done[0]?.date ?? TODAY
 const opp = m => (m.us === 'home' ? m.away : m.home)
+// "1 beraberlik ve 2 mağlubiyet" — sıfır olanlar atlanır
+const sayilar = (w, d, l) => { const p = [w && `${w} galibiyet`, d && `${d} beraberlik`, l && `${l} mağlubiyet`].filter(Boolean); return p.length > 1 ? `${p.slice(0, -1).join(', ')} ve ${p.at(-1)}` : p[0] }
 const ourS = m => (m.us === 'home' ? m.home : m.away)
 if (next) {
   const t = opp(next), row = table.find(r => r.code === t.code), us = table.find(r => r.us)
@@ -277,8 +279,8 @@ if (next) {
   const w = h2h.filter(m => m.result === 'G').length, d = h2h.filter(m => m.result === 'B').length, l = h2h.filter(m => m.result === 'M').length
   feed.push({
     id: 'pre-' + next.id, kind: 'preview', date: feedDay(done), matchId: next.id,
-    title: row?.rank === 1 ? `Lider ${t.name} ${next.us === 'home' ? 'bize geliyor' : 'ile deplasmanda'}` : `Sırada ${t.name} var`,
-    body: `${row ? `${t.name} ${row.played} maçta ${row.points} puan ve ${row.gd > 0 ? '+' : ''}${row.gd} averajla ${row.rank}. sırada. ` : ''}${us ? `Biz ${us.points} puanla ${us.rank}. sıradayız. ` : ''}${h2h.length ? `Kayıtlı ${h2h.length} karşılaşmada ${w} galibiyet, ${d} beraberlik, ${l} mağlubiyet.` : 'Kayıtlarda aramızda oynanmış maç yok.'}`,
+    title: row?.rank === 1 ? (next.us === 'home' ? `Lider ${t.name}, 1337 Crew FC'nin konuğu` : `1337 Crew FC, lider ${t.name} deplasmanında`) : `Sırada ${t.name} var`,
+    body: `${row ? `${t.name} ${row.played} maçta ${row.points} puan ve ${row.gd > 0 ? '+' : ''}${row.gd} averajla ${row.rank}. sırada. ` : ''}${us ? `1337 Crew FC ${us.points} puanla ${us.rank}. sırada. ` : ''}${h2h.length ? `İki takımın kayıtlı ${h2h.length} karşılaşmasında 1337 Crew FC ${sayilar(w, d, l)} aldı.` : 'Kayıtlarda iki takımın karşılaşması yok.'}`,
   })
   feed.push({ id: 'vote-' + next.id, kind: 'vote', date: feedDay(done), title: `${t.name} maçı için 11'ini kur`, body: 'Taraftar oylaması açıldı. Maç saatinde kapanır, sonuçlar takıma iletilir.' })
 }
@@ -289,8 +291,8 @@ for (const m of done.filter(m => cur.label && m.seasonShort === short(cur.label)
   const verb = m.result === 'G' ? 'galibiyet' : m.result === 'B' ? 'beraberlik' : 'mağlubiyet'
   feed.push({
     id: 'rep-' + m.id, kind: 'report', date: m.date, matchId: m.id,
-    title: `${m.us === 'home' ? 'Evimizde' : t.name + ' deplasmanında'} ${o.score}–${t.score} ${verb}`,
-    body: `${m.compLabel}${m.week ? ` ${m.week}. hafta` : ''}. ${m.scorers?.length ? `Goller: ${m.scorers.map(x => x.name + (x.n > 1 ? ` (${x.n})` : '')).join(', ')}. ` : ''}${m.assisters?.length ? `Asist: ${m.assisters.map(x => x.name).join(', ')}. ` : ''}${m.mvp ? (m.mvp.ours ? `MVP bizden: ${m.mvp.name}. ` : `MVP rakipten ${m.mvp.name}. `) : ''}${m.videos.length ? 'Maçın videosu maç sayfasında.' : ''}`,
+    title: `${m.us === 'home' ? `İç sahada ${t.name} karşısında` : t.name + ' deplasmanında'} ${o.score}–${t.score} ${verb}`,
+    body: `${m.compLabel}${m.week ? ` ${m.week}. hafta` : ''}. ${m.scorers?.length ? `Goller: ${m.scorers.map(x => x.name + (x.n > 1 ? ` (${x.n})` : '')).join(', ')}. ` : ''}${m.assisters?.length ? `Asist: ${m.assisters.map(x => x.name).join(', ')}. ` : ''}${m.mvp ? (m.mvp.ours ? `MVP 1337 Crew FC'den ${m.mvp.name}. ` : `MVP rakipten ${m.mvp.name}. `) : ''}${m.videos.length ? 'Maçın videosu maç sayfasında.' : ''}`,
   })
 }
 function addDays(d, n) { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10) }
@@ -312,29 +314,30 @@ for (const p of players) {
 }
 // Doğum günü kartları sitede, ziyaret günü canlı üretilir (burada üretilirse veri her gün değişir)
 const usRow = table.find(r => r.us)
-if (usRow && done[0] && table[0]) feed.push({ id: 'tbl-' + done[0].id, kind: 'table', date: done[0].date, title: `${usRow.played}. haftadan sonra ${usRow.rank}. sıradayız`, body: `${usRow.points} puan, averaj ${usRow.gd}. Lider ${table[0].name} ${table[0].points} puanda.` })
+if (usRow && usRow.played > 0 && done[0] && table[0]) feed.push({ id: 'tbl-' + done[0].id, kind: 'table', date: done[0].date, title: `${usRow.played} maç sonunda 1337 Crew FC ${usRow.rank}. sırada`, body: `${usRow.points} puan, averaj ${usRow.gd}. Lider ${table[0].name} ${table[0].points} puanda.` })
 const ORDER = { birthday: -1, preview: 0, vote: 1, video: 2, table: 3, milestone: 4, report: 5, streak: 6 }
 feed.sort((a, b) => b.date.localeCompare(a.date) || ORDER[a.kind] - ORDER[b.kind])
 
 // ---- yapay zekâ yazıları (Gemini, yoksa OpenRouter; doğrulanmayan yazı kullanılmaz, kalıp metin kalır)
-// Önce bu sezon, sonra yeniden eskiye: kota yetmezse en önemli maçlar önce yazılır
+// Sıra: 1) sıradaki maçın maç önü yazısı, 2) bu sezonun raporları (yeniden eskiye), 3) eski maçlar
+// (tur başına en fazla 2). Ücretsiz kota önce sitenin ön yüzündeki güncel yazılara harcanır.
+if (next) {
+  const r = await onizlemeYaz(next, table, done)
+  const f = feed.find(x => x.id === 'pre-' + next.id)
+  if (r && f) { f.body = r.metin; next.onizleme = r.metin }
+}
 const buSezon = m => !!cur.label && m.seasonShort === short(cur.label)
 const sira = [...done].sort((a, b) => (buSezon(b) - buSezon(a)) || b.date.localeCompare(a.date))
 for (const m of sira) {
-  const r = await raporYaz(m)
+  const r = await raporYaz(m, buSezon(m))
   if (r) {
     m.rapor = r.metin
     const f = feed.find(x => x.id === 'rep-' + m.id)
     if (f) f.body = r.metin
   }
 }
-if (next) {
-  const r = await onizlemeYaz(next, table, done)
-  const f = feed.find(x => x.id === 'pre-' + next.id)
-  if (r && f) { f.body = r.metin; next.onizleme = r.metin }
-}
 kaydet()
-console.log('yazar:', yazarDurum.yazildi, 'yeni yazı', yazarDurum.model ?? '', yazarDurum.hata.slice(0, 3).join(' | '))
+console.log('yazar:', yazarDurum.yazildi, 'yeni yazı (eski maç:', yazarDurum.eski + ')', yazarDurum.model ?? '', yazarDurum.tukenen.length ? 'kotası dolan: ' + yazarDurum.tukenen.join(',') : '', yazarDurum.hata.slice(0, 3).join(' | '))
 
 // ---- görseller (prototipte gömülü; canlı sitede sunucuda önbellek)
 const jCache = new Map()
@@ -381,7 +384,7 @@ const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : null
 const out = { updatedAt: prev?.hash === hash ? prev.updatedAt : new Date().toISOString(), hash, ...body }
 if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
-if (prev?.hash !== hash || !existsSync(new URL('./durum-sync.json', OUTDIR))) writeFileSync(new URL('./durum-sync.json', OUTDIR), JSON.stringify({ yazar: { yeni: yazarDurum.yazildi, model: yazarDurum.model, anahtar: !!process.env.OPENROUTER_API_KEY, hatalar: yazarDurum.hata.slice(0, 5) }, veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
+if (prev?.hash !== hash || !existsSync(new URL('./durum-sync.json', OUTDIR))) writeFileSync(new URL('./durum-sync.json', OUTDIR), JSON.stringify({ yazar: { yeni: yazarDurum.yazildi, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, atlanan: yazarDurum.atlanan, hatalar: yazarDurum.hata.slice(0, 5) }, veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
 console.log(prev?.hash === hash ? 'Veri değişmedi' : 'Veri güncellendi: ' + hash)
 const vids = matches.reduce((n, m) => n + m.videos.length, 0)
 console.log({ matches: matches.length, withVideo: matches.filter(m => m.videos.length).length, videos: vids, highlights: matches.flatMap(m => m.videos).filter(v => v.kind === 'highlight').length, parts: matches.flatMap(m => m.videos).filter(v => v.kind === 'part').length, extra: extra.length, photos: players.filter(p => p.photo).length, thumbs: [...thumbs.values()].filter(Boolean).length, logos: [...logos.values()].filter(Boolean).length, feed: feed.length, kb: Math.round(JSON.stringify(out).length / 1024) })
