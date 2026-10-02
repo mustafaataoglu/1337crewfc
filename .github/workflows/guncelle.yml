@@ -1,0 +1,80 @@
+name: Veriyi güncelle ve siteyi derle
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # 15 dakikada bir EfendiLig + YouTube kontrolü
+  workflow_dispatch:
+    inputs:
+      tam:
+        description: 'Tam senkron (tüm ayrıntıları tazele)'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ['web/**', 'server/**', 'sync/*.mjs', 'sync/gallery/**', '.github/workflows/**']
+
+concurrency:
+  group: guncelle
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  guncelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: EfendiLig önbelleğini geri yükle
+        uses: actions/cache@v4
+        with:
+          path: sync/cache
+          key: efendilig-${{ github.run_id }}
+          restore-keys: efendilig-
+
+      - name: Önbellek boşsa tohum veriyi kullan
+        run: |
+          if [ ! -f sync/cache/state.json ] && [ -d sync/cache-seed ]; then
+            mkdir -p sync/cache && cp -n sync/cache-seed/* sync/cache/
+            echo "Tohum önbellek kullanıldı"
+          fi
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: web
+
+      - name: EfendiLig ve YouTube senkronu
+        run: node sync/backfill.mjs ${{ inputs.tam && '--tam' || '' }}
+
+      - name: Site verisini üret
+        run: node sync/build-data.mjs
+
+      - name: Siteyi derle
+        run: pnpm build
+        working-directory: web
+
+      - name: Sunucu dosyalarını ekle, sürüm üret
+        run: node sync/paketle.mjs
+
+      - name: Değiştiyse kaydet
+        run: |
+          git config user.name "1337crewfc-bot"
+          git config user.email "1337crewfc-bot@users.noreply.github.com"
+          git add -A site web/public/data
+          if git diff --cached --quiet; then
+            echo "Değişiklik yok"
+          else
+            git commit -m "Otomatik güncelleme: $(cat site/surum.txt)"
+            git push
+          fi

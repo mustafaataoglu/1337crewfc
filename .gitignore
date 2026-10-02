@@ -1,0 +1,6 @@
+node_modules/
+sync/cache/
+sync/backfill.json
+sync/sync-stats.json
+*.log
+.DS_Store

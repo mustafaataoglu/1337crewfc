@@ -1,0 +1,23 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+
+# Sistem, veri (oylar, anahtar, loglar) ve eski site dışarıya kapalı
+RewriteEngine On
+RewriteRule ^(_sistem|_veri|_eski_site)(/|$) - [F,L]
+
+# Veri dosyası her zaman taze okunsun; hash'li asset'ler uzun süre önbellekte kalsın
+<IfModule mod_headers.c>
+  <FilesMatch "^(veri|durum-sync)\.json$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "^durum\.json$">
+    Header set Cache-Control "no-store"
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 month"
+</IfModule>
