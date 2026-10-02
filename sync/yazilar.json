@@ -23,5 +23,30 @@
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 3. haftasında 1337 Crew FC, 12 Mayıs 2026 tarihinde deplasmanda Çiçek Spor ile karşılaştı. Ev sahibi Çiçek Spor'un 1-0 kazandığı mücadele sonucunda 1337 Crew FC sahadan mağlubiyetle ayrıldı.",
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-02T19:45:49.113Z"
+ },
+ "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-05-06T210000000Z:ad7e8c396a": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi 2. haftasında 1337 Crew FC, 6 Mayıs 2026 tarihinde sahasında Fire Dryer FC ile 1-1 berabere kaldı. Ev sahibi 1337 Crew FC'nin golünü Yasin Kayran'ın asistinde Yamaç Yaman attı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:48:09.626Z"
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2026-04-28T210000000Z:bee479961b": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 1. haftasında 28 Nisan 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda The Wall SK ile karşılaştı. Rakibini 2-3 mağlup eden 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Kemal Sezer Şahin attı. Karşılaşmadaki asistler ise Yasin Kayran, Kemal Sezer Şahin ve Oğuzhan Uygur'dan geldi.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:48:17.304Z"
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2026-04-21T230000000Z:ebb657b0a4": {
+  "metin": "Play-Off 7. haftasında 21 Nisan 2026 tarihinde 1337 Crew FC, ev sahibi The Wall SK ile 3-3 berabere kaldı. Deplasmanda oynayan 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Bahadır Oğuz kaydetti. Karşılaşmada asistleri ise Oğuzhan Uygur ve Erdal Gürses yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-02T19:48:26.576Z"
+ },
+ "rapor:1337-Crew-FC-AKUT-Futbol-2026-04-15T210000000Z:b396c15dbd": {
+  "metin": "1337 Crew FC, Play-Off 6. haftasında ev sahibi olduğu AKUT Futbol maçını 3-0 kazandı. Maç hükmen sonuçlandı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:48:29.783Z"
+ },
+ "rapor:1337-Crew-FC-Son-Baski-FK-2026-03-31T210000000Z:34ce041067": {
+  "metin": "1337 Crew FC, 31 Mart 2026'da Play-Off 5. hafta maçında Son Baskı FK'ya 1-6 mağlup oldu, maç 1337'nin iç sahasında oynandı. Mustafa Ataoğlu'nun golü Mert Demir'in asistinde kaleye girdi.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-02T19:48:34.072Z"
  }
 }
