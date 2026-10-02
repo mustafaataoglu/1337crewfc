@@ -274,7 +274,7 @@ const opp = m => (m.us === 'home' ? m.away : m.home)
 const sayilar = (w, d, l) => { const p = [w && `${w} galibiyet`, d && `${d} beraberlik`, l && `${l} mağlubiyet`].filter(Boolean); return p.length > 1 ? `${p.slice(0, -1).join(', ')} ve ${p.at(-1)}` : p[0] }
 const ourS = m => (m.us === 'home' ? m.home : m.away)
 if (next) {
-  const t = opp(next), row = table.find(r => r.code === t.code), us = table.find(r => r.us)
+  const t = opp(next), row = table.find(r => r.code === t.code && r.played > 0), us = table.find(r => r.us && r.played > 0)
   const h2h = done.filter(m => opp(m).code === t.code)
   const w = h2h.filter(m => m.result === 'G').length, d = h2h.filter(m => m.result === 'B').length, l = h2h.filter(m => m.result === 'M').length
   feed.push({
@@ -337,7 +337,7 @@ for (const m of sira) {
   }
 }
 kaydet()
-console.log('yazar:', yazarDurum.yazildi, 'yeni yazı (eski maç:', yazarDurum.eski + ')', yazarDurum.model ?? '', yazarDurum.tukenen.length ? 'kotası dolan: ' + yazarDurum.tukenen.join(',') : '', yazarDurum.hata.slice(0, 3).join(' | '))
+console.log('yazar:', yazarDurum.yazildi, 'yeni yazı (yükseltilen:', yazarDurum.yukseltilen + ', eski maç denemesi:', yazarDurum.eski + ')', yazarDurum.model ?? '', yazarDurum.tukenen.length ? 'kotası dolan: ' + yazarDurum.tukenen.join(',') : '', yazarDurum.hata.slice(0, 3).join(' | '))
 
 // ---- görseller (prototipte gömülü; canlı sitede sunucuda önbellek)
 const jCache = new Map()
@@ -384,7 +384,12 @@ const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : null
 const out = { updatedAt: prev?.hash === hash ? prev.updatedAt : new Date().toISOString(), hash, ...body }
 if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
-if (prev?.hash !== hash || !existsSync(new URL('./durum-sync.json', OUTDIR))) writeFileSync(new URL('./durum-sync.json', OUTDIR), JSON.stringify({ yazar: { yeni: yazarDurum.yazildi, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, atlanan: yazarDurum.atlanan, hatalar: yazarDurum.hata.slice(0, 5) }, veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
+const DURUM = new URL('./durum-sync.json', OUTDIR)
+const yazar = { yeni: yazarDurum.yazildi, yukseltilen: yazarDurum.yukseltilen, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, durdu: yazarDurum.durdu, tukenen: yazarDurum.tukenen, atlanan: yazarDurum.atlanan, hatalar: yazarDurum.hata.slice(0, 5) }
+// Karşılaştırmada sayılar atılır ("retry in 23.4s" gibi) — yoksa her tur yeni commit olur
+const yazarOzu = y => JSON.stringify({ ...y, yeni: undefined, yukseltilen: undefined, atlanan: undefined, hatalar: (y?.hatalar ?? []).map(h => String(h).replace(/[\d.,:]+/g, '#')) })
+const eskiDurum = existsSync(DURUM) ? JSON.parse(readFileSync(DURUM, 'utf8')) : null
+if (prev?.hash !== hash || !eskiDurum || yazarOzu(eskiDurum.yazar) !== yazarOzu(yazar)) writeFileSync(DURUM, JSON.stringify({ yazar, veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
 console.log(prev?.hash === hash ? 'Veri değişmedi' : 'Veri güncellendi: ' + hash)
 const vids = matches.reduce((n, m) => n + m.videos.length, 0)
 console.log({ matches: matches.length, withVideo: matches.filter(m => m.videos.length).length, videos: vids, highlights: matches.flatMap(m => m.videos).filter(v => v.kind === 'highlight').length, parts: matches.flatMap(m => m.videos).filter(v => v.kind === 'part').length, extra: extra.length, photos: players.filter(p => p.photo).length, thumbs: [...thumbs.values()].filter(Boolean).length, logos: [...logos.values()].filter(Boolean).length, feed: feed.length, kb: Math.round(JSON.stringify(out).length / 1024) })
