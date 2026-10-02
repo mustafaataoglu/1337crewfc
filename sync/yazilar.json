@@ -2,7 +2,9 @@
  "rapor:baston-villa-1337-Crew-FC-2026-09-28T230000000Z:908dc552c3": {
   "metin": "EfendiLig 2026-2027 Sezonu 2. haftasında 1337 Crew FC, 28 Eylül 2026 tarihinde deplasmanda Baston Villa ile karşılaştı. Ev sahibi ekibin 2-0 kazandığı mücadelede 1337 Crew FC sahadan mağlubiyetle ayrıldı. Maçın MVP'si Baston Villa oyuncusu Mehdi Çapar oldu.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:41:14.441Z"
+  "zaman": "2026-10-02T19:41:14.441Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:Buyuk-Avlu-1337-Crew-FC-2026-06-09T220000000Z:d33d54c464": {
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 5. haftasında 1337 Crew FC, 9 Haziran 2026 tarihinde deplasmanda Büyük Avlu ile karşılaştı. Karşılaşma Büyük Avlu'nun 2-1'lik üstünlüğüyle sona erdi ve 1337 Crew FC maçtan mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Kemal Sezer Şahin'in asistinde Oğuzhan Göktepe attı.",
@@ -67,6 +69,8 @@
  "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:8aee22fd14": {
   "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında 1337 Crew FC, 7 Ekim 2026 Çarşamba günü saat 21:00'de iç sahada Bordreaux JB ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC son maçında Baston Villa'ya 2-0 mağlup olurken, rakip Bordreaux JB ise 2 maçta 4 puan ve +10 averajla 1. sırada bulunuyor. İki takım arasındaki kayıtlı 3 maçta 1337 galibiyet alamazken 1 beraberlik ve 2 Bordreaux JB galibiyeti kaydedildi.",
   "model": "gemini-3.8-flash",
-  "zaman": "2026-10-02T21:29:37.763Z"
+  "zaman": "2026-10-02T21:29:37.763Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.7-flash"
  }
 }
