@@ -53,7 +53,7 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
         <>
           <section className="mt-6">
             <SectionTitle>Maç raporu</SectionTitle>
-            <p className="text-[17px] leading-relaxed max-w-[62ch]">{report(m)}</p>
+            <p className="text-[17px] leading-relaxed max-w-[62ch] whitespace-pre-line">{m.rapor ?? report(m)}</p>
           </section>
           <section className="mt-8">
             <SectionTitle>Videolar</SectionTitle>

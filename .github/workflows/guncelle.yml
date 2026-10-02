@@ -58,6 +58,8 @@ jobs:
         run: node sync/backfill.mjs ${{ inputs.tam && '--tam' || '' }}
 
       - name: Site verisini üret
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node sync/build-data.mjs
 
       - name: Siteyi derle
@@ -71,7 +73,7 @@ jobs:
         run: |
           git config user.name "1337crewfc-bot"
           git config user.email "1337crewfc-bot@users.noreply.github.com"
-          git add -A site web/public/data sync/youtube.json
+          git add -A site web/public/data sync/youtube.json sync/yazilar.json
           if git diff --cached --quiet; then
             echo "Değişiklik yok"
           else

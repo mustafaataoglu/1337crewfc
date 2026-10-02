@@ -30,6 +30,8 @@ export interface Match {
   mvp?: { name: string; ours: boolean }
   lineup?: { xi: string[]; subs: string[] }
   forfeit?: boolean
+  rapor?: string
+  onizleme?: string
   scorers?: { slug: string; name: string; n: number }[]
   assisters?: { slug: string; name: string; n: number }[]
 }
