@@ -8,12 +8,13 @@ import { createHash } from 'node:crypto'
 const FILE = new URL('./yazilar.json', import.meta.url)
 const KEY = process.env.OPENROUTER_API_KEY
 // Türkçe için tercih sırası; listede olmayan ya da artık ücretsiz olmayan model atlanır
-const TERCIH = ['google/gemma-4-31b-it:free', 'qwen/qwen3.8-27b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'google/gemma-4-26b-a4b-it:free', 'openrouter/free']
+// openrouter/free o an müsait ücretsiz modele yönlendirir (en güvenilir); diğerleri yedek
+const TERCIH = ['openrouter/free', 'google/gemma-4-31b-it:free', 'qwen/qwen3.8-27b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'google/gemma-4-26b-a4b-it:free']
 const BIR_CALISMADA_EN_FAZLA = 6 // ücretsiz kotayı aşmamak için her 15 dakikada en fazla bu kadar yeni yazı
 
 export const yazilar = existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : {}
 export const durum = { yazildi: 0, hata: [], model: null, istek: 0, durdu: false }
-const EN_FAZLA_ISTEK = 12 // bir çalışmada toplam deneme sınırı (hatalı anahtar/kota durumunda boşa istek atmasın)
+const EN_FAZLA_ISTEK = 20 // bir çalışmada toplam deneme sınırı (hatalı anahtar/kota durumunda boşa istek atmasın)
 let modeller = null
 
 async function ucretsizModeller() {
