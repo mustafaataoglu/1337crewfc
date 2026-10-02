@@ -530,7 +530,8 @@ async function openrouterYaz(model, sistem, istek, ayar = {}) {
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${OPENROUTER}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://1337crewfc.com', 'X-Title': '1337 Crew FC' },
-    body: JSON.stringify({ model, temperature: ayar.json ? 0 : 0.4, max_tokens: ayar.json ? 800 : 500, messages: [{ role: 'system', content: sistem }, { role: 'user', content: istek }] }),
+    // Akıl yürüten ücretsiz modeller düşünmeye jeton harcıyor: sınır geniş, düşünme kısa ve yanıta katılmaz (yoksa boş yanıt dönüyordu)
+    body: JSON.stringify({ model, temperature: ayar.json ? 0 : 0.4, max_tokens: 3000, reasoning: { effort: 'low', exclude: true }, messages: [{ role: 'system', content: sistem }, { role: 'user', content: istek }] }),
     signal: AbortSignal.timeout(60000),
   })
   const j = await r.json().catch(() => ({}))
@@ -665,7 +666,11 @@ async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true
   const k = `${anahtar}:${ozet(bilgi)}`
   if (KAPALI) return null
   // Bir kerelik geçiş: anahtarın hesaplanma biçimi değiştiyse eski kaydı yeni anahtara taşı
-  if (eskiBilgi && !yazilar[k]) { const ek = `${anahtar}:${ozet(eskiBilgi)}`; if (yazilar[ek]) { yazilar[k] = yazilar[ek]; delete yazilar[ek] } }
+  for (const eb of [].concat(eskiBilgi ?? [])) {
+    if (yazilar[k]) break
+    const ek = `${anahtar}:${ozet(eb)}`
+    if (yazilar[ek]) { yazilar[k] = yazilar[ek]; delete yazilar[ek]; if (RED[ek]) { RED[k] = RED[ek]; delete RED[ek] } }
+  }
   let kayitli = null, bekleyen = null, eskiKayit = false
   if (!TASLAK && yazilar[k]) {
     const kayit = yazilar[k]
@@ -749,19 +754,22 @@ const sirala = xs => [...xs].sort((a, b) => (b.n ?? 1) - (a.n ?? 1) || a.name.lo
 
 export async function raporYaz(m, oncelikli = true) {
   const t = m.us === 'home' ? m.away : m.home
-  const temel = {
-    yarisma: m.compLabel, hafta: m.week ?? null, tarih: m.date, evSahibi: m.home.name, deplasman: m.away.name,
+  // tarih okunur biçimde ("28 Eylül 2026") ve gün adıyla verilir; ham tarih verilince model onu metne aynen koyuyordu
+  const temel = (tarih, gun) => ({
+    yarisma: m.compLabel, hafta: m.week ?? null, tarih, ...(gun ? { gun } : {}), evSahibi: m.home.name, deplasman: m.away.name,
     skor: `${m.home.score}-${m.away.score}`, sonuc1337: m.result === 'G' ? 'galibiyet' : m.result === 'B' ? 'beraberlik' : 'mağlubiyet',
     saha: m.us === 'home' ? `1337 iç sahada, ${m.home.name} ev sahibi` : `1337 deplasmanda, ev sahibi ${m.home.name}`, hukmen: !!m.forfeit,
-  }
+  })
   const liste = (sc, as) => ({
     golculer1337: sc.map(x => x.n > 1 ? `${x.name} (${x.n})` : x.name),
     asistler1337: as.map(x => x.name),
     macinMVPsi: m.mvp ? `${m.mvp.name} (${m.mvp.ours ? '1337 oyuncusu' : t.name + ' oyuncusu'})` : null,
   })
-  // Golcü/asist sırası sabit (kadro sırası değişince anahtar değişip yazı yeniden yazılmasın); eski anahtar bir kez taşınır
-  const bilgi = { ...temel, ...liste(sirala(m.scorers ?? []), sirala(m.assisters ?? [])) }
-  const eskiBilgi = { ...temel, ...liste(m.scorers ?? [], m.assisters ?? []) }
+  // Golcü/asist sırası sabit (kadro sırası değişince anahtar değişip yazı yeniden yazılmasın).
+  // Önceki sürümlerin anahtarları (ham tarihli; sıralı ya da sırasız) bir kez yeni anahtara taşınır, yazılar kaybolmaz.
+  const sirali = liste(sirala(m.scorers ?? []), sirala(m.assisters ?? []))
+  const bilgi = { ...temel(tarihYazi(m.date), gunAdi(m.date)), ...sirali }
+  const eskiBilgi = [{ ...temel(m.date), ...sirali }, { ...temel(m.date), ...liste(m.scorers ?? [], m.assisters ?? []) }]
   const kisiler = { golcu: (m.scorers ?? []).map(x => ({ name: x.name, n: x.n ?? 1 })), asist: (m.assisters ?? []).map(x => x.name), mvp: m.mvp ?? null }
   const istek = m.forfeit ? 'Bu maç hükmen sonuçlandı; bunu belirten 1-2 cümlelik kısa bir not yaz.' : 'Bu maç için kısa bir maç raporu yaz.'
   return yaz({
