@@ -6,7 +6,7 @@ export default function Table() {
   return (
     <div className="max-w-3xl">
       <SectionTitle>Puan durumu</SectionTitle>
-      <p className="text-[14px] text-muted-foreground -mt-1 mb-4">{data.club.season} · EfendiLig'den otomatik, maç gecesi 5 dakikada bir güncellenir.</p>
+      <p className="text-[14px] text-muted-foreground -mt-1 mb-4">{data.club.season}</p>
       <div className="rounded-xl border bg-card overflow-x-auto">
         <table className="w-full min-w-[420px] text-[15px] num">
           <thead>

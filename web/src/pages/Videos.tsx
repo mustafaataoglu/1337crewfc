@@ -11,12 +11,14 @@ export default function Videos({ nav }: { nav: Nav }) {
   const [kind, setKind] = useState<'all' | 'highlight' | 'full'>('all')
   const list = withVid.filter(m => season === 'all' || m.seasonShort === season)
   const total = withVid.reduce((n, m) => n + m.videos.length, 0)
+  const match = (k: string) => kind === 'all' || (kind === 'highlight' ? k === 'highlight' : k !== 'highlight')
+  const visible = list.some(m => m.videos.some(v => match(v.kind)))
 
   return (
     <div>
       <SectionTitle>Videolar</SectionTitle>
       <p className="text-[14px] text-muted-foreground -mt-1 mb-4">
-        {withVid.length} maçın {total} videosu. Eski sezonlarda her maçın tek videosu var, 2026-27'den itibaren tam maç ve özet ayrı yükleniyor. Yeni videolar yüklendiği gün buraya kendiliğinden düşer.
+        {withVid.length} maç · {total} video
       </p>
       <div className="flex flex-wrap gap-2 mb-5">
         <div className="flex gap-1 p-1 rounded-lg bg-muted">
@@ -31,6 +33,7 @@ export default function Videos({ nav }: { nav: Nav }) {
         </div>
       </div>
 
+      {!visible && <p className="text-muted-foreground">{kind === 'highlight' ? 'Bu sezon için maç özeti yok. Özetler 2026-27 sezonunda başladı.' : 'Bu seçimde video yok.'}</p>}
       <div className="flex flex-col gap-8">
         {list.map(m => {
           const vids = m.videos.filter(v => kind === 'all' || (kind === 'highlight' ? v.kind === 'highlight' : v.kind !== 'highlight'))
@@ -39,7 +42,7 @@ export default function Videos({ nav }: { nav: Nav }) {
           return (
             <section key={m.id}>
               <button onClick={() => nav.openMatch(m.id)} className="flex items-baseline gap-3 mb-2 text-left">
-                <span className="font-display text-[20px] leading-tight">{m.home.name} {m.home.score}–{m.away.score} {m.away.name}</span>
+                <span className="font-display text-[20px] leading-tight">{m.home.name} {m.status === 'done' ? `${m.home.score}–${m.away.score}` : '–'} {m.away.name}</span>
                 <span className="text-[13px] text-muted-foreground shrink-0">{fmtDate(m.date)}</span>
               </button>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -51,10 +54,10 @@ export default function Videos({ nav }: { nav: Nav }) {
         })}
       </div>
 
-      {data.extraVideos.length > 0 && kind !== 'highlight' && season === 'all' && (
+      {(data.extraVideos ?? []).length > 0 && kind !== 'highlight' && season === 'all' && (
         <section className="mt-10">
           <SectionTitle>Diğer videolar</SectionTitle>
-          <p className="text-[14px] text-muted-foreground -mt-1 mb-4">Kanalda olup EfendiLig'de maç kaydı bulunmayan videolar (hazırlık maçları, eski parçalar).</p>
+          <p className="text-[14px] text-muted-foreground -mt-1 mb-4">Hazırlık maçları ve diğer kayıtlar.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {data.extraVideos.map(v => <VideoCard key={v.id} v={v} />)}
           </div>

@@ -5,19 +5,20 @@ import { Crest, SectionTitle } from '@/components/bits'
 
 export default function Club() {
   const c = data.club
-  const photos = data.gallery.filter(g => g.kind === 'foto').sort((a, b) => b.date.localeCompare(a.date))
-  const kits = data.gallery.filter(g => g.kind === 'forma')
+  const photos = (data.gallery ?? []).filter(g => g.kind === 'foto').sort((a, b) => b.date.localeCompare(a.date))
+  const kits = (data.gallery ?? []).filter(g => g.kind === 'forma')
   const [open, setOpen] = useState<number | null>(null)
 
   useEffect(() => {
     if (open === null) return
+    document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(null)
       if (e.key === 'ArrowRight') setOpen(i => (i === null ? i : (i + 1) % photos.length))
       if (e.key === 'ArrowLeft') setOpen(i => (i === null ? i : (i - 1 + photos.length) % photos.length))
     }
     addEventListener('keydown', onKey)
-    return () => removeEventListener('keydown', onKey)
+    return () => { removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [open, photos.length])
 
   const seasons = new Set(data.matches.map(m => m.seasonShort)).size
@@ -55,7 +56,7 @@ export default function Club() {
 
       <section className="mt-8">
         <SectionTitle>Doğum günleri</SectionTitle>
-        <p className="text-[14px] text-muted-foreground -mt-1 mb-4">Güncel kadro, EfendiLig kayıtlarından. Doğum günü gelen oyuncu için o gün akışa kutlama kartı düşer.</p>
+        <p className="text-[14px] text-muted-foreground -mt-1 mb-4">Güncel kadronun doğum günleri.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {AYLAR.map((ay, mi) => {
             const list = squad.filter(p => p.birthday?.month === mi + 1).sort((a, b) => a.birthday!.day - b.birthday!.day)
@@ -76,7 +77,7 @@ export default function Club() {
 
       <section className="mt-8">
         <SectionTitle>Galeri</SectionTitle>
-        <p className="text-[14px] text-muted-foreground -mt-1 mb-4">{photos.length} fotoğraf · eski 1337crewfc.com sitesinden taşındı. Fotoğrafa dokununca büyür.</p>
+        <p className="text-[14px] text-muted-foreground -mt-1 mb-4">{photos.length} fotoğraf</p>
         <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
           {photos.map((p, i) => (
             <button key={p.file} onClick={() => setOpen(i)} className="block w-full mb-3 break-inside-avoid rounded-lg overflow-hidden bg-muted group">

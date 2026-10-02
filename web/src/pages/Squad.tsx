@@ -9,7 +9,7 @@ export default function Squad({ nav }: { nav: Nav }) {
   return (
     <div>
       <SectionTitle>Kadro</SectionTitle>
-      <p className="text-[14px] text-muted-foreground -mt-1 mb-5">{squad.length} oyuncu · EfendiLig'deki güncel kadro. Maç, gol ve asist 1337 formasıyla oynanan tüm resmi maçların toplamı.</p>
+      <p className="text-[14px] text-muted-foreground -mt-1 mb-5">{squad.length} oyuncu · maç, gol ve asist 1337 formasıyla oynanan resmi maçlardan</p>
       <div className="flex flex-col gap-7">
         {groups.map(({ g, list }) => (
           <section key={g}>
@@ -31,7 +31,7 @@ export default function Squad({ nav }: { nav: Nav }) {
         ))}
         <section>
           <div className="eyebrow mb-2">Eski oyuncular · {formerPlayers.length}</div>
-          <p className="text-[14px] text-muted-foreground -mt-1 mb-3">Crew formasıyla maça çıkmış, bugün kadroda olmayan oyuncular. Maç kadrolarından otomatik bulunur.</p>
+          <p className="text-[14px] text-muted-foreground -mt-1 mb-3">1337 formasını giymiş, bugün kadroda olmayan oyuncular.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {formerPlayers.map(p => (
               <button key={p.slug} onClick={() => nav.openPlayer(p.slug)} className="flex items-center gap-3 p-3 rounded-xl border bg-card/60 text-left hover:border-club transition-colors min-w-0">

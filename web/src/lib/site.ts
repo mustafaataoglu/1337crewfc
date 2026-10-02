@@ -14,17 +14,19 @@ export function fmtDate(d: string, withDay = false) {
   return `${withDay ? GUN[dt.getDay()] + ', ' : ''}${day} ${AY[m - 1]}${withDay ? '' : ' ' + y}`
 }
 
+/** Maç başlama anı: İstanbul saatiyle (ziyaretçi hangi ülkede olursa olsun doğru) */
 export function kickoff(m: Match) {
-  const [y, mo, d] = m.date.split('-').map(Number)
-  const [h, mi] = (m.time || '21:00').split(':').map(Number)
-  return new Date(y, mo - 1, d, h, mi)
+  const time = /^dd:dd$/.test(m.time ?? '') ? m.time : '21:00'
+  return new Date(`${m.date}T${time}:00+03:00`)
 }
+const order = (m: Match) => `${m.date}T${m.time ?? ''}`
 
 export const ours = (m: Match) => (m.us === 'home' ? m.home : m.away)
 export const theirs = (m: Match) => (m.us === 'home' ? m.away : m.home)
 
-export const played = data.matches.filter(m => m.status === 'done').sort((a, b) => b.date.localeCompare(a.date))
-export const upcoming = data.matches.filter(m => m.status !== 'done').sort((a, b) => a.date.localeCompare(b.date))
+export const played = data.matches.filter(m => m.status === 'done').sort((a, b) => order(b).localeCompare(order(a)))
+// Yaklaşan: henüz oynanmamış ve başlama saatinden en fazla 2 saat geçmiş maçlar (skor girilene kadar takılı kalmasın)
+export const upcoming = data.matches.filter(m => m.status !== 'done' && kickoff(m).getTime() > Date.now() - 2 * 3600e3).sort((a, b) => order(a).localeCompare(order(b)))
 export const matchById = (id: string) => data.matches.find(m => m.id === id)
 export const playerBySlug = (s: string) => data.players.find(p => p.slug === s)
 /** Ortak oyuncu listesi: güncel kadro (Kadro, Senin 11'in) ve eski oyuncular (arşiv, tüm zamanlar) */
@@ -40,12 +42,15 @@ export function initials(p: Player) {
 }
 
 export function rankBy(key: 'g' | 'a' | 'm' | 'mvp', scope: 'current' | 'career') {
-  return [...(scope === 'current' ? squad : data.players)]
+  // Bu sezon: sezon içinde ayrılan oyuncular da bu sezonki katkısıyla listede kalır
+  return [...data.players]
     .filter(p => (p[scope][key] ?? 0) > 0)
     .sort((a, b) => (b[scope][key] ?? 0) - (a[scope][key] ?? 0) || a[scope].m - b[scope].m)
 }
 
 export const AYLAR = AY
+/** Bugünün tarihi (yerel), YYYY-MM-DD */
+export const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
 /** Güncel kadronun yaklaşan doğum günleri, sitenin açıldığı günün tarihine göre */
 export function upcomingBirthdays(limit = 5, now = new Date()) {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())

@@ -100,13 +100,18 @@ function agoToDate(ago) {
   if (!m) return null
   const n = Number(m[1]), unit = { saat: 0, gün: 1, hafta: 7, ay: 30.4, yıl: 365 }[m[2]]
   const tol = { saat: 1, gün: 2, hafta: 7, ay: 18, yıl: 190 }[m[2]]
-  return { t: new Date(TODAY).getTime() - n * unit * 864e5, tol }
+  // "N ay önce" bilgisi kanal araması 2 Ekim 2026'da yapıldığında yazıldı: o güne göre çöz (bugüne göre kayar)
+  return { t: new Date(v_ago_base).getTime() - n * unit * 864e5, tol }
 }
+const v_ago_base = '2026-10-02'
+const isHighlight = t => /ÖZET/i.test(t)
+const isPartTitle = t => /\b(\d\.?\s*)?(DEVRE|YARI|BÖLÜM|KISIM|PART)\b/i.test(t)
+const kindOf = v => isHighlight(v.title) ? 'highlight' : isPartTitle(v.title) || (lenMin(v.len) ?? 60) < 45 ? 'part' : 'full'
 const extra = []
 for (const v of search) {
   if (used.has(v.id)) continue
   const T = norm(v.title)
-  const isHl = /^ÖZET/i.test(v.title)
+  const isHl = isHighlight(v.title)
   const years = v.title.match(/(\d{4})-(\d{4})/)
   const week = v.title.match(/(\d+)\.\s*Hafta/i)
   let cand = matches.filter(m => m.status === 'done' && T.includes(norm(m.us === 'home' ? m.away.name : m.home.name)))
@@ -115,9 +120,14 @@ for (const v of search) {
   if (/play-?off/i.test(v.title)) cand = cand.filter(m => m.comp === 'playoff')
   else if (/kupa/i.test(v.title)) cand = cand.filter(m => m.comp === 'cup')
   else if (/sezonu/i.test(v.title)) cand = cand.filter(m => m.comp === 'league')
+  // Video maçtan önce yayınlanamaz: yayın tarihi biliniyorsa sonrasında oynanan maçları ele
+  const pub0 = pubDate(v)
+  if (pub0) cand = cand.filter(m => new Date(m.date).getTime() <= pub0.t + pub0.tol * 864e5)
   if (isHl && !years && !week) {
-    // Özet başlıkları sade ("ÖZET - X & Y"): en yakın tarihli, özeti olmayan maç
-    cand = cand.filter(m => !m.videos.some(x => x.kind === 'highlight')).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 1)
+    // Özet başlıkları sade ("ÖZET - X & Y"): yayından önceki en yakın tarihli, özeti olmayan maç.
+    // Yayın tarihi kesin değilse (eski arama sonuçları) belirsiz bırak.
+    cand = cand.filter(m => !m.videos.some(x => x.kind === 'highlight')).sort((a, b) => b.date.localeCompare(a.date))
+    if (pub0 && pub0.tol <= 2) cand = cand.slice(0, 1)
   }
   if (cand.length > 1) {
     // Başlık yetmiyorsa yayın tarihine bak: video maçtan sonra, hata payı içinde yayınlanmış olmalı
@@ -129,25 +139,31 @@ for (const v of search) {
   }
   if (cand.length === 1) {
     const m = cand[0]
-    const kind = isHl ? 'highlight' : (lenMin(v.len) ?? 60) < 45 ? 'part' : 'full'
-    m.videos.push({ id: v.id, kind, title: v.title, len: v.len, published: v.published })
+    m.videos.push({ id: v.id, kind: kindOf(v), title: v.title, len: v.len, published: v.published })
     used.add(v.id)
   } else {
-    extra.push({ id: v.id, kind: (lenMin(v.len) ?? 60) < 15 ? 'highlight' : (lenMin(v.len) ?? 60) < 45 ? 'part' : 'full', title: v.title, len: v.len })
+    extra.push({ id: v.id, kind: kindOf(v), title: v.title, len: v.len })
   }
 }
 // Bir maçın parça videoları varsa API'deki tekil video da bir parçadır
 for (const m of matches) {
-  if (m.videos.some(v => v.kind === 'part')) for (const v of m.videos) if (v.kind === 'full' && (lenMin(v.len) ?? 60) < 45) v.kind = 'part'
+  if (m.videos.some(v => v.kind === 'part')) for (const v of m.videos) if (v.kind === 'full' && (isPartTitle(v.title) || (lenMin(v.len) ?? 60) < 45)) v.kind = 'part'
   m.videos.sort((a, b) => (a.kind === 'highlight' ? -1 : 0) - (b.kind === 'highlight' ? -1 : 0))
 }
 
 // ---- oyuncular
-const cur = raw.club.season
+const cur = raw.club.season ?? { id: null, label: '', rank: null, totalTable: [], stats: {} }
 // Sadece Crew formasıyla oynanan maçlar sayılır (kariyer başka kulüpleri de içerebilir)
 const crewSlugs = new Set(raw.matches.map(m => m.slug.toLowerCase()))
-const mvpCount = {}
-for (const m of raw.matches) if (m.mvp?.club === CLUB && m.mvp.slug) mvpCount[m.mvp.slug] = (mvpCount[m.mvp.slug] ?? 0) + 1
+const mvpCount = {}, mvpNow = {}
+for (const m of raw.matches) if (m.mvp?.club === CLUB && m.mvp.slug) {
+  mvpCount[m.mvp.slug] = (mvpCount[m.mvp.slug] ?? 0) + 1
+  if (m.seasonId === cur.id) mvpNow[m.mvp.slug] = (mvpNow[m.mvp.slug] ?? 0) + 1
+}
+// Hesap slug'ı -> EfendiLig oyuncu kimlikleri (maç kadrolarındaki kimliklerle eşlemek için)
+const idsOf = {}
+for (const [id, sl] of Object.entries(raw.idMap ?? {})) (idsOf[sl] ??= []).push(id)
+const rawBySlug = new Map(raw.matches.map(m => [m.slug.toLowerCase(), m]))
 // ---- ORTAK OYUNCU LİSTESİ: güncel kadro + eski oyuncular, mükerrer hesaplar birleştirilir
 const POS = { K: 'K', S: 'S', OS: 'O', O: 'O', F: 'F' }
 const tokens = n => norm(n).length ? (n ?? '').split(String.fromCharCode(32)).map(norm).filter(Boolean) : []
@@ -165,25 +181,41 @@ for (const a of accounts) {
 const players = people.map(p => {
   const bySeasonMap = new Map(), countedMatch = new Set()
   const tot = { m: 0, g: 0, a: 0, yc: 0, rc: 0, mvp: 0 }
-  let now = { m: 0, g: 0, a: 0, mvp: 0 }, photoPath, elM = 0
+  let now = { m: 0, g: 0, a: 0, mvp: 0 }, photoPath, other = new Set()
+  const log = []
   for (const acc of p.accounts) {
     const c = acc.career ?? {}
     photoPath ??= c.player?.photoUrl
-    elM += c.career?.matches ?? 0
     tot.mvp += mvpCount[acc.slug] ?? 0
+    now.mvp += mvpNow[acc.slug] ?? 0
     for (const se of c.seasons ?? []) {
       const label = short(se.label ?? se.seasonSlug ?? '')
       const line = bySeasonMap.get(label) ?? { label, m: 0, g: 0, a: 0, start: se.year ?? Number(label.slice(0, 4)) }
       for (const r of se.matches ?? []) {
         const key = (r.slug ?? '').toLowerCase()
+        if (r.played && !crewSlugs.has(key)) other.add(key)
         if (!r.played || !crewSlugs.has(key) || countedMatch.has(key)) continue
         countedMatch.add(key)
         line.m++; line.g += r.goals ?? 0; line.a += r.assists ?? 0
+        log.push({ date: rawBySlug.get(key)?.date ?? (r.date ?? '').slice(0, 10), g: r.goals ?? 0, a: r.assists ?? 0, cur: se.seasonId === cur.id })
         tot.yc += r.yellow ?? 0; tot.rc += r.red ?? 0
         if (se.seasonId === cur.id) { now.m++; now.g += r.goals ?? 0; now.a += r.assists ?? 0 }
       }
       bySeasonMap.set(label, line)
     }
+  }
+  // Kariyer satırı olmayan ama ilk 11'de yer aldığı Crew maçları (EfendiLig bazı eski maçlarda satır üretmemiş)
+  const myIds = new Set(p.accounts.flatMap(a => idsOf[a.slug] ?? []))
+  for (const rm of raw.matches) {
+    const key = rm.slug.toLowerCase()
+    if (countedMatch.has(key) || !rm.lineup?.xi?.some(id => myIds.has(id))) continue
+    countedMatch.add(key)
+    const label = short(rm.season)
+    const line = bySeasonMap.get(label) ?? { label, m: 0, g: 0, a: 0, start: Number(label.slice(0, 4)) }
+    line.m++
+    bySeasonMap.set(label, line)
+    log.push({ date: rm.date, g: 0, a: 0, cur: rm.seasonId === cur.id })
+    if (rm.seasonId === cur.id) now.m++
   }
   const bySeason = [...bySeasonMap.values()].filter(l => l.m).sort((x, y) => y.start - x.start).map(({ start, ...l }) => l)
   tot.m = bySeason.reduce((n, l) => n + l.m, 0); tot.g = bySeason.reduce((n, l) => n + l.g, 0); tot.a = bySeason.reduce((n, l) => n + l.a, 0)
@@ -193,7 +225,8 @@ const players = people.map(p => {
     nowClub: p.former ? p.nowClub ?? undefined : undefined,
     short: parts.length > 2 ? parts.slice(-1)[0] : parts[0],
     photoPath, firstYear: bySeason.length ? Number(bySeason.at(-1).label.slice(0, 4)) : undefined, seasons: bySeason.length,
-    otherClubMatches: elM > tot.m ? elM - tot.m : 0,
+    otherClubMatches: other.size,
+    _log: log.sort((x, y) => x.date.localeCompare(y.date)),
     accountSlugs: p.accounts.map(a => a.slug),
     birthday: p.accounts.map(a => raw.birthdays?.[a.slug]).find(Boolean),
     career: tot, current: now, bySeason,
@@ -221,18 +254,20 @@ for (const p of [...raw.players, ...(raw.former ?? [])]) for (const se of p.care
   if (pm.assists && !(m.assisters ??= []).some(x => x.slug === pl.slug)) m.assisters.push({ slug: pl.slug, name: pl.name, n: pm.assists })
 }
 // ---- puan tablosu
-const table = cur.totalTable.map(r => ({ rank: r.rank, name: r.name, code: r.code, played: r.played, points: r.points, gd: r.goalDiff, us: r.clubId === CLUB }))
+const table = (cur.totalTable ?? []).map(r => ({ rank: r.rank, name: r.name, code: r.code, played: r.played, points: r.points, gd: r.goalDiff, us: r.clubId === CLUB }))
 const club = {
   name: raw.club.club.name, founded: raw.club.club.foundedYear, coach: raw.club.club.coach, captains: raw.club.club.captains,
   season: cur.label, rank: cur.rank,
-  stats: { played: cur.stats.played, wins: cur.stats.wins, draws: cur.stats.draws, losses: cur.stats.losses, gf: cur.stats.goalsFor, ga: cur.stats.goalsAgainst, points: cur.stats.points },
+  stats: { played: cur.stats?.played ?? 0, wins: cur.stats?.wins ?? 0, draws: cur.stats?.draws ?? 0, losses: cur.stats?.losses ?? 0, gf: cur.stats?.goalsFor ?? 0, ga: cur.stats?.goalsAgainst ?? 0, points: cur.stats?.points ?? 0 },
   form: (raw.club.form ?? []).map(x => ({ W: 'G', D: 'B', L: 'M' }[x] ?? x)),
 }
 
 // ---- akış (değişiklik motorunun bugünkü çıktısı)
 const feed = []
 const done = matches.filter(m => m.status === 'done').sort((a, b) => b.date.localeCompare(a.date))
-const next = matches.filter(m => m.status !== 'done').sort((a, b) => a.date.localeCompare(b.date))[0]
+const kickoffMs = m => new Date(`${m.date}T${/^\d\d:\d\d$/.test(m.time ?? '') ? m.time : '21:00'}:00+03:00`).getTime()
+const next = matches.filter(m => m.status !== 'done' && kickoffMs(m) > Date.now()).sort((a, b) => kickoffMs(a) - kickoffMs(b))[0]
+const feedDay = done => done[0]?.date ?? TODAY
 const opp = m => (m.us === 'home' ? m.away : m.home)
 const ourS = m => (m.us === 'home' ? m.home : m.away)
 if (next) {
@@ -240,13 +275,13 @@ if (next) {
   const h2h = done.filter(m => opp(m).code === t.code)
   const w = h2h.filter(m => m.result === 'G').length, d = h2h.filter(m => m.result === 'B').length, l = h2h.filter(m => m.result === 'M').length
   feed.push({
-    id: 'pre-' + next.id, kind: 'preview', date: TODAY, matchId: next.id,
+    id: 'pre-' + next.id, kind: 'preview', date: feedDay(done), matchId: next.id,
     title: row?.rank === 1 ? `Lider ${t.name} ${next.us === 'home' ? 'bize geliyor' : 'ile deplasmanda'}` : `Sırada ${t.name} var`,
-    body: `${row ? `${t.name} ${row.played} maçta ${row.points} puan ve ${row.gd > 0 ? '+' : ''}${row.gd} averajla ${row.rank}. sırada. ` : ''}Biz ${us?.points} puanla ${us?.rank}. sıradayız. ${h2h.length ? `Kayıtlı ${h2h.length} karşılaşmada ${w} galibiyet, ${d} beraberlik, ${l} mağlubiyet.` : 'Kayıtlarda aramızda oynanmış maç yok.'}`,
+    body: `${row ? `${t.name} ${row.played} maçta ${row.points} puan ve ${row.gd > 0 ? '+' : ''}${row.gd} averajla ${row.rank}. sırada. ` : ''}${us ? `Biz ${us.points} puanla ${us.rank}. sıradayız. ` : ''}${h2h.length ? `Kayıtlı ${h2h.length} karşılaşmada ${w} galibiyet, ${d} beraberlik, ${l} mağlubiyet.` : 'Kayıtlarda aramızda oynanmış maç yok.'}`,
   })
-  feed.push({ id: 'vote-' + next.id, kind: 'vote', date: TODAY, title: `${t.name} maçı için 11'ini kur`, body: 'Taraftar oylaması açıldı. Maç saatinde kapanır, sonuçlar takıma iletilir.' })
+  feed.push({ id: 'vote-' + next.id, kind: 'vote', date: feedDay(done), title: `${t.name} maçı için 11'ini kur`, body: 'Taraftar oylaması açıldı. Maç saatinde kapanır, sonuçlar takıma iletilir.' })
 }
-for (const m of done.filter(m => m.seasonShort === short(cur.label))) {
+for (const m of done.filter(m => cur.label && m.seasonShort === short(cur.label))) {
   const t = opp(m), o = ourS(m)
   const hl = m.videos.find(v => v.kind === 'highlight')
   if (hl) feed.push({ id: 'hl-' + m.id, kind: 'video', date: hl.published ? new Date(new Date(hl.published).getTime() + 3 * 3600e3).toISOString().slice(0, 10) : addDays(m.date, 2), matchId: m.id, videoId: hl.id, title: `Özet yayında: ${m.home.name} ${m.home.score}–${m.away.score} ${m.away.name}`, body: `${hl.len ? hl.len + ' dakikalık ' : ''}maç özeti EfendiLig kanalına yüklendi ve maç sayfasına eklendi.` })
@@ -258,24 +293,25 @@ for (const m of done.filter(m => m.seasonShort === short(cur.label))) {
   })
 }
 function addDays(d, n) { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10) }
-// kilometre taşları: bu sezon geçilen eşikler
-const lastDate = done[0]?.date ?? TODAY
+// kilometre taşları: bu sezon geçilen eşikler, eşiğin aşıldığı maçın tarihiyle
+const topM = [...players].sort((a, b) => b.career.m - a.career.m)[0]
 for (const p of players) {
   if (!p.current.m) continue
-  for (const T of [25, 50, 75, 100]) if (p.career.m >= T && p.career.m - p.current.m < T) {
-    const top = [...players].sort((a, b) => b.career.m - a.career.m)[0]
-    feed.push({ id: `ms-m-${p.slug}-${T}`, kind: 'milestone', date: lastDate, playerSlug: p.slug, title: `${p.name}: kulüpte ${T}. maç`, body: `Toplam ${p.career.m} maç, ${p.career.g} gol, ${p.career.a} asist.${top.slug === p.slug ? ' Kulübün en çok forma giyen oyuncusu.' : ''}` })
+  let m = 0, g = 0, a = 0, firstGoal = null
+  for (const [i, r] of p._log.entries()) {
+    const pm = m, pg = g, pa = a
+    m++; g += r.g; a += r.a
+    if (r.g > 0 && firstGoal === null) firstGoal = { ...r, n: i + 1 }
+    if (!r.cur) continue
+    for (const T of [25, 50, 75, 100]) if (pm < T && m >= T) feed.push({ id: `ms-m-${p.slug}-${T}`, kind: 'milestone', date: r.date, playerSlug: p.slug, title: `${p.name}: kulüpte ${T}. maç`, body: `Toplam ${p.career.m} maç, ${p.career.g} gol, ${p.career.a} asist.${topM.slug === p.slug ? ' Kulübün en çok forma giyen oyuncusu.' : ''}` })
+    for (const T of [10, 25, 50]) if (pg < T && g >= T) feed.push({ id: `ms-g-${p.slug}-${T}`, kind: 'milestone', date: r.date, playerSlug: p.slug, title: `${p.name} ${T}. golünü attı`, body: `${m} maçta ${g} gol.` })
+    for (const T of [10, 25]) if (pa < T && a >= T) feed.push({ id: `ms-a-${p.slug}-${T}`, kind: 'milestone', date: r.date, playerSlug: p.slug, title: `${p.name} ${T}. asistini yaptı`, body: `${m} maçta ${a} asist.` })
   }
-  for (const T of [10, 25, 50]) if (p.career.g >= T && p.career.g - p.current.g < T) feed.push({ id: `ms-g-${p.slug}-${T}`, kind: 'milestone', date: lastDate, playerSlug: p.slug, title: `${p.name} ${T}. golünü attı`, body: `${p.career.m} maçta ${p.career.g} gol.` })
-  for (const T of [10, 25]) if (p.career.a >= T && p.career.a - p.current.a < T) feed.push({ id: `ms-a-${p.slug}-${T}`, kind: 'milestone', date: lastDate, playerSlug: p.slug, title: `${p.name} ${T}. asistini yaptı`, body: `${p.career.m} maçta ${p.career.a} asist. Kulübün asist listesinde üst sıralarda.` })
-  if (p.current.g > 0 && p.career.g === p.current.g) feed.push({ id: `ms-first-${p.slug}`, kind: 'milestone', date: lastDate, playerSlug: p.slug, title: `${p.name} ilk golünü attı`, body: `EfendiLig'deki ${p.career.m}. maçında ilk golü geldi.` })
+  if (firstGoal?.cur) feed.push({ id: `ms-first-${p.slug}`, kind: 'milestone', date: firstGoal.date, playerSlug: p.slug, title: `${p.name} ilk golünü attı`, body: `1337 formasıyla ${firstGoal.n}. maçında ilk golü geldi.` })
 }
-const [ty, tm, td] = TODAY.split('-').map(Number)
-for (const p of players.filter(p => !p.former && p.birthday?.day === td && p.birthday?.month === tm)) {
-  feed.push({ id: 'bd-' + p.slug + '-' + ty, kind: 'birthday', date: TODAY, playerSlug: p.slug, title: `İyi ki doğdun ${p.name}!`, body: `1337 formasıyla ${p.career.m} maç, ${p.career.g} gol, ${p.career.a} asist. Bugün onun günü.` })
-}
+// Doğum günü kartları sitede, ziyaret günü canlı üretilir (burada üretilirse veri her gün değişir)
 const usRow = table.find(r => r.us)
-if (usRow && done[0]) feed.push({ id: 'tbl-' + done[0].id, kind: 'table', date: done[0].date, title: `${usRow.played}. haftadan sonra ${usRow.rank}. sıradayız`, body: `${usRow.points} puan, averaj ${usRow.gd}. Lider ${table[0].name} ${table[0].points} puanda.` })
+if (usRow && done[0] && table[0]) feed.push({ id: 'tbl-' + done[0].id, kind: 'table', date: done[0].date, title: `${usRow.played}. haftadan sonra ${usRow.rank}. sıradayız`, body: `${usRow.points} puan, averaj ${usRow.gd}. Lider ${table[0].name} ${table[0].points} puanda.` })
 const ORDER = { birthday: -1, preview: 0, vote: 1, video: 2, table: 3, milestone: 4, report: 5, streak: 6 }
 feed.sort((a, b) => b.date.localeCompare(a.date) || ORDER[a.kind] - ORDER[b.kind])
 
@@ -311,6 +347,7 @@ for (const p of players) {
   if (p.photoPath) p.photo = S3 + p.photoPath
   delete p.photoPath
   delete p.accountSlugs
+  delete p._log
 }
 
 const gallery = JSON.parse(readFileSync(here('./gallery/galeri.json'), 'utf8'))
@@ -323,7 +360,7 @@ const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : null
 const out = { updatedAt: prev?.hash === hash ? prev.updatedAt : new Date().toISOString(), hash, ...body }
 if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
-writeFileSync(new URL('./durum-sync.json', OUTDIR), JSON.stringify({ veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
+if (prev?.hash !== hash || !existsSync(new URL('./durum-sync.json', OUTDIR))) writeFileSync(new URL('./durum-sync.json', OUTDIR), JSON.stringify({ veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
 console.log(prev?.hash === hash ? 'Veri değişmedi' : 'Veri güncellendi: ' + hash)
 const vids = matches.reduce((n, m) => n + m.videos.length, 0)
 console.log({ matches: matches.length, withVideo: matches.filter(m => m.videos.length).length, videos: vids, highlights: matches.flatMap(m => m.videos).filter(v => v.kind === 'highlight').length, parts: matches.flatMap(m => m.videos).filter(v => v.kind === 'part').length, extra: extra.length, photos: players.filter(p => p.photo).length, thumbs: [...thumbs.values()].filter(Boolean).length, logos: [...logos.values()].filter(Boolean).length, feed: feed.length, kb: Math.round(JSON.stringify(out).length / 1024) })

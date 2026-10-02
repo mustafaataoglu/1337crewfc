@@ -17,7 +17,8 @@ const walk = d => { for (const f of readdirSync(d)) { const p = join(d, f); stat
 walk(site)
 const h = createHash('sha1')
 for (const f of files.sort()) {
-  if (f.endsWith('surum.txt')) continue
+  // durum-sync.json her çalışmada değişebilir; sürümü sadece gerçek içerik belirlesin
+  if (f.endsWith('surum.txt') || f.endsWith('durum-sync.json')) continue
   h.update(f.slice(site.length).replace(/\\/g, '/'))
   h.update(readFileSync(f))
 }

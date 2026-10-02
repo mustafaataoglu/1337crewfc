@@ -16,7 +16,7 @@ function Board({ title, unit, k, scope, nav, limit }: { title: string; unit: str
         <h3 className="font-display text-[22px] leading-none">{title}</h3>
         <span className="eyebrow !text-[12px]">{scope === 'current' ? 'Bu sezon' : 'Tüm zamanlar'}</span>
       </div>
-      {list.length === 0 ? <p className="px-4 pb-4 text-[14px] text-muted-foreground">Bu sezon henüz kimse yok.</p> : (
+      {list.length === 0 ? <p className="px-4 pb-4 text-[14px] text-muted-foreground">{scope === 'current' ? 'Bu sezon henüz kimse yok.' : 'Henüz kimse yok.'}</p> : (
         <ol>
           {list.map((p, i) => <Row key={p.slug} p={p} i={i} v={p[scope][k] ?? 0} m={p[scope].m} max={max} unit={unit} nav={nav} />)}
         </ol>
@@ -82,7 +82,7 @@ export default function Stats({ nav }: { nav: Nav }) {
           <Board title="En çok maç" unit="maç" k="m" scope={scope} nav={nav} limit={10} />
           <div className="min-w-0 flex flex-col gap-2">
             <Board title="MVP" unit="MVP" k="mvp" scope={scope} nav={nav} limit={10} />
-            <p className="text-[13px] text-muted-foreground px-1">EfendiLig maçın MVP'sini 2026-27 sezonundan itibaren kaydediyor. Önceki sezonlar için MVP bilgisi yok.</p>
+            <p className="text-[13px] text-muted-foreground px-1">MVP seçimi 2026-27 sezonunda başladı.</p>
           </div>
         </div>
       </div>

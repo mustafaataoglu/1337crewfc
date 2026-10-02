@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Lock, X } from 'lucide-react'
 import type { Player, Pos } from '@/types'
-import { squad, fmtDate, upcoming, kickoff, POS_LABEL } from '@/lib/site'
+import { squad, fmtDate, upcoming, played, kickoff, POS_LABEL } from '@/lib/site'
 import { Avatar, SectionTitle } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { hungarian } from '@/lib/assign'
@@ -30,10 +30,19 @@ function autoPick(f: string): (string | null)[] {
 }
 
 type Anchor = { x: number; y: number; g: Pos }
-type Saved = { f: string; xi: (string | null)[]; anchors?: Record<string, Anchor>; sent?: boolean }
+type Saved = { f: string; xi: (string | null)[]; anchors?: Record<string, Anchor>; sent?: boolean; mac?: string }
 const KEY = '1337-vote-v2'
+// Kayıtlı kadroyu doğrula: geçersiz dizilişi varsayılana çevir, kadrodan çıkan oyuncuyu boşalt
 function load(): Saved | null {
-  try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null } catch { return null }
+  try {
+    const r = localStorage.getItem(KEY)
+    if (!r) return null
+    const s = JSON.parse(r) as Saved
+    if (!F[s.f] || !Array.isArray(s.xi) || s.xi.length !== F[s.f].length) return null
+    const inSquad = new Set(squad.map(p => p.slug))
+    s.xi = s.xi.map(x => (x && inSquad.has(x) ? x : null))
+    return s
+  } catch { return null }
 }
 const LINE: Record<Pos, number> = { K: 0, S: 1, O: 2, F: 3 }
 // Bir oyuncuyu "çapa" noktasından (kullanıcının onu koyduğu yer) yeni slota taşımanın maliyeti
@@ -53,8 +62,15 @@ export default function Vote() {
   // Her oyuncunun kullanıcının onu yerleştirdiği nokta. Taktik değişse de korunur,
   // böylece dizilişler arasında gidip gelince kadro kaymaz ve eski haline döner.
   const [anchors, setAnchors] = useState<Record<string, Anchor>>(() => anchorsOf(saved?.f ?? '4-2-3-1', saved?.xi ?? autoPick('4-2-3-1'), saved?.anchors))
-  const [sent, setSent] = useState(!!saved?.sent)
+  // "Oy verildi" bilgisi maça özel: önceki maça verilen oy sıradaki maçı kilitlemesin
+  const [sent, setSent] = useState(!!saved?.sent && !!next && saved?.mac === next.id)
   const [pick, setPick] = useState<number | null>(null)
+  const pickerRef = useRef<HTMLDivElement>(null)
+  // Telefonda oyuncu listesi sahanın altında açılır: görünür olsun diye oraya kaydır
+  useEffect(() => { if (pick !== null && innerWidth < 1024) pickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [pick])
+  // Maç saati geldiğinde açık sayfada da oylama kapansın
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t) }, [])
   const bySlug = (s: string | null) => (s ? squad.find(p => p.slug === s) : undefined)
   const filled = xi.filter(Boolean).length
 
@@ -71,8 +87,8 @@ export default function Vote() {
   }
   // Kurulan kadro her değişiklikte bu tarayıcıya kaydedilir; sayfa yenilenince kaybolmaz.
   useEffect(() => {
-    try { localStorage.setItem(KEY, JSON.stringify({ f, xi, anchors, sent })) } catch { /* depolama kapalı */ }
-  }, [f, xi, anchors, sent])
+    try { localStorage.setItem(KEY, JSON.stringify({ f, xi, anchors, sent, mac: next?.id })) } catch { /* depolama kapalı */ }
+  }, [f, xi, anchors, sent, next?.id])
 
   const choose = (slug: string) => {
     if (pick === null) return
@@ -90,7 +106,7 @@ export default function Vote() {
   }
   const [sending, setSending] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const closed = next ? Date.now() >= kickoff(next).getTime() : true
+  const closed = next ? now >= kickoff(next).getTime() : true
   // Oy sunucuya gider: cihaz başına maç başına tek oy (yeniden gönderilirse günceller)
   const send = async () => {
     if (!next) return
@@ -153,10 +169,11 @@ export default function Vote() {
       </div>
 
       <div className="min-w-0">
+        <div ref={pickerRef} className="scroll-mt-20" />
         {pick !== null ? (
           <Picker slot={F[f][pick]} current={xi} onChoose={choose} onClose={() => setPick(null)} />
         ) : (
-          <TeamPanel f={f} mac={next?.id} />
+          <TeamPanel f={f} />
         )}
       </div>
     </div>
@@ -208,19 +225,24 @@ function deviceId() {
 type Sonuc = { toplam: number; dizilisler: Record<string, number>; oyuncular: Record<string, number>; mevkiler: Record<string, Record<string, number>> }
 
 // Takım paneli: sonuçlar yalnızca panel anahtarıyla görünür (anahtar kurulumda bir kez gösterilir)
-function TeamPanel({ f, mac }: { f: string; mac?: string }) {
+function TeamPanel({ f }: { f: string }) {
+  // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin
+  const options = [...(upcoming[0] ? [upcoming[0]] : []), ...played.slice(0, 3)]
+  const [mac, setMac] = useState(options[0]?.id)
   const [key, setKey] = useState(() => { try { return localStorage.getItem('1337-panel') ?? '' } catch { return '' } })
   const [input, setInput] = useState('')
   const [res, setRes] = useState<Sonuc | null>(null)
   const [err, setErr] = useState<string | null>(null)
   useEffect(() => {
     if (!key || !mac) return
-    fetch(`api/oy.php?mac=${encodeURIComponent(mac)}&anahtar=${encodeURIComponent(key)}`)
+    fetch(`api/oy.php?mac=${encodeURIComponent(mac)}`, { headers: { 'X-Panel-Anahtar': key } })
       .then(r => r.json())
       .then(j => { if (j.ok) { setRes(j.sonuc); setErr(null) } else { setErr(j.hata ?? 'Anahtar geçersiz'); setRes(null) } })
       .catch(() => setErr('Sunucuya ulaşılamadı'))
   }, [key, mac])
-  const save = () => { try { localStorage.setItem('1337-panel', input.trim()) } catch { /* depolama kapalı */ } setKey(input.trim()) }
+  const save = (e?: React.FormEvent) => { e?.preventDefault(); setKey(input.trim()) }
+  // Anahtar ancak sunucu kabul edince hatırlanır
+  useEffect(() => { if (res && key) { try { localStorage.setItem('1337-panel', key) } catch { /* depolama kapalı */ } } }, [res, key])
   const top = (o: Record<string, number>) => Object.entries(o).sort((a, b) => b[1] - a[1])
   return (
     <section className="rounded-xl border bg-card p-5">
@@ -228,17 +250,21 @@ function TeamPanel({ f, mac }: { f: string; mac?: string }) {
       <h3 className="font-display text-[24px] mt-1">Taraftar ne diyor?</h3>
       {!res ? (
         <div className="mt-3">
-          <p className="text-[14px] text-muted-foreground">Sonuçları görmek için panel anahtarını gir. Anahtar site kurulurken bir kez gösterilir; takım içinde paylaşın.</p>
-          <div className="flex gap-2 mt-3">
+          <p className="text-[14px] text-muted-foreground">Sonuçları görmek için takım paneli anahtarını gir.</p>
+          <form onSubmit={save} className="flex gap-2 mt-3">
             <label htmlFor="panel-anahtar" className="sr-only">Panel anahtarı</label>
             <input id="panel-anahtar" value={input} onChange={e => setInput(e.target.value)} placeholder="Panel anahtarı" className="flex-1 min-w-0 h-11 px-3 rounded-lg border bg-background" />
-            <button onClick={save} className="px-4 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px]">Aç</button>
-          </div>
+            <button type="submit" className="px-4 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px]">Aç</button>
+          </form>
           {err && key && <p className="text-[14px] text-loss mt-2">{err}</p>}
         </div>
       ) : (
         <div className="mt-3">
-          <p className="text-[14px] num"><b>{res.toplam}</b> oy</p>
+          <label htmlFor="panel-mac" className="sr-only">Maç</label>
+          <select id="panel-mac" value={mac} onChange={e => setMac(e.target.value)} className="w-full h-10 px-2 rounded-lg border bg-background text-[14px]">
+            {options.map(m => <option key={m.id} value={m.id}>{m.home.name} – {m.away.name} · {fmtDate(m.date)}</option>)}
+          </select>
+          <p className="text-[14px] num mt-3"><b>{res.toplam}</b> oy</p>
           <div className="mt-3 flex flex-col gap-2.5">
             {top(res.dizilisler).map(([k, n]) => (
               <div key={k}>

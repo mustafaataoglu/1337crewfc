@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Home as HomeIcon, CalendarDays, Users, BarChart3, PlaySquare, Vote as VoteIcon, ListOrdered, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Crest } from '@/components/bits'
-import { data, fmtDate } from '@/lib/site'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import Home from '@/pages/Home'
 import Fixtures from '@/pages/Fixtures'
 import MatchPage from '@/pages/MatchPage'
@@ -34,23 +34,29 @@ const TABS = [
 
 const TOP = TABS.map(t => t.page as string)
 
+// Adresler: #fikstur, #mac/<maç>, #oyuncu/<oyuncu> — paylaşılabilir, geri tuşu çalışır
 function fromHash(): Route {
-  const h = location.hash.replace('#', '')
+  const h = decodeURIComponent(location.hash.replace(/^#/, ''))
+  if (h.startsWith('mac/')) return { page: 'mac', id: h.slice(4) }
+  if (h.startsWith('oyuncu/')) return { page: 'oyuncu', slug: h.slice(7) }
   return TOP.includes(h) ? ({ page: h } as Route) : { page: 'home' }
 }
+const toHash = (r: Route) =>
+  r.page === 'home' ? '' : r.page === 'mac' ? `#mac/${encodeURIComponent(r.id)}` : r.page === 'oyuncu' ? `#oyuncu/${encodeURIComponent(r.slug)}` : `#${r.page}`
 
 export default function App() {
   const [route, setRoute] = useState<Route>(fromHash)
   const go = (r: Route) => {
     setRoute(r)
-    if (r.page !== 'mac' && r.page !== 'oyuncu') history.replaceState(null, '', r.page === 'home' ? location.pathname : '#' + r.page)
+    history.pushState(null, '', toHash(r) || location.pathname)
     window.scrollTo({ top: 0 })
   }
   const nav: Nav = { go, openMatch: id => go({ page: 'mac', id }), openPlayer: slug => go({ page: 'oyuncu', slug }) }
   useEffect(() => {
-    const f = () => setRoute(fromHash())
+    const f = () => { setRoute(fromHash()); window.scrollTo({ top: 0 }) }
+    addEventListener('popstate', f)
     addEventListener('hashchange', f)
-    return () => removeEventListener('hashchange', f)
+    return () => { removeEventListener('popstate', f); removeEventListener('hashchange', f) }
   }, [])
 
   const active = route.page === 'mac' ? 'fikstur' : route.page === 'oyuncu' ? 'kadro' : route.page
@@ -65,7 +71,7 @@ export default function App() {
           </button>
           <nav className="hidden md:flex items-center gap-1 ml-auto" aria-label="Ana menü">
             {TABS.map(t => (
-              <button key={t.page} onClick={() => go({ page: t.page } as Route)}
+              <button key={t.page} onClick={() => go({ page: t.page } as Route)} aria-current={active === t.page ? 'page' : undefined}
                 className={cn('px-2.5 py-1.5 rounded-md font-data font-semibold uppercase tracking-wider text-[14px] transition-colors',
                   active === t.page ? 'bg-club text-clubink' : 'text-[#f5f2e6]/80 hover:text-[#f5f2e6] hover:bg-white/10')}>
                 {t.label}
@@ -76,6 +82,7 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 pt-5">
+        <ErrorBoundary resetKey={JSON.stringify(route)}>
         {route.page === 'home' && <Home nav={nav} />}
         {route.page === 'fikstur' && <Fixtures nav={nav} />}
         {route.page === 'mac' && <MatchPage id={route.id} nav={nav} />}
@@ -86,8 +93,9 @@ export default function App() {
         {route.page === 'video' && <Videos nav={nav} />}
         {route.page === 'oyla' && <Vote />}
         {route.page === 'kulup' && <Club />}
+        </ErrorBoundary>
         <footer className="mt-14 pt-5 border-t text-[13px] text-muted-foreground flex flex-wrap gap-x-6 gap-y-1">
-          <span>Veriler EfendiLig ve YouTube'dan otomatik güncellenir · son değişiklik {fmtDate(data.updatedAt)} {new Date(data.updatedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+          <span>© 1337 Crew FC · 2007'den beri</span>
           <a className="underline underline-offset-2" href="https://efendilig.com/takim/1337-Crew-FC" target="_blank" rel="noreferrer">Veri: EfendiLig</a>
           <a className="underline underline-offset-2" href="https://www.youtube.com/@EfendiLig" target="_blank" rel="noreferrer">YouTube: @EfendiLig</a>
         </footer>

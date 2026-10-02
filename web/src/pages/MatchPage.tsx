@@ -7,7 +7,7 @@ import { Avatar, Crest, JerseyBadge, MatchRow, ResultChip, SectionTitle, TeamBad
 function report(m: Match) {
   const o = ours(m), t = theirs(m)
   const where = m.us === 'home' ? 'evinde' : `${t.name} deplasmanında`
-  const verb = m.result === 'G' ? 'galip geldi' : m.result === 'B' ? 'berabere kaldı' : 'mağlup oldu'
+  const verb = m.result === 'G' ? 'galip geldi' : m.result === 'B' ? 'berabere kaldı' : m.result === 'M' ? 'mağlup oldu' : 'oynadı'
   if (m.forfeit) return `${m.compLabel} maçı hükmen ${o.score}–${t.score} ${m.result === 'G' ? '1337 Crew FC lehine' : `${t.name} lehine`} sonuçlandı. Maç oynanmadığı için kadro ve video yok.`
   const parts = [`1337 Crew FC, ${m.compLabel}${m.week ? ` ${m.week}. hafta` : ''} maçında ${where} ${t.name} karşısında ${o.score}–${t.score} ${verb}.`]
   if (m.scorers?.length) parts.push(`Goller: ${m.scorers.map(x => x.name + (x.n > 1 ? ` (${x.n})` : '')).join(', ')}.`)
@@ -54,13 +54,12 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
           <section className="mt-6">
             <SectionTitle>Maç raporu</SectionTitle>
             <p className="text-[17px] leading-relaxed max-w-[62ch]">{report(m)}</p>
-            <p className="text-[13px] text-muted-foreground mt-2">EfendiLig maç kaydından otomatik yazıldı.</p>
           </section>
           <section className="mt-8">
             <SectionTitle>Videolar</SectionTitle>
             {m.videos.length ? (
               <div className="grid sm:grid-cols-2 gap-4">{m.videos.map(v => <VideoCard key={v.id} v={v} sub={v.kind === 'highlight' ? 'Maç özeti' : v.kind === 'part' ? 'Maçın bir bölümü' : 'Maçın tamamı'} />)}</div>
-            ) : <p className="text-muted-foreground">{m.forfeit ? 'Hükmen sonuçlanan maçın videosu yok.' : 'Bu maçın videosu YouTube kanalında bulunamadı. Yüklenirse buraya kendiliğinden eklenecek.'}</p>}
+            ) : <p className="text-muted-foreground">{m.forfeit ? 'Hükmen sonuçlanan maçın videosu yok.' : 'Bu maçın videosu henüz yok.'}</p>}
           </section>
         </>
       ) : (
@@ -84,7 +83,7 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
           <div className="grid sm:grid-cols-3 gap-3">
             <Box label="Rakibin sırası" value={oppRow ? `${oppRow.rank}.` : '–'} sub={oppRow ? `${oppRow.points} puan · averaj ${oppRow.gd > 0 ? '+' : ''}${oppRow.gd}` : ''} />
             <Box label="Bizim sıramız" value={usRow ? `${usRow.rank}.` : '–'} sub={usRow ? `${usRow.points} puan · averaj ${usRow.gd > 0 ? '+' : ''}${usRow.gd}` : ''} />
-            <Box label="Aramızdaki maçlar" value={h2h.length ? `${hw}G ${hd}B ${hl}M` : 'İlk maç'} sub={h2h.length ? `${h2h.length} maç, kayıtlı veriden` : 'Kayıtlarda eşleşme yok'} />
+            <Box label="Aramızdaki maçlar" value={h2h.length ? `${hw}G ${hd}B ${hl}M` : 'İlk maç'} sub={h2h.length ? `${h2h.length} maç` : 'Daha önce karşılaşmadık'} />
           </div>
         </section>
         </>
@@ -95,7 +94,6 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
           <SectionTitle>1337 kadrosu</SectionTitle>
           <Lineup title="İlk 11" slugs={m.lineup.xi} m={m} nav={nav} />
           {m.lineup.subs.length > 0 && <Lineup title="Yedekler" slugs={m.lineup.subs} m={m} nav={nav} />}
-          <p className="text-[13px] text-muted-foreground mt-2">Kadro EfendiLig maç kaydından gelir.</p>
         </section>
       )}
 

@@ -78,7 +78,7 @@ for (const s of seasons) {
 }
 
 // 2) Güncel kadro kariyerleri: değişiklikte tazele
-for (const p of club.squad) {
+for (const p of club.squad ?? []) {
   const c = await get(`/players/${p.slug}/career`, { fresh: changed })
   out.players.push({ slug: p.slug, name: p.name, no: p.jerseyNumber, pos: p.position?.code, captain: !!p.captain, career: c })
 }
@@ -86,9 +86,9 @@ for (const p of club.squad) {
 // 3) Eski oyuncular: maç kadrolarında Crew için yer alıp güncel kadroda olmayanlar
 const idx = await get('/search/index', { fresh: FULL })
 const slugOf = new Map((idx?.players ?? []).map(p => [p.id, p]))
-const current = new Set(club.squad.map(p => p.playerId))
+const current = new Set((club.squad ?? []).map(p => p.playerId))
 const seen = new Set(out.matches.flatMap(m => m.lineup ? [...m.lineup.xi, ...m.lineup.subs] : []))
-out.idMap = Object.fromEntries([...club.squad.map(p => [p.playerId, p.slug]), ...[...seen].filter(id => slugOf.has(id)).map(id => [id, slugOf.get(id).slug])])
+out.idMap = Object.fromEntries([...(club.squad ?? []).map(p => [p.playerId, p.slug]), ...[...seen].filter(id => slugOf.has(id)).map(id => [id, slugOf.get(id).slug])])
 out.former = []
 for (const id of seen) {
   if (current.has(id)) continue
@@ -106,7 +106,8 @@ for (const p of [...out.players, ...out.former]) {
 }
 
 // 5) YouTube: RSS (son 15 video) her seferinde; birikimli liste cache/yt.json'da
-const YT = here('./cache/yt.json')
+// Birikimli video listesi depoda kalıcı tutulur (önbellek silinse de kaybolmaz)
+const YT = here('./youtube.json')
 const yt = existsSync(YT) ? JSON.parse(readFileSync(YT, 'utf8')) : (existsSync(here('./ytsearch.json')) ? JSON.parse(readFileSync(here('./ytsearch.json'), 'utf8')) : [])
 try {
   const x = await (await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL}`)).text()
@@ -127,6 +128,7 @@ writeFileSync(YT, JSON.stringify(yt, null, 1))
 out.youtube = yt
 
 writeFileSync(here('./backfill.json'), JSON.stringify(out))
-writeFileSync(STATE_FILE, JSON.stringify({ sig, lastFull: FULL ? Date.now() : state.lastFull, lastRun: Date.now() }))
+// Bu çalışmada istek hatası olduysa imzayı kaydetme: bir sonraki çalışma ayrıntıları yeniden tazelesin
+writeFileSync(STATE_FILE, JSON.stringify({ sig: stats.hatalar.length ? state.sig : sig, lastFull: FULL && !stats.hatalar.length ? Date.now() : state.lastFull, lastRun: Date.now() }))
 writeFileSync(here('./sync-stats.json'), JSON.stringify({ ...stats, degisiklik: changed, tam: FULL }))
 console.log('maç', out.matches.length, 'oyuncu', out.players.length, 'eski', out.former.length, 'istek', stats.istek, 'önbellek', stats.onbellek, 'hata', stats.hatalar.length)

@@ -11,8 +11,8 @@ export default function Fixtures({ nav }: { nav: Nav }) {
   const list = data.matches
     .filter(m => m.seasonShort === season)
     .filter(m => comp === 'all' || (comp === 'league' ? m.comp === 'league' : m.comp !== 'league'))
-  const next = list.filter(m => m.status !== 'done').sort((a, b) => a.date.localeCompare(b.date))
-  const done = list.filter(m => m.status === 'done').sort((a, b) => b.date.localeCompare(a.date))
+  const next = list.filter(m => m.status !== 'done').sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+  const done = list.filter(m => m.status === 'done').sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time))
   const w = done.filter(m => m.result === 'G').length, d = done.filter(m => m.result === 'B').length, l = done.filter(m => m.result === 'M').length
 
   return (

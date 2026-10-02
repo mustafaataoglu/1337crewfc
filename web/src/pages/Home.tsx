@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, Cake, Flag, Film, Medal, Sparkles, TrendingUp, Vote as VoteIcon, FileText } from 'lucide-react'
 import type { Nav } from '@/App'
 import type { FeedItem } from '@/types'
-import { data, fmtDate, kickoff, upcoming, played, playerBySlug, yt, upcomingBirthdays, bdayText } from '@/lib/site'
+import { data, fmtDate, kickoff, upcoming, played, playerBySlug, yt, upcomingBirthdays, bdayText, todayStr } from '@/lib/site'
 import { Crest, ResultChip, SectionTitle, TeamBadge, Avatar, JerseyBadge, kitNote } from '@/components/bits'
 import { Leaders } from '@/pages/Stats'
 
@@ -29,11 +29,11 @@ export default function Home({ nav }: { nav: Nav }) {
   const last = played[0]
   const c = data.club
   const bdays = upcomingBirthdays(5)
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const today = todayStr()
   // Doğum günü kartı sitenin açıldığı gün canlı üretilir (statik akıştaki kartlar atlanır)
   const feed: FeedItem[] = [
-    ...bdays.filter(b => b.days === 0).map(({ p }) => ({ id: 'bd-' + p.slug, kind: 'birthday' as const, date: todayStr, playerSlug: p.slug, title: `İyi ki doğdun ${p.name}!`, body: `1337 formasıyla ${p.career.m} maç, ${p.career.g} gol, ${p.career.a} asist. Bugün onun günü.` })),
-    ...data.feed.filter(f => f.kind !== 'birthday'),
+    ...bdays.filter(b => b.days === 0).map(({ p }) => ({ id: 'bd-' + p.slug, kind: 'birthday' as const, date: today, playerSlug: p.slug, title: `İyi ki doğdun ${p.name}!`, body: `1337 formasıyla ${p.career.m} maç, ${p.career.g} gol, ${p.career.a} asist. Bugün onun günü.` })),
+    ...(data.feed ?? []).filter(f => f.kind !== 'birthday' && ICON[f.kind]),
   ]
   const around = data.table.filter(r => Math.abs(r.rank - c.rank) <= 2 || r.rank === 1)
 
@@ -64,7 +64,8 @@ export default function Home({ nav }: { nav: Nav }) {
                 </div>
               </div>
               {kitNote(next) && <p className="text-center font-semibold text-[15px] -mt-1">{kitNote(next)}</p>}
-              {cd && (
+              {cd && cd.d + cd.h + cd.m + cd.s === 0 && <p className="text-center font-display text-[26px]">Maç başladı</p>}
+              {cd && cd.d + cd.h + cd.m + cd.s > 0 && (
                 <div className="flex justify-center gap-5 font-data font-bold uppercase text-[12px] tracking-wider" aria-label="Maça kalan süre">
                   {([['gün', cd.d], ['saat', cd.h], ['dk', cd.m], ['sn', cd.s]] as const).map(([l, v]) => (
                     <span key={l} className="flex flex-col items-center"><b className="font-display font-normal text-[34px] leading-none num tracking-normal">{String(v).padStart(2, '0')}</b>{l}</span>
@@ -81,7 +82,6 @@ export default function Home({ nav }: { nav: Nav }) {
 
         <section>
           <SectionTitle>Akış</SectionTitle>
-          <p className="text-[14px] text-muted-foreground -mt-1 mb-3">Bu kartların hiçbirini kimse yazmadı. Site EfendiLig ve YouTube'daki her değişikliği yakalayıp kendisi üretti.</p>
           <ol className="flex flex-col gap-3">
             {feed.map(f => <FeedCard key={f.id} f={f} nav={nav} />)}
           </ol>
@@ -121,7 +121,7 @@ export default function Home({ nav }: { nav: Nav }) {
           </table>
           <div className="flex items-center justify-between mt-3 pt-3 border-t">
             <span className="text-[13px] text-muted-foreground">Form</span>
-            <span className="flex gap-1">{c.form.map((r, i) => <ResultChip key={i} r={r} />)}</span>
+            <span className="flex gap-1">{(c.form ?? []).map((r, i) => <ResultChip key={i} r={r} />)}</span>
           </div>
         </section>
 
