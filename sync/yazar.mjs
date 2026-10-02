@@ -23,6 +23,8 @@ const ESKI_EN_FAZLA = 2 // bir turda en fazla kaç eski maç DENENİR (başarıl
 const EN_FAZLA_ISTEK = 20 // bir turdaki toplam HTTP isteği (tekrar denemeler dahil)
 const RED_SINIR = 3 // bir yazı art arda bu kadar tur reddedilirse...
 const RED_BEKLE = 6 * 3600e3 // ...bu kadar süre denenmez (bilgisi değişirse hemen denenir)
+const SURE = 5 * 60e3 // yazarın bir turda harcayabileceği en uzun süre (sağlayıcılar cevap vermezse tur uzamasın)
+const BASLA = Date.now()
 
 export const yazilar = existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : {}
 delete yazilar._red // eski sürümde sayaç burada tutuluyordu
@@ -36,6 +38,9 @@ const ozet = o => createHash('sha1').update(JSON.stringify(o)).digest('hex').sli
 const AYLAR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 const GUNLER = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']
 const gunAdi = tarih => { const [y, m, d] = tarih.split('-').map(Number); return GUNLER[new Date(Date.UTC(y, m - 1, d)).getUTCDay()] }
+const tarihYazi = tarih => { const [y, m, d] = tarih.split('-').map(Number); return `${d} ${AYLAR[m - 1]} ${y}` }
+/** Bilgideki tarihten [ay, gün]; iki biçim de okunur */
+const tarihParca = t => { const iso = t.match(/^(\d{4})-(\d{2})-(\d{2})$/); if (iso) return [Number(iso[2]), Number(iso[3])]; const y = t.match(/^(\d{1,2})\s+(\S+)/); return y ? [AYLAR.findIndex(a => norm(a) === norm(y[2])) + 1, Number(y[1])] : [0, 0] }
 /** Cümlelere böl */
 const cumleler = metin => metin.split(/(?<=[.!?…])\s+/).map(s => s.trim()).filter(Boolean)
 /** Kelimelere böl: boşluk, noktalama, tırnak, tire ve eğik çizgide; her kelimenin kesme işaretinden önceki kökü */
@@ -146,69 +151,114 @@ function adVar(t, ad) {
 const buMac = c => c.split(/(?<!\p{L})(?:ardından|sonrası|sonra|ertesinde)(?!\p{L})/iu).at(-1)
 /** Önceki bir maçtan söz eden cümle (maç önünde son maç bilgisi verilir; o maçın sahası bu maçınkiyle karışmasın) */
 const oncekiMac = c => /(?<!\p{L})(son|önceki|geçen|bir\s+önceki)\s+(maç|hafta|karşılaşma|mücadele)/iu.test(c)
-// 1337 cümlenin öznesi mi? "1337 Crew FC'yi/'ye/'nin" özne değildir
-const ozne1337 = /1337(?!(?:\s*Crew\s*FC)?['’])/i
 const ONE = String.raw`1337(?:\s*Crew\s*FC)?`
 const SAHIP_1337 = new RegExp(`${ONE}['’](n[iı]n|in)\\s+(kendi\\s+|iç\\s+)?(sahas|evi|ev\\s+sahipliğ)`, 'i')
 const kelimeler = c => parcala(c).map(w => ({ ham: w, n: norm(kok(w)), ekli: /['’]/.test(w) }))
-/** Rakip adının (FC/SK gibi genel ekler olmadan) cümlede geçtiği yer; yoksa -1 */
-function rakipYeri(ws, kisa) {
-  if (!kisa.length) return -1
-  return ws.findIndex((_, i) => kisa.every((p, j) => ws[i + j]?.n === p))
+const kacir = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// Takımın ardından gelince takımı özne olmaktan çıkaran kelimeler ("1337 Crew FC karşısında", "Baston Villa ile")
+const TUMLEC = /^(karşısında|karşısına|karşısındaki|karşı|ile|deplasmanında|deplasmanına|deplasmanından|önünde|tarafından|maçında|maçının|karşılaşmasında)$/i
+/**
+ * Takımın metindeki anılışları: { bas, son, ek, sonraki, ozne, tamlayan }.
+ * Tam ad ya da FC/SK gibi genel ekler olmadan; "1337 Crew FC" için tek başına "1337" de sayılır.
+ */
+function takimAnis(c, ad) {
+  const parca = ad.split(/[\s\-–—\/]+/).filter(Boolean)
+  const desenler = [parca, parca.filter(x => !GENEL.has(norm(x)))]
+  if (/^1337/.test(ad)) desenler.push(['1337'])
+  const out = []
+  for (const p of desenler) {
+    if (!p.length) continue
+    const re = new RegExp(`(?<![\\p{L}\\d])${p.map(kacir).join('[\\s\\-–—/]+')}(?:['’](\\p{L}+))?(?![\\p{L}\\d])`, 'giu')
+    for (const mt of c.matchAll(re)) {
+      if (out.some(o => mt.index >= o.bas && mt.index < o.son)) continue
+      const son = mt.index + mt[0].length, ek = (mt[1] ?? '').toLocaleLowerCase('tr')
+      const sonraki = (c.slice(son).match(/^\s*,?\s*(\p{L}+)/u)?.[1] ?? '')
+      out.push({ bas: mt.index, son, ek, sonraki, ozne: !ek && !TUMLEC.test(sonraki), tamlayan: /^n?[ıiuü]n$/.test(ek) })
+    }
+  }
+  return out.sort((a, b) => a.bas - b.bas)
 }
+// Yer sözünün ardından ortaç + rakip geliyorsa söz rakibi niteler: "kendi sahasında oynayan Baston Villa"
+const ORTAC = /^\s*(\p{L}+(?:yan|yen|an|en|dığı|diği|duğu|düğü|tığı|tiği))\s+/iu
+const rakibeBagli = (sonra, rakipAd) => { const o = sonra.match(ORTAC); return !!o && takimAnis(sonra.slice(o[0].length), rakipAd).some(a => a.bas === 0) }
+const BIRINCI_YER = /(kendi\s+sahas\p{L}*|iç\s+saha\p{L}*|(?<!\p{L})sahas[ıi]nda(?!\p{L})|(?<!\p{L})evinde(?!\p{L})|(taraftar|seyirci)\p{L}*\s+önünde)/iu
+const AGIRLADI = /(ağırla(dı|yacak|yor|r|mış)|konuk\s+e(tti|decek|diyor|der|miş)|misafir\s+e(tti|decek|diyor|der)|ev\s+sahipliği\s+yap\p{L}*)(?!\p{L})/iu
+const pencereAl = (c, bas) => c.slice(bas).split(/;|\s(?:ve|ise|ancak|fakat|ama|oysa)\s|(?<=\p{L}ken)(?!\p{L})/iu)[0].slice(0, 110)
 
-/** Saha yanlış mı? Deplasman maçında 1337'yi ev sahibi, iç saha maçında deplasmanda gösteren cümle */
-function sahaYanlis(t, m) {
-  const { kisa } = takimParcalari(m.us === 'home' ? m.away.name : m.home.name)
+/** Saha yanlış mı? Deplasman maçında 1337'yi ev sahibi, iç saha maçında deplasmanda gösteren cümle. Belirsizse yanlış sayılmaz. */
+function sahaYanlis(t, m, oncekiRakip = null) {
+  const rakipAd = m.us === 'home' ? m.away.name : m.home.name
   for (const c0 of cumleler(t)) {
     if (oncekiMac(c0) && !/(ardından|sonra)/i.test(c0)) continue
     const c = buMac(c0)
-    const ws = kelimeler(c)
-    const r = rakipYeri(ws, kisa)
-    const rakipOzne = r >= 0 && !ws[r + kisa.length - 1].ekli
-    const sonraki = r >= 0 ? ws.slice(r + kisa.length, r + kisa.length + 10).map(x => x.ham).join(' ') : ''
-    const i = c.search(ozne1337)
-    // 1337 özneyse, ilk bağlaca kadar olan kısım
-    const pencere = i >= 0 ? c.slice(i).split(/;|\s(?:ve|ise|ancak|fakat|ama)\s/i)[0].slice(0, 100) : ''
+    // önceki maçın rakibi geçen cümlede ("Baston Villa'ya yenildiği maçı geride bırakıp…") yalnızca açık kalıplara bakılır
+    const oncekiVar = !!oncekiRakip && takimAnis(c, oncekiRakip).length > 0
+    const biz = takimAnis(c, '1337 Crew FC').filter(a => a.ozne)
+    const rakip = takimAnis(c, rakipAd)
+    const basta = rakip.find(a => a.bas <= c.search(/\S/) + 1 && a.ozne) // cümle rakiple başlıyor, rakip özne
     if (m.us === 'away') {
       if (new RegExp(`ev\\s+sahibi\\s+${ONE}`, 'i').test(c) || SAHIP_1337.test(c)) return true
       if (new RegExp(`${ONE},?\\s+(ev\\s+sahibi\\s+(olarak|olduğu|olacağı|konumunda|sıfatıyla)|ev\\s+sahipliği\\s+yap)`, 'i').test(c)) return true
-      if (pencere) {
-        const yer = pencere.search(/(kendi\s+sahas|iç\s+saha|(?<!\p{L})sahas[ıi]nda(?!\p{L})|(?<!\p{L})evinde(?!\p{L})|ağırla|konuk\s+e[dt]|misafir\s+e[dt])/iu)
-        if (yer >= 0) {
-          const once = pencere.slice(0, yer)
-          // "1337 Crew FC, deplasmanda Bordreaux JB'nin sahasında": sahanın sahibi rakip ya da 1337 açıkça deplasmanda
-          // (yalnızca tamlayan eki: "Bordreaux JB'nin sahasında"; "Bordreaux JB'yi ağırladı" yanlıştır)
-          const rakipSahibi = kelimeler(once).some(x => /['’]n?[ıiuü]n$/i.test(x.ham) && kisa.includes(x.n)) || /(rakib[ıi]n[ıi]n|ev\s+sahibi|deplasman|konuk\s+ol|konuğu)/i.test(once)
-          if (!rakipSahibi) return true
+      if (!oncekiVar) for (const a of biz) {
+        const p = pencereAl(c, a.son)
+        const y = p.match(BIRINCI_YER)
+        if (y) {
+          const once = p.slice(0, y.index), sonra = p.slice(y.index + y[0].length)
+          const rakipSahibi = takimAnis(once, rakipAd).some(x => x.tamlayan) || /(rakib\p{L}*n[ıi]n|ev\s+sahibi|deplasman|konuk\s+ol|konuğu)/iu.test(once)
+          if (!rakipSahibi && !rakibeBagli(sonra, rakipAd)) return true
         }
+        if (AGIRLADI.test(p)) return true
       }
-      // rakip özne olup deplasmandaysa ya da 1337'ye konuk oluyorsa
-      if (rakipOzne && /^,?\s*(deplasmanda|1337[^.]{0,20}(konuğu|konuk\s+ol|misafiri))/i.test(sonraki)) return true
+      if (basta && /^\s*,?\s*deplasmanda(?!\p{L})/iu.test(c.slice(basta.son)) && !rakibeBagli(c.slice(basta.son).replace(/^\s*,?\s*deplasmanda/i, ''), '1337 Crew FC')) return true
     } else {
-      if (pencere && /((?<!\p{L})deplasmanda(?!\p{L})|deplasmana\s+(çık|gid)|konuğu\s+ol|konuk\s+ol|misafiri\s+ol)/iu.test(pencere) && !/deplasmanda\s+(ağırla|konuk\s+e[dt])/i.test(pencere)) return true
-      if (r >= 0 && /ev\s+sahibi\s*$/i.test(ws.slice(0, r).map(x => x.ham).join(' '))) return true // "ev sahibi Bordreaux JB"
-      if (rakipOzne && /(kendi\s+sahas|(?<!\p{L})sahas[ıi]nda(?!\p{L})|(?<!\p{L})evinde(?!\p{L})|ağırla|konuk\s+e[dt]|ev\s+sahipliği)/iu.test(sonraki) && !SAHIP_1337.test(sonraki)) return true
+      if (new RegExp(`ev\\s+sahibi\\s+${rakipAd.split(/[\s\-–—\/]+/).map(kacir).join('[\\s\\-–—/]+')}`, 'iu').test(c)) return true
+      if (rakip.some(a => a.tamlayan && /^\s*(kendi\s+|iç\s+)?(sahas|evi|ev\s+sahipliğ)/iu.test(c.slice(a.son)))) return true
+      if (!oncekiVar) for (const a of biz) {
+        const p = pencereAl(c, a.son)
+        const y = p.match(/((?<!\p{L})deplasmanda(?!\p{L})|deplasmana\s+çık(tı|acak|ıyor|ar)(?!\p{L})|konu(k|ğu)\s+ol(du|acak|uyor|ur|muş)(?!\p{L})|misafiri\s+ol(du|acak|uyor|ur)(?!\p{L}))/iu)
+        if (y && !rakibeBagli(p.slice(y.index + y[0].length), rakipAd) && !/^deplasmanda\s+(ağırla|konuk\s+e)/i.test(p.slice(y.index))) return true
+      }
+      if (basta) {
+        const sonra = c.slice(basta.son, basta.son + 100)
+        if (AGIRLADI.test(sonra)) return true
+        const y = sonra.match(/^\s*,?\s*((kendi\s+)?sahas[ıi]nda|evinde|iç\s+sahada)(?!\p{L})/iu)
+        if (y && !rakibeBagli(sonra.slice(y[0].length), '1337 Crew FC')) return true
+      }
     }
   }
   return false
 }
 
-const KAZAN = /(mağlup\s+et(ti|erek)|(?<!\p{L})yen(di|erek)(?!\p{L})|(?<!puan[ıi]?\s|puanları\s)kazan(dı|arak)(?!\p{L})|galip\s+(geldi|ayrıl)|galibiyet(le|i\s+(aldı|elde)|\s+aldı)|üstün\s+geldi)/iu
-const KAYBET = /(mağlup\s+(oldu|ayrıl)|mağlubiyet(le|e\s+uğra|\s+aldı|\s+yaşadı)|(?<!\p{L})yenil(di|erek)(?!\p{L})|(?<!puan[ıi]?\s|puanları\s)kaybet(ti|erek)|boyun\s+eğdi|yenilgi(ye\s+uğra|\s+aldı|yle)|puansız\s+döndü)/iu
-const BERABER = /(berabere\s+kal|beraberlikle|puanları\s+paylaş|yenişemedi|beraberliğe\s+razı)/i
-/** Sonucun yönü: 1337'nin özne olduğu cümle parçasında beklenen sonuç dışında bir sonuç sözcüğü varsa yanlış */
-function sonucYanlis(t, m) {
+// Sonuç sözleri. "bir puan kazandı", "iki puan kaybetti", "galibiyeti kaçırdı", "yenilgi serisine son verdi" sonuç bildirmez.
+const KAZAN = /(mağlup\s+(etti|ederek|edecek|etmişti)|(?<!\p{L})yen(di|erek|mişti)(?!\p{L})|(?<!(bir|1)\s+puan[ıi]?\s|puan\s)kazan(dı|arak)(?!\p{L})|galip\s+(geldi|gelerek|ayrıldı|ayrılarak)|galibiyet\p{L}*\s+(aldı|alarak|elde\s+etti|kazandı|imza\s+attı|uzandı|uzanarak|ulaştı|ulaşarak)|galibiyet(le|iyle)(?!\p{L})|üstün\s+gel(di|erek)|üstünlük\s+kur(du|arak)|zafer\p{L}*\s+(kazandı|elde\s+etti|imza\s+attı|ulaştı|uzandı)|zaferle(?!\p{L})|geride\s+bırak(tı|arak)|devir(di|erek)|(yenilgiye|mağlubiyete)\s+uğrat(tı|arak)|(3|üç)\s+puan\p{L}*\s+(aldı|alarak|kazandı|hanesine\s+yazdır(dı|arak)|topladı|cebine\s+koydu|getirdi))/iu
+const KAYBET = /(mağlup\s+(oldu|olarak|olurken|ayrıldı)|mağlubiyet\p{L}*\s+(aldı|alarak|yaşadı)|mağlubiyet(le|iyle)(?!\p{L})|(yenilgiye|mağlubiyete)\s+uğra(dı|yarak|mıştı)|yenilgi\p{L}*\s+(aldı|alarak|yaşadı)|yenilgi(yle|siyle)(?!\p{L})|(?<!\p{L})yenil(di|erek|irken|mişti)(?!\p{L})|(?<!puan[ıi]?\s|puanları\s)kaybet(ti|erek)(?!\p{L})|boyun\s+eğ(di|erek)|puansız\s+(döndü|kaldı|ayrıldı)|hezimet\p{L}*\s+(yaşadı|aldı)|hezimetle(?!\p{L}))/iu
+const BERABER = /(berabere\s+kal(dı|arak|ırken)|beraberlik(le|iyle)(?!\p{L})|beraberliğ\p{L}*\s+(aldı|alarak)|puanları\s+paylaş(tı|arak)|yenişe(medi|meyerek)|beraberliğe\s+razı\s+(oldu|kaldı)|(bir|1)\s+puan\p{L}*\s+(aldı|alarak|kazandı|topladı|yetindi|döndü))/iu
+const SONUC = [['G', KAZAN], ['M', KAYBET], ['B', BERABER]]
+const TERS = { G: 'M', M: 'G', B: 'B' }
+/** Yan cümlelere böl: "-ken" zarf-fiilinden ve bağlaçlardan sonra */
+const yanCumleler = c => c.split(/(?<=\p{L}ken)(?!\p{L})|;|\s(?:ama|fakat|ancak|oysa|ise)\s/iu).filter(s => s.trim())
+/**
+ * Sonucun yönü: her sonuç sözünün sahibi, önündeki en yakın özne ya da tamlayan takımdır ("Baston Villa, 1337 Crew FC karşısında 2-0 kazandı"
+ * → Baston Villa). 1337'ninse beklenen sonuç, rakibinse tersi. Sahibi belli değilse (ör. "Ev sahibi ekip") yanlış sayılmaz.
+ */
+function sonucYanlis(t, m, rakipAd) {
   if (m.forfeit || !m.result) return false
-  const yanlis = { G: [KAYBET, BERABER], M: [KAZAN, BERABER], B: [KAZAN, KAYBET] }[m.result]
   for (const c0 of cumleler(t)) {
     if (oncekiMac(c0) && !/(ardından|sonra)/i.test(c0)) continue
-    const c = buMac(c0)
-    const i = c.search(ozne1337)
-    if (i < 0) continue
-    // 1337'den sonraki kısım; ortaçlı yan cümleler ("rakibin kazandığı", "galibiyetle sonuçlanan seriyi") ile "galibiyetsiz/yenilgisiz" sayılmaz
-    const parca = c.slice(i).replace(/\S+(dığı|diği|duğu|düğü|tığı|tiği|tuğu|tüğü)\S*/gi, '').replace(/(galibiyetsiz|yenilgisiz)\S*/gi, '')
-    if (yanlis.some(r => r.test(parca))) return true
+    for (const yan0 of yanCumleler(buMac(c0))) {
+      // ortaçlı yan cümleler ("rakibin kazandığı maçta") ve "galibiyetsiz/yenilgisiz" sonuç bildirmez
+      const yan = yan0.replace(/\S+(dığı|diği|duğu|düğü|tığı|tiği|tuğu|tüğü)\S*/giu, x => ' '.repeat(x.length)).replace(/(galibiyetsiz|yenilgisiz)\S*/giu, x => ' '.repeat(x.length))
+      const anis = [...takimAnis(yan, '1337 Crew FC').map(a => ({ ...a, biz: true })), ...takimAnis(yan, rakipAd).map(a => ({ ...a, biz: false }))]
+        .filter(a => a.ozne || a.tamlayan).sort((a, b) => a.bas - b.bas)
+      for (const [tur, re] of SONUC) {
+        for (const mt of yan.matchAll(new RegExp(re.source, 'giu'))) {
+          const sahip = anis.filter(a => a.son <= mt.index).at(-1)
+          if (!sahip) continue
+          const beklenen = sahip.biz ? m.result : TERS[m.result]
+          if (tur !== beklenen) return true
+        }
+      }
+    }
   }
   return false
 }
@@ -216,7 +266,7 @@ function sonucYanlis(t, m) {
 const SAYI_ADI = { iki: 2, üç: 3, dört: 4, beş: 5, altı: 6 } // "bir" belirsiz ("bir gol daha"), sayılmaz
 /** Gün, saat, hafta, tarih ve (maç önünde) puan/sıra/maç/averaj sayıları bilgiyle uyuşuyor mu? */
 function sayiYanlis(t, bilgi, sayilar = null) {
-  const gun = bilgi.gun ?? (bilgi.tarih ? gunAdi(bilgi.tarih) : null)
+  const gun = bilgi.gun ?? (/^\d{4}-/.test(bilgi.tarih ?? '') ? gunAdi(bilgi.tarih) : null)
   for (const g of GUNLER) if (new RegExp(`(?<!\\p{L})${g}(?!\\p{L})`, 'iu').test(t) && g !== gun) return `gün yanlış (${g})`
   for (const [, h, d] of t.matchAll(/(?<![\d.:-])(\d{1,2})[:.](\d{2})(?![\d.:])/g)) {
     if (!bilgi.saat || `${h.padStart(2, '0')}:${d}` !== bilgi.saat) return `saat yanlış (${h}:${d})`
@@ -224,7 +274,7 @@ function sayiYanlis(t, bilgi, sayilar = null) {
   for (const [, n] of t.matchAll(/(\d+)\.\s*hafta/gi)) if (Number(n) !== bilgi.hafta) return `hafta yanlış (${n})`
   if (/(?<!\p{L})ilk\s+hafta/iu.test(t) && bilgi.hafta !== 1) return 'hafta yanlış (ilk)'
   if (bilgi.tarih) {
-    const [, ay, gn] = bilgi.tarih.split('-').map(Number)
+    const [ay, gn] = tarihParca(bilgi.tarih)
     for (const mt of t.matchAll(new RegExp(`(\\d{1,2})\\s+(${AYLAR.join('|')})`, 'giu'))) {
       if (Number(mt[1]) !== gn || norm(mt[2]) !== norm(AYLAR[ay - 1])) return `tarih yanlış (${mt[0]})`
     }
@@ -244,43 +294,54 @@ function sayiYanlis(t, bilgi, sayilar = null) {
 }
 
 /** Gol atan olarak yazılan kişi gerçekten golcü mü, gol sayısı doğru mu? (MVP ile golcüyü karıştırma) */
+const DUR = /^(ve|ile|ise|ama|fakat|ancak|toplam|toplamda|takımın|takımının|ekibin|diğer)$/i
 function golcuYanlis(t, kisiler) {
   const { golcu, asist, mvp } = kisiler
   const golSayisi = Object.fromEntries(golcu.map(x => [x.name, x.n ?? 1]))
   const adlar = [...new Set([...golcu.map(x => x.name), ...asist, ...(mvp ? [mvp.name] : [])])]
-  const parcalar = ad => ad.split(/\s+/).map(norm).filter(x => x.length > 2)
+  const parca = ad => ad.split(/\s+/).map(norm).filter(Boolean)
+  // Kişinin cümledeki yerleri: tam ad; yoksa yalnızca ona ait (başka kimsenin adında olmayan) soyadı.
+  // Böylece "Kemal Sezer Şahin" geçen cümlede asistçi "Kemal Orkun Gündoğdu" anılmış sayılmaz.
+  function yerler(ws, ad) {
+    const p = parca(ad), out = []
+    for (let i = 0; i + p.length <= ws.length; i++) if (p.every((x, j) => ws[i + j].n === x)) out.push({ i, son: i + p.length })
+    if (out.length || p.length < 2) return out
+    const soyad = p.at(-1)
+    if (soyad.length > 2 && !adlar.some(b => b !== ad && parca(b).includes(soyad))) ws.forEach((w, i) => { if (w.n === soyad) out.push({ i, son: i + 1 }) })
+    return out
+  }
   for (const c of cumleler(t)) {
     if (!/gol/i.test(c)) continue
     const ws = kelimeler(c)
-    // ad cümlede nerede geçiyor (ilk ya da soyadı)
-    const yer = ad => ws.findIndex(x => parcalar(ad).includes(x.n))
-    const gecen = adlar.filter(ad => yer(ad) >= 0)
+    const anis = adlar.map(ad => ({ ad, y: yerler(ws, ad) })).filter(x => x.y.length)
+    const baskasi = (ad, k) => anis.some(o => o.ad !== ad && o.y.some(z => k >= z.i && k < z.son))
     const golFiili = /(att|kaydett|buld|atan|imza|fileleri|sahne)/i.test(c)
-    for (const ad of gecen) {
-      if (ad in golSayisi) continue
-      if (!golFiili) continue
-      if (asist.includes(ad) && /(asist|pas)/i.test(c)) continue
+    for (const { ad, y } of anis) {
+      if (ad in golSayisi || !golFiili) continue
+      if (asist.includes(ad) && /(asist|pas|orta)/i.test(c)) continue
       if (mvp && ad === mvp.name && /(mvp|değerli)/i.test(c)) {
-        // MVP aynı cümlede anılabilir; ama adının hemen ardından (araya golcü girmeden) gol fiili geliyorsa golü ona yazmıştır
-        const i = yer(ad), sonra = ws.slice(i + 1, i + 5)
-        const k = sonra.findIndex(x => /(att|kaydett|imza)/i.test(x.ham))
-        if (k >= 0 && !sonra.slice(0, k).some(x => golcu.some(g => parcalar(g.name).includes(x.n)))) return `golcü yanlış (${ad})`
+        // MVP aynı cümlede anılabilir; ama adının ardından (araya başka ad ya da bağlaç girmeden) gol fiili geliyorsa golü ona yazmıştır
+        for (let k = y[0].son; k < y[0].son + 4 && k < ws.length; k++) {
+          if (DUR.test(ws[k].ham) || baskasi(ad, k)) break
+          if (/(att|kaydett|imza)/i.test(ws[k].ham)) return `golcü yanlış (${ad})`
+        }
         continue
       }
       return `golcü yanlış (${ad})`
     }
-    // Gol sayısı: golcünün adından hemen sonra gelen "iki gol / 2 gol"; "hat-trick" en az 3 gol ister
-    const anilan = gecen.filter(ad => ad in golSayisi)
-    for (const ad of anilan) {
-      const i = yer(ad)
-      for (let k = i + 1; k <= i + 4 && k + 1 < ws.length; k++) {
-        if (!/^gol/i.test(ws[k + 1].ham)) continue
-        const s = ws[k].ham.toLocaleLowerCase('tr')
-        const n = /^\d+$/.test(s) ? Number(s) : SAYI_ADI[s]
-        if (n && n !== golSayisi[ad]) return `gol sayısı yanlış (${ad}: ${n})`
+    // Gol sayısı: golcünün adının hemen ardından "iki gol / 2 gol"; araya başka ad ya da "ve/toplam/takımın" girerse sayı ona ait değildir
+    for (const { ad, y } of anis.filter(x => x.ad in golSayisi)) {
+      for (const { son } of y) {
+        for (let k = son; k < son + 3 && k + 1 < ws.length; k++) {
+          if (DUR.test(ws[k].ham) || baskasi(ad, k)) break
+          if (!/^gol/i.test(ws[k + 1].ham)) continue
+          const s = ws[k].ham.toLocaleLowerCase('tr'), n = /^\d+$/.test(s) ? Number(s) : SAYI_ADI[s]
+          if (n && n !== golSayisi[ad]) return `gol sayısı yanlış (${ad}: ${n})`
+          break
+        }
       }
     }
-    if (/hat-?trick/i.test(c) && !anilan.some(ad => golSayisi[ad] >= 3)) return 'hat-trick yanlış'
+    if (/hat-?trick/i.test(c) && !anis.some(x => golSayisi[x.ad] >= 3)) return 'hat-trick yanlış'
   }
   return null
 }
@@ -348,6 +409,7 @@ function kontrol(metin, bilgi, dogrula) {
   if (!metin) return 'boş'
   if (metin.length < 40) return 'çok kısa'
   if (metin.length > 900) return 'çok uzun'
+  if (/\d{4}-\d{2}-\d{2}/.test(metin)) return 'ham tarih'
   if (metin.split('\n').some(s => s.trim() && !/[.!?…]$/.test(s.trim()))) return 'başlık ya da yarım satır'
   const b = bizVar(metin, bilgiKelimeleri(bilgi))
   if (b) return `biz dili: ${b}`
@@ -388,11 +450,12 @@ async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true
   let reddedildi = false
   for (const d of await denemeler(!!yukselt)) {
     if (durum.durdu[d.ad] || durum.tukenen.includes(d.model) || durum.istek >= EN_FAZLA_ISTEK) continue
+    if (Date.now() - BASLA > SURE) { durum.hata.push('süre doldu'); break }
     try {
       durum.istek++
       let r = await d.fn(d.model, SISTEM, tam)
       // Ücretsiz modeller yoğunken "high demand / overloaded" der: 20 sn bekleyip bir kez daha dene
-      if (r.hata && /high demand|overloaded|unavailable|try again/i.test(r.hata) && durum.istek < EN_FAZLA_ISTEK) {
+      if (r.hata && /high demand|overloaded|unavailable|try again/i.test(r.hata) && durum.istek < EN_FAZLA_ISTEK && Date.now() - BASLA < SURE - 60e3) {
         await new Promise(x => setTimeout(x, 20000))
         durum.istek++
         r = await d.fn(d.model, SISTEM, tam)
@@ -405,6 +468,11 @@ async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true
         continue
       }
       const metin = temizle(r.metin)
+      if (!metin) {
+        durum.hata.push(`${d.model}: boş yanıt`)
+        if ((modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
+        continue
+      }
       const sebep = kontrol(metin, bilgi, dogrula)
       if (sebep) { reddedildi = true; durum.reddedilen.push({ anahtar, model: d.model, sebep, metin }); durum.hata.push(`${d.model}: reddedildi (${sebep})`); continue }
       if (!TASLAK) {
@@ -418,7 +486,7 @@ async function yaz({ anahtar, bilgi, eskiBilgi, istek, dogrula, oncelikli = true
       return { metin, model: d.model }
     } catch (e) {
       durum.hata.push(`${d.model}: ${e.message}`.slice(0, 160))
-      if ((modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
+      if (/abort|timeout/i.test(e.name + e.message) || (modelHata[d.model] = (modelHata[d.model] ?? 0) + 1) >= 2) durum.tukenen.push(d.model)
     }
   }
   // Model metin yazdı ama kontrolden geçemedi: kalıcı sayaç (kota/yoğunluk hataları sayılmaz)
@@ -451,7 +519,7 @@ export async function raporYaz(m, oncelikli = true) {
   const istek = m.forfeit ? 'Bu maç hükmen sonuçlandı; bunu belirten 1-2 cümlelik kısa bir not yaz.' : 'Bu maç için kısa bir maç raporu yaz.'
   return yaz({
     anahtar: `rapor:${m.id}`, bilgi, eskiBilgi, istek, oncelikli,
-    dogrula: x => !skorVar(x, m) ? 'skor yok' : !adVar(x, t.name) ? 'rakip adı yok' : sahaYanlis(x, m) ? 'saha yanlış' : sonucYanlis(x, m) ? 'sonuç yanlış' : sayiYanlis(x, bilgi) ?? golcuYanlis(x, kisiler),
+    dogrula: x => !skorVar(x, m) ? 'skor yok' : !adVar(x, t.name) ? 'rakip adı yok' : sahaYanlis(x, m) ? 'saha yanlış' : sonucYanlis(x, m, t.name) ? 'sonuç yanlış' : sayiYanlis(x, bilgi) ?? golcuYanlis(x, kisiler),
   })
 }
 
@@ -462,10 +530,10 @@ export async function onizlemeYaz(next, table, done) {
   const row = table.find(r => r.code === t.code && r.played > 0), us = table.find(r => r.us && r.played > 0)
   const h2h = done.filter(m => opp(m).code === t.code)
   const bilgi = {
-    mac: `${next.home.name} - ${next.away.name}`, yarisma: next.compLabel, hafta: next.week ?? null, tarih: next.date, gun: gunAdi(next.date), saat: next.time,
+    mac: `${next.home.name} - ${next.away.name}`, yarisma: next.compLabel, hafta: next.week ?? null, tarih: tarihYazi(next.date), gun: gunAdi(next.date), saat: next.time,
     saha: next.us === 'home' ? `1337 iç sahada, ${next.home.name} ev sahibi` : `1337 deplasmanda, ev sahibi ${next.home.name}`,
-    rakip: t.name, rakipSira: row ? `${row.rank}. sıra, ${row.played} maçta ${row.points} puan, averaj ${row.gd}` : null,
-    sira1337: us ? `${us.rank}. sıra, ${us.played} maçta ${us.points} puan, averaj ${us.gd}` : null,
+    rakip: t.name, rakipSira: row ? `${row.rank}. sıra, ${row.played} maçta ${row.points} puan, averaj ${row.gd > 0 ? '+' : ''}${row.gd}` : null,
+    sira1337: us ? `${us.rank}. sıra, ${us.played} maçta ${us.points} puan, averaj ${us.gd > 0 ? '+' : ''}${us.gd}` : null,
     oncekiKarsilasmalar: h2h.length ? `kayıtlı ${h2h.length} maç: ${h2h.filter(m => m.result === 'G').length} 1337 galibiyeti, ${h2h.filter(m => m.result === 'B').length} beraberlik, ${h2h.filter(m => m.result === 'M').length} ${t.name} galibiyeti` : 'kayıtlarda iki takımın maçı yok',
     sonMac1337: done[0] ? `${done[0].home.name} ${done[0].home.score}-${done[0].away.score} ${done[0].away.name}` : null,
   }
@@ -473,7 +541,7 @@ export async function onizlemeYaz(next, table, done) {
   const sayilar = { puan: rows.map(r => r.points), sira: rows.map(r => r.rank), mac: [...rows.map(r => r.played), h2h.length], averaj: rows.map(r => Math.abs(r.gd)) }
   return yaz({
     anahtar: `onizleme:${next.id}`, bilgi, istek: 'Bu maç için kısa bir maç önü yazısı yaz.',
-    dogrula: x => !adVar(x, t.name) ? 'rakip adı yok' : sahaYanlis(x, next) ? 'saha yanlış' : sayiYanlis(x, bilgi, sayilar),
+    dogrula: x => !adVar(x, t.name) ? 'rakip adı yok' : sahaYanlis(x, next, done[0] ? opp(done[0]).name : null) ? 'saha yanlış' : sayiYanlis(x, bilgi, sayilar),
   })
 }
 
@@ -482,4 +550,4 @@ export function kaydet() {
   writeFileSync(FILE, JSON.stringify(yazilar, null, 1))
   redKaydet()
 }
-export const _dogrulama = { yabanciIsim, sahaYanlis, sonucYanlis, sayiYanlis, golcuYanlis, skorVar, adVar, bizVar, kontrol, gunAdi, temizle, RED }
+export const _dogrulama = { tarihYazi, tarihParca, yabanciIsim, sahaYanlis, sonucYanlis, sayiYanlis, golcuYanlis, skorVar, adVar, bizVar, kontrol, gunAdi, temizle, RED }

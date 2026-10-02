@@ -386,8 +386,8 @@ if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
 const DURUM = new URL('./durum-sync.json', OUTDIR)
 const yazar = { yeni: yazarDurum.yazildi, yukseltilen: yazarDurum.yukseltilen, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, durdu: yazarDurum.durdu, tukenen: yazarDurum.tukenen, atlanan: yazarDurum.atlanan, hatalar: yazarDurum.hata.slice(0, 5) }
-// Karşılaştırmada sayılar atılır ("retry in 23.4s" gibi) — yoksa her tur yeni commit olur
-const yazarOzu = y => JSON.stringify({ ...y, yeni: undefined, yukseltilen: undefined, atlanan: undefined, hatalar: (y?.hatalar ?? []).map(h => String(h).replace(/[\d.,:]+/g, '#')) })
+// Yalnızca kalıcı durum karşılaştırılır (hata metni, model ve sayılar her tur değişir; her tur commit olmasın)
+const yazarOzu = y => JSON.stringify([y?.gemini, y?.openrouter, y?.durdu, [...(y?.tukenen ?? [])].sort()])
 const eskiDurum = existsSync(DURUM) ? JSON.parse(readFileSync(DURUM, 'utf8')) : null
 if (prev?.hash !== hash || !eskiDurum || yazarOzu(eskiDurum.yazar) !== yazarOzu(yazar)) writeFileSync(DURUM, JSON.stringify({ yazar, veriDegisti: prev?.hash !== hash, veriZamani: out.updatedAt, hash, ...syncStats, mac: matches.length, oyuncu: players.length, video: matches.reduce((n, m) => n + m.videos.length, 0) }))
 console.log(prev?.hash === hash ? 'Veri değişmedi' : 'Veri güncellendi: ' + hash)
