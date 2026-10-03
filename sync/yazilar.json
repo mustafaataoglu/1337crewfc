@@ -229,5 +229,19 @@
   "zaman": "2026-10-03T19:13:40.169Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-AKUT-Futbol-2025-05-20T230000000Z:341133adc5": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi 5. haftasında 20 Mayıs 2025 Salı günü 1337 Crew FC, iç sahada AKUT Futbol ile karşılaştı. 1337 Crew FC, mücadeleden 0-4'lük mağlubiyetle ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T20:56:45.985Z",
+  "dogrulayan": "qwen/qwen3.8-27b:free",
+  "dogrulandi": true
+ },
+ "rapor:Atletico-Hybrid-1337-Crew-FC-2025-05-12T210000000Z:b14f226040": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi 4. haftasında 12 Mayıs 2025 Pazartesi günü Atletico Hybrid'e konuk olan 1337 Crew FC, sahadan 2-1 mağlup ayrıldı. Karşılaşmada 1337 Crew FC'nin golünü Murat Güldür'ün asistinde Orhun Mete Çevik attı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T20:57:15.158Z",
+  "dogrulayan": "qwen/qwen3.8-27b:free",
+  "dogrulandi": true
  }
 }
