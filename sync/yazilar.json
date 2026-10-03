@@ -166,5 +166,19 @@
   "zaman": "2026-10-03T16:11:03.965Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:Atletico-Hybrid-1337-Crew-FC-2025-11-25T220000000Z:1adf320668": {
+  "metin": "EfendiLig 2025-2026 Sezonu 8. haftasında 1337 Crew FC, 25 Kasım Salı günü deplasmanda Atletico Hybrid'e 2-1 mağlup oldu. 1337'nin tek golünü Kemal Sezer Şahin attı.",
+  "model": "qwen/qwen3.8-27b:free",
+  "zaman": "2026-10-03T16:21:44.018Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-AKUT-Futbol-2025-11-17T210000000Z:9f778dfe9e": {
+  "metin": "EfendiLig 2025-2026 Sezonu 7. haftasında 17 Kasım 2025 Pazartesi günü ev sahibi olarak AKUT Futbol ile karşılaşan 1337 Crew FC, mücadeleden 2-3 mağlup ayrıldı. 1337 Crew FC'nin gollerini Kemal Sezer Şahin ve Yasin Kayran kaydederken, asistleri Uğur Kemerkaya ile Yasin Enes Aksu yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T16:22:18.611Z",
+  "dogrulayan": "qwen/qwen3.8-27b:free",
+  "dogrulandi": true
  }
 }
