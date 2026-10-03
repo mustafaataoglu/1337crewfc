@@ -243,5 +243,19 @@
   "zaman": "2026-10-03T20:57:15.158Z",
   "dogrulayan": "qwen/qwen3.8-27b:free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Son-Baski-FK-2025-05-07T210000000Z:a9beb74683": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi 3. haftasında 7 Mayıs 2025 Çarşamba günü ev sahibi 1337 Crew FC, sahasında Son Baskı FK'ya 1-2 mağlup oldu. Müsabakada 1337 Crew FC'nin golünü Bahadır Oğuz'un asistinde Oğuzhan Uygur kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T23:42:17.017Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2025-04-29T230000000Z:a06564395e": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi 2. haftasında 29 Nisan 2025 Salı günü deplasmanda The Wall SK ile karşılaşan 1337 Crew FC, sahadan 4-1'lik mağlubiyetle ayrıldı. Maçta 1337 Crew FC'nin golünü Mustafa Ataoğlu'nun asistinde Uğur Kemerkaya kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T23:42:35.764Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
