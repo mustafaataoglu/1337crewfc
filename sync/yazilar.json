@@ -30,12 +30,16 @@
  "rapor:1337-Crew-FC-Football-Brothers-United-2026-06-02T210000000Z:3fbd5d7292": {
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 4. haftasında 2 Haziran 2026 tarihinde ev sahibi 1337 Crew FC ile Football Brothers United arasında oynanması gereken maç hükmen sonuçlandı. 1337 Crew FC bu mücadeleden 3-0'lık galibiyetle ayrıldı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:45:39.055Z"
+  "zaman": "2026-10-02T19:45:39.055Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:Cicek-Spor-1337-Crew-FC-2026-05-12T230000000Z:a161a8434f": {
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 3. haftasında 1337 Crew FC, 12 Mayıs 2026 tarihinde deplasmanda Çiçek Spor ile karşılaştı. Ev sahibi Çiçek Spor'un 1-0 kazandığı mücadele sonucunda 1337 Crew FC sahadan mağlubiyetle ayrıldı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:45:49.113Z"
+  "zaman": "2026-10-02T19:45:49.113Z",
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
  },
  "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-05-06T210000000Z:fa975edd0b": {
   "metin": "Aman Ali Rıza Bey ATK Ligi 2. haftasında 1337 Crew FC, 6 Mayıs 2026 tarihinde sahasında Fire Dryer FC ile 1-1 berabere kaldı. Ev sahibi 1337 Crew FC'nin golünü Yasin Kayran'ın asistinde Yamaç Yaman attı.",
@@ -90,5 +94,19 @@
   "metin": "1337 Crew FC ev sahibi 1337 iç sahada GoodFellas FC'ya karşı 0-4 skorla mağlubiyetle maçı bitirdi. GoodFellas FC, 14. hafta EfendiLig 2025-2026 sezonu maçında 4 golü elde etti.",
   "model": "openrouter/free",
   "zaman": "2026-10-02T20:20:38.961Z"
+ },
+ "rapor:Son-Baski-FK-1337-Crew-FC-2026-02-17T230000000Z:12dd538f8f": {
+  "metin": "EfendiLig 2025-2026 Sezonu 15. haftasında, 17 Şubat 2026 Salı günü deplasmanda Son Baskı FK ile karşılaşan 1337 Crew FC, sahadan 4-2'lik mağlubiyetle ayrıldı. Mücadelede 1337 Crew FC'nin gollerini Altay Tuğberk Yücel ve Kemal Sezer Şahin atarken, Mustafa Duman bir asist kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T01:28:03.087Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-AC-Nevizade-2026-02-09T220000000Z:04a339e0e7": {
+  "metin": "EfendiLig Kupası Final Yolu 1. haftasında 1337 Crew FC, 9 Şubat 2026 Pazartesi günü kendi sahasında AC Nevizade ile karşılaştı. Ev sahibi 1337 Crew FC, mücadeleden 0-2'lik skorla mağlup ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T01:28:18.661Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
