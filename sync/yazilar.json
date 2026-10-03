@@ -44,12 +44,16 @@
  "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-05-06T210000000Z:fa975edd0b": {
   "metin": "Aman Ali Rıza Bey ATK Ligi 2. haftasında 1337 Crew FC, 6 Mayıs 2026 tarihinde sahasında Fire Dryer FC ile 1-1 berabere kaldı. Ev sahibi 1337 Crew FC'nin golünü Yasin Kayran'ın asistinde Yamaç Yaman attı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:48:09.626Z"
+  "zaman": "2026-10-02T19:48:09.626Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:The-Wall-SK-1337-Crew-FC-2026-04-28T210000000Z:5fe48533e9": {
   "metin": "Aman Ali Rıza Bey ATK Ligi'nin 1. haftasında 28 Nisan 2026 tarihinde oynanan maçta 1337 Crew FC, deplasmanda The Wall SK ile karşılaştı. Rakibini 2-3 mağlup eden 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Kemal Sezer Şahin attı. Karşılaşmadaki asistler ise Yasin Kayran, Kemal Sezer Şahin ve Oğuzhan Uygur'dan geldi.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-02T19:48:17.304Z"
+  "zaman": "2026-10-02T19:48:17.304Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.7-flash"
  },
  "rapor:The-Wall-SK-1337-Crew-FC-2026-04-21T230000000Z:a31cd7ecec": {
   "metin": "Play-Off 7. haftasında 21 Nisan 2026 tarihinde 1337 Crew FC, ev sahibi The Wall SK ile 3-3 berabere kaldı. Deplasmanda oynayan 1337 Crew FC'nin gollerini iki gol atan Yasin Kayran ve Bahadır Oğuz kaydetti. Karşılaşmada asistleri ise Oğuzhan Uygur ve Erdal Gürses yaptı.",
@@ -67,9 +71,10 @@
   "zaman": "2026-10-02T19:48:34.072Z"
  },
  "rapor:Football-Brothers-United-1337-Crew-FC-2026-03-24T220000000Z:ac49e330ef": {
-  "metin": "1337 Crew FC, Play-Off 4. haftasında 2026-03-24 tarihinde deplasmanda karşılaştığı Football Brothers United'a 4-1 mağlup oldu. Mücadelede 1337 Crew FC'nin golünü Mustafa Ataoğlu'nun asistinde Yasin Enes Aksu kaydetti.",
-  "model": "gemini-3.7-flash",
-  "zaman": "2026-10-02T20:55:43.677Z"
+  "metin": "Play-Off 4. haftasında 24 Mart 2026 Salı günü deplasmanda Football Brothers United ile karşılaşan 1337 Crew FC, mücadeleden 4-1 mağlup ayrıldı. 1337 Crew FC'nin maçtaki golünü Mustafa Ataoğlu'nun asistinde Yasin Enes Aksu kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T06:54:54.833Z",
+  "dogrulandi": false
  },
  "rapor:1337-Crew-FC-GoodFellas-FC-2026-03-10T220000000Z:99a12f6d2e": {
   "metin": "1337 Crew FC, 1337 iç sahada, 1-4 skorla GoodFellas FC'yi mağlub etti. Altay Tuğberk Yücel gol attı ve Kemal Sezer Şahin asist sağladı.",
