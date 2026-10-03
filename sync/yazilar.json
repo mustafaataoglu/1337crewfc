@@ -72,7 +72,9 @@
  "rapor:1337-Crew-FC-Son-Baski-FK-2026-03-31T210000000Z:42faa00b2b": {
   "metin": "1337 Crew FC, 31 Mart 2026'da Play-Off 5. hafta maçında Son Baskı FK'ya 1-6 mağlup oldu, maç 1337'nin iç sahasında oynandı. Mustafa Ataoğlu'nun golü Mert Demir'in asistinde kaleye girdi.",
   "model": "openrouter/free",
-  "zaman": "2026-10-02T19:48:34.072Z"
+  "zaman": "2026-10-02T19:48:34.072Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:Football-Brothers-United-1337-Crew-FC-2026-03-24T220000000Z:ac49e330ef": {
   "metin": "Play-Off 4. haftasında 24 Mart 2026 Salı günü deplasmanda Football Brothers United ile karşılaşan 1337 Crew FC, mücadeleden 4-1 mağlup ayrıldı. 1337 Crew FC'nin maçtaki golünü Mustafa Ataoğlu'nun asistinde Yasin Enes Aksu kaydetti.",
@@ -82,9 +84,11 @@
   "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:1337-Crew-FC-GoodFellas-FC-2026-03-10T220000000Z:99a12f6d2e": {
-  "metin": "1337 Crew FC, 1337 iç sahada, 1-4 skorla GoodFellas FC'yi mağlub etti. Altay Tuğberk Yücel gol attı ve Kemal Sezer Şahin asist sağladı.",
-  "model": "openrouter/free",
-  "zaman": "2026-10-02T20:19:26.042Z"
+  "metin": "1337 Crew FC, 10 Mart 2026 Salı günü Play-Off 3. haftasında sahasında GoodFellas FC'yi konuk etti ve mücadeleden 1-4 mağlup ayrıldı. Karşılaşmada 1337 Crew FC'nin tek golü Kemal Sezer Şahin'in asistinde Altay Tuğberk Yücel'den geldi.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-03T14:47:27.742Z",
+  "dogrulayan": "gemini-3.8-flash",
+  "dogrulandi": true
  },
  "rapor:Dikilitas-Galaxy-FC-1337-Crew-FC-2026-03-04T210000000Z:87a670f768": {
   "metin": "4 Mart 2026 Çarşamba günü Play-Off 2. hafta maçında, 1337 Crew FC deplasmanda Dikilitaş Galaxy FC ile karşılaştı ve 6-3 mağlubiyet etti. Maçın golcüleri Oğuzhan Uygur (2) ve Yasin Enes Aksu idi.",
@@ -123,6 +127,13 @@
   "metin": "EfendiLig 2025-2026 Sezonu 13. haftasında 1337 Crew FC, 26 Ocak 2026 Pazartesi günü deplasmanda Football Brothers United ile oynadığı karşılaşmadan 3-2'lik mağlubiyetle ayrıldı. 1337 Crew FC'nin gollerini Kemal Sezer Şahin ve Mustafa Duman atarken, asist Mustafa Ataoğlu'ndan geldi.",
   "model": "gemini-3.8-flash",
   "zaman": "2026-10-03T12:13:11.570Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Fire-Dryer-FC-2026-01-19T230000000Z:dd2929baee": {
+  "metin": "EfendiLig 2025-2026 Sezonu 12. haftasında 19 Ocak 2026 Pazartesi günü evinde Fire Dryer FC'yi konuk eden 1337 Crew FC, sahadan 5-3 galip ayrıldı. 1337 Crew FC'nin gollerini Kemal Sezer Şahin (2), Yasin Enes Aksu (2) ve Bahadır Oğuz kaydetti. Karşılaşmada asistler Kemal Sezer Şahin, Mert Demir, Murat Güldür, Uğur Kemerkaya ve Yasin Enes Aksu'dan geldi.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-03T14:48:26.067Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  }
