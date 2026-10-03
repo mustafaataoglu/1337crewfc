@@ -19,11 +19,17 @@ function crew_veri(): array {
     return $v;
 }
 
+/** Maçı adresiyle, kalıcı kimliğiyle (eid) ya da eski adresiyle (saat değişmeden önceki) bulur */
 function crew_mac(string $id): ?array {
     if (!preg_match('/^[A-Za-z0-9._-]{5,120}$/', $id)) return null;
-    foreach (crew_veri()['matches'] ?? [] as $m) if (($m['id'] ?? '') === $id) return $m;
+    $v = crew_veri();
+    $id = (string)($v['macTakma'][$id] ?? $id);
+    foreach ($v['matches'] ?? [] as $m) if (($m['id'] ?? '') === $id || ($m['eid'] ?? '') === $id) return $m;
     return null;
 }
+
+/** Oyuncunun güncel adresi (eski hesap adresiyle gelen oylar aynı kişiye sayılır) */
+function crew_oyuncu(string $slug): string { return (string)(crew_veri()['oyuncuTakma'][$slug] ?? $slug); }
 
 /** Maçın başlama anı (İstanbul saati) */
 function crew_baslama(array $m): DateTime {
@@ -81,8 +87,14 @@ function crew_kilitli_guncelle(string $dosya, callable $fn) {
 }
 
 /** Aynı ağdan en fazla 25 farklı cihaz (mobil operatörlerde çok kişi aynı IP'yi paylaşır) */
-function crew_ag_dolu(array $kayitlar, string $ip, string $cihaz): bool {
+// $pencere (saniye) verilirse yalnızca o süre içindeki kayıtlar sayılır: hiç kapanmayan oylamada sınır kalıcı kilit olmasın
+function crew_ag_dolu(array $kayitlar, string $ip, string $cihaz, int $pencere = 0): bool {
     $n = 0;
-    foreach ($kayitlar as $k => $o) if (($o['ip'] ?? '') === $ip && $k !== $cihaz) $n++;
+    $sinir = $pencere ? time() - $pencere : 0;
+    foreach ($kayitlar as $k => $o) {
+        if (($o['ip'] ?? '') !== $ip || $k === $cihaz) continue;
+        if ($sinir && strtotime((string)($o['zaman'] ?? '')) < $sinir) continue;
+        $n++;
+    }
     return $n >= 25;
 }

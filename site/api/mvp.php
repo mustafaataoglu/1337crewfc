@@ -26,6 +26,8 @@ if ($post) {
     $cihaz = crew_cihaz($g['cihaz'] ?? '');
     if (!$cihaz) crew_json_cevap(['ok' => false, 'hata' => 'Geçersiz cihaz'], 400);
     $oyuncu = (string)($g['oyuncu'] ?? '');
+    $oyuncu = crew_oyuncu($oyuncu);
+    $adaylar = array_map('crew_oyuncu', $adaylar);
     if (!in_array($oyuncu, $adaylar, true)) crew_json_cevap(['ok' => false, 'hata' => 'Bu oyuncu maçın kadrosunda yok'], 400);
     $ip = crew_ip((string)($m['eid'] ?? $mac));
     $r = crew_kilitli_guncelle($dosya, function (array $k) use ($cihaz, $oyuncu, $ip) {
@@ -39,10 +41,10 @@ if ($post) {
 
 $oylar = json_decode((string)@file_get_contents($dosya), true) ?: [];
 $cihaz = crew_cihaz($_SERVER['HTTP_X_CIHAZ'] ?? '');
-$benim = $cihaz && isset($oylar[$cihaz]) ? $oylar[$cihaz]['oyuncu'] : null;
+$benim = $cihaz && isset($oylar[$cihaz]) ? crew_oyuncu($oylar[$cihaz]['oyuncu']) : null;
 $durum = ['bitti' => $bitti, 'acik' => $acik, 'kapanis' => $kapanis->format('c'), 'toplam' => count($oylar), 'benim' => $benim];
 if ($acik && !$benim) crew_json_cevap(['ok' => true, 'kilitli' => true] + $durum);
 $say = [];
-foreach ($oylar as $o) $say[$o['oyuncu']] = ($say[$o['oyuncu']] ?? 0) + 1;
+foreach ($oylar as $o) { $s = crew_oyuncu($o['oyuncu']); $say[$s] = ($say[$s] ?? 0) + 1; }
 arsort($say);
 crew_json_cevap(['ok' => true, 'kilitli' => false, 'oyuncular' => $say ?: new stdClass()] + $durum);

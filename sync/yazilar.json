@@ -180,5 +180,12 @@
   "zaman": "2026-10-03T16:22:18.611Z",
   "dogrulayan": "qwen/qwen3.8-27b:free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Cicek-Spor-2025-10-21T210000000Z:3b7e3835d8": {
+  "metin": "EfendiLig 2025-2026 Sezonu'nun 5. haftasında 1337 Crew FC, 21 Ekim 2025 Salı günü iç sahada Çiçek Spor ile karşılaştı. Ev sahibi 1337 Crew FC, mücadeleden 0-1'lik skorla mağlup ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T16:42:06.193Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
