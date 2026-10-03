@@ -215,5 +215,19 @@
   "zaman": "2026-10-03T19:12:08.175Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:AC-Nevizade-1337-Crew-FC-2025-09-23T220000000Z:f433b7a14a": {
+  "metin": "EfendiLig 2025-2026 Sezonu 2. haftasında 1337 Crew FC, 23 Eylül 2025 Salı günü deplasmanda AC Nevizade ile karşılaştı ve mücadeleden 5-3'lük mağlubiyetle ayrıldı. AC Nevizade'nin ev sahipliğinde oynanan maçta 1337 Crew FC'nin gollerini iki gol atan Kemal Orkun Gündoğdu ve Yasin Kayran kaydederken, Kemal Sezer Şahin bir asist yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T19:13:25.309Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:Dikilitas-Galaxy-FC-1337-Crew-FC-2025-09-15T230000000Z:6a10864bdb": {
+  "metin": "EfendiLig 2025-2026 Sezonu'nun 1. haftasında, 15 Eylül 2025 Pazartesi günü ev sahibi Dikilitaş Galaxy FC ile karşılaşan 1337 Crew FC, deplasman mücadelesinden 3-1'lik mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Kemal Orkun Gündoğdu'nun asistinde Kemal Sezer Şahin kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T19:13:40.169Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
