@@ -6,6 +6,7 @@ import { Avatar, SectionTitle } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { hungarian } from '@/lib/assign'
 import VotePanel from '@/pages/VotePanel'
+import { deviceId } from '@/lib/cihaz'
 
 type Slot = { x: number; y: number; g: Pos; label: string }
 const RAW: Record<string, [number, number, Pos, string][]> = {
@@ -106,6 +107,8 @@ export default function Vote() {
     setAnchors(nextA); setXi(n); setPick(null); setSent(false)
   }
   const [sending, setSending] = useState(false)
+  // Her başarılı gönderimde sonuçlar yeniden çekilir (oy veren sonuçları görür)
+  const [gonderim, setGonderim] = useState(0)
   const [err, setErr] = useState<string | null>(null)
   const closed = next ? now >= kickoff(next).getTime() : true
   // Oy sunucuya gider: cihaz başına maç başına tek oy (yeniden gönderilirse günceller)
@@ -120,6 +123,7 @@ export default function Vote() {
       const j = await r.json().catch(() => ({}))
       if (!r.ok || !j.ok) throw new Error(j.hata || `Sunucu hatası (${r.status})`)
       setSent(true)
+      setGonderim(n => n + 1)
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e))
     } finally { setSending(false) }
@@ -174,7 +178,7 @@ export default function Vote() {
         {pick !== null ? (
           <Picker slot={F[f][pick]} current={xi} onChoose={choose} onClose={() => setPick(null)} />
         ) : (
-          <VotePanel F={F} />
+          <VotePanel F={F} gonderim={gonderim} />
         )}
       </div>
     </div>
@@ -213,12 +217,4 @@ function Picker({ slot, current, onChoose, onClose }: { slot: Slot; current: (st
       </div>
     </section>
   )
-}
-
-function deviceId() {
-  try {
-    let id = localStorage.getItem('1337-cihaz')
-    if (!id) { id = crypto.randomUUID(); localStorage.setItem('1337-cihaz', id) }
-    return id
-  } catch { return 'gecici-' + Math.random().toString(36).slice(2) }
 }

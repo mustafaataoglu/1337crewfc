@@ -282,7 +282,7 @@ if (next) {
     title: row?.rank === 1 ? (next.us === 'home' ? `Lider ${t.name}, 1337 Crew FC'nin konuğu` : `1337 Crew FC, lider ${t.name} deplasmanında`) : `Sırada ${t.name} var`,
     body: `${row ? `${t.name} ${row.played} maçta ${row.points} puan ve ${row.gd > 0 ? '+' : ''}${row.gd} averajla ${row.rank}. sırada. ` : ''}${us ? `1337 Crew FC ${us.points} puanla ${us.rank}. sırada. ` : ''}${h2h.length ? `İki takımın kayıtlı ${h2h.length} karşılaşmasında 1337 Crew FC ${sayilar(w, d, l)} aldı.` : 'Kayıtlarda iki takımın karşılaşması yok.'}`,
   })
-  feed.push({ id: 'vote-' + next.id, kind: 'vote', date: feedDay(done), title: `${t.name} maçı için 11'ini kur`, body: 'Taraftar oylaması açıldı. Maç saatinde kapanır, sonuçlar takıma iletilir.' })
+  feed.push({ id: 'vote-' + next.id, kind: 'vote', date: feedDay(done), title: `${t.name} maçı için 11'ini kur`, body: "Taraftar oylaması açıldı. Oy verenler sonuçları, önerilen 11'i ve yedekleri görür. Oylama maç saatinde kapanır." })
 }
 for (const m of done.filter(m => cur.label && m.seasonShort === short(cur.label))) {
   const t = opp(m), o = ourS(m)
