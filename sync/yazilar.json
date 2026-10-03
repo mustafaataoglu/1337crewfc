@@ -187,5 +187,19 @@
   "zaman": "2026-10-03T16:42:06.193Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:Buyuk-Avlu-1337-Crew-FC-2025-11-11T230000000Z:938567cc2c": {
+  "metin": "EfendiLig Kupası'nın 2. haftasında 11 Kasım 2025 Salı günü oynanan maçta 1337 Crew FC, deplasmanda Büyük Avlu ile 2-2 berabere kaldı. Büyük Avlu'nun ev sahipliğinde gerçekleşen karşılaşmada 1337 Crew FC'nin gollerini Altay Tuğberk Yücel ve Kemal Orkun Gündoğdu kaydederken, asistleri Kemal Orkun Gündoğdu ve Mustafa Ataoğlu yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T18:02:24.161Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2025-10-13T220000000Z:1bb3b545b6": {
+  "metin": "EfendiLig 2025-2026 Sezonu'nun 4. haftasında 1337 Crew FC, 13 Ekim 2025 Pazartesi günü deplasmanda The Wall SK ile karşılaştı. Ev sahibi The Wall SK'nin 3-2'lik galibiyetiyle sonuçlanan müsabakada 1337 Crew FC sahadan mağlubiyetle ayrıldı. Maçta 1337 Crew FC'nin gollerini Gürhan Ulutaş ve Yasin Enes Aksu atarken, Kemal Sezer Şahin asist yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T18:02:32.160Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
