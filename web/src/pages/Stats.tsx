@@ -66,7 +66,7 @@ export default function Stats({ nav }: { nav: Nav }) {
   const tot = data.players.reduce((s, p) => ({ g: s.g + p.career.g, a: s.a + p.career.a }), { g: 0, a: 0 })
   return (
     <div>
-      <SectionTitle>İstatistikler</SectionTitle>
+      <SectionTitle action={<button onClick={() => nav.go({ page: 'karsilastir' })} className="px-3 py-1.5 rounded-lg border font-data font-bold uppercase tracking-wider text-[13px]">Oyuncu karşılaştır</button>}>İstatistikler</SectionTitle>
       <p className="text-[14px] text-muted-foreground -mt-1 mb-5">Sadece 1337 formasıyla oynanan resmi maçlar: lig, play-off, kupa ve ATK. Tüm zamanlar listeleri eski oyuncuları da içerir. Toplam: {tot.g} gol, {tot.a} asist.</p>
       <Leaders nav={nav} />
       <div className="mt-8">

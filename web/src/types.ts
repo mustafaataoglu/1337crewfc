@@ -14,6 +14,8 @@ export interface Video {
 
 export interface Match {
   id: string
+  /** EfendiLig'in kalıcı maç kimliği (adres saat değişince değişir, bu değişmez) */
+  eid?: string
   season: string
   seasonShort: string
   date: string

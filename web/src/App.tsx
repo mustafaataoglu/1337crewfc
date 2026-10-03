@@ -13,9 +13,13 @@ import Stats from '@/pages/Stats'
 import Videos from '@/pages/Videos'
 import Vote from '@/pages/Vote'
 import Club from '@/pages/Club'
+import Tahmin from '@/pages/Tahmin'
+import Karsilastir from '@/pages/Karsilastir'
+import { TaraftarSekme } from '@/components/taraftar'
 
 export type Route =
-  | { page: 'home' | 'fikstur' | 'puan' | 'kadro' | 'istatistik' | 'video' | 'oyla' | 'kulup' }
+  | { page: 'home' | 'fikstur' | 'puan' | 'kadro' | 'istatistik' | 'video' | 'oyla' | 'tahmin' | 'efsane' | 'kulup' }
+  | { page: 'karsilastir'; a?: string; b?: string }
   | { page: 'mac'; id: string }
   | { page: 'oyuncu'; slug: string }
 
@@ -28,21 +32,24 @@ const TABS = [
   { page: 'kadro', label: 'Kadro', icon: Users },
   { page: 'istatistik', label: 'İstatistik', icon: BarChart3 },
   { page: 'video', label: 'Videolar', icon: PlaySquare },
-  { page: 'oyla', label: "Senin 11'in", icon: VoteIcon },
+  { page: 'oyla', label: 'Taraftar', icon: VoteIcon },
   { page: 'kulup', label: 'Kulüp', icon: Shield },
 ] as const
 
-const TOP = TABS.map(t => t.page as string)
+// Menüde olmayan ama doğrudan açılabilen sayfalar
+const TOP = [...TABS.map(t => t.page as string), 'tahmin', 'efsane']
 
 // Adresler: #fikstur, #mac/<maç>, #oyuncu/<oyuncu> — paylaşılabilir, geri tuşu çalışır
 function fromHash(): Route {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''))
   if (h.startsWith('mac/')) return { page: 'mac', id: h.slice(4) }
   if (h.startsWith('oyuncu/')) return { page: 'oyuncu', slug: h.slice(7) }
+  if (h === 'karsilastir' || h.startsWith('karsilastir/')) { const [, a, b] = h.split('/'); return { page: 'karsilastir', a, b } }
   return TOP.includes(h) ? ({ page: h } as Route) : { page: 'home' }
 }
 const toHash = (r: Route) =>
-  r.page === 'home' ? '' : r.page === 'mac' ? `#mac/${encodeURIComponent(r.id)}` : r.page === 'oyuncu' ? `#oyuncu/${encodeURIComponent(r.slug)}` : `#${r.page}`
+  r.page === 'home' ? '' : r.page === 'mac' ? `#mac/${encodeURIComponent(r.id)}` : r.page === 'oyuncu' ? `#oyuncu/${encodeURIComponent(r.slug)}`
+    : r.page === 'karsilastir' ? `#karsilastir${r.a ? `/${encodeURIComponent(r.a)}${r.b ? `/${encodeURIComponent(r.b)}` : ''}` : ''}` : `#${r.page}`
 
 export default function App() {
   const [route, setRoute] = useState<Route>(fromHash)
@@ -59,7 +66,8 @@ export default function App() {
     return () => { removeEventListener('popstate', f); removeEventListener('hashchange', f) }
   }, [])
 
-  const active = route.page === 'mac' ? 'fikstur' : route.page === 'oyuncu' ? 'kadro' : route.page
+  const active = route.page === 'mac' ? 'fikstur' : route.page === 'oyuncu' ? 'kadro' : route.page === 'karsilastir' ? 'istatistik'
+    : route.page === 'tahmin' || route.page === 'efsane' ? 'oyla' : route.page
 
   return (
     <div className="min-h-full pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-10">
@@ -91,7 +99,10 @@ export default function App() {
         {route.page === 'oyuncu' && <PlayerPage slug={route.slug} nav={nav} />}
         {route.page === 'istatistik' && <Stats nav={nav} />}
         {route.page === 'video' && <Videos nav={nav} />}
-        {route.page === 'oyla' && <Vote />}
+        {route.page === 'oyla' && <><TaraftarSekme aktif="oyla" nav={nav} /><Vote /></>}
+        {route.page === 'efsane' && <><TaraftarSekme aktif="efsane" nav={nav} /><Vote key="efsane" mod="efsane" /></>}
+        {route.page === 'tahmin' && <Tahmin nav={nav} />}
+        {route.page === 'karsilastir' && <Karsilastir a={route.a} b={route.b} nav={nav} />}
         {route.page === 'kulup' && <Club />}
         </ErrorBoundary>
         <footer className="mt-14 pt-5 border-t text-[13px] text-muted-foreground flex flex-wrap gap-x-6 gap-y-1">
@@ -110,7 +121,7 @@ export default function App() {
                 className={cn('flex-1 min-w-0 flex flex-col items-center gap-0.5 py-2 font-data font-semibold text-[9.5px] uppercase tracking-normal',
                   active === t.page ? 'text-club' : 'text-[#f5f2e6]/65')}>
                 <I className="w-5 h-5" />
-                <span className="leading-none whitespace-nowrap">{t.label === "Senin 11'in" ? 'Oyla' : t.label === 'İstatistik' ? 'İstat.' : t.label}</span>
+                <span className="leading-none whitespace-nowrap">{t.label === 'İstatistik' ? 'İstat.' : t.label}</span>
               </button>
             )
           })}

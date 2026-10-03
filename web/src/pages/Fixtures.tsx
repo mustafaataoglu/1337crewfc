@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Nav } from '@/App'
 import { data } from '@/lib/site'
 import { MatchRow, SectionTitle } from '@/components/bits'
+import { AboneButonlari } from '@/components/taraftar'
 import { cn } from '@/lib/utils'
 
 export default function Fixtures({ nav }: { nav: Nav }) {
@@ -18,6 +19,7 @@ export default function Fixtures({ nav }: { nav: Nav }) {
   return (
     <div className="max-w-3xl">
       <SectionTitle>Maçlar</SectionTitle>
+      <div className="mb-4"><AboneButonlari /></div>
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4" role="tablist" aria-label="Sezon">
         {seasons.map(s => (
           <button key={s} role="tab" aria-selected={s === season} onClick={() => setSeason(s)}

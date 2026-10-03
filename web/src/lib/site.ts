@@ -16,7 +16,7 @@ export function fmtDate(d: string, withDay = false) {
 
 /** Maç başlama anı: İstanbul saatiyle (ziyaretçi hangi ülkede olursa olsun doğru) */
 export function kickoff(m: Match) {
-  const time = /^dd:dd$/.test(m.time ?? '') ? m.time : '21:00'
+  const time = /^\d\d:\d\d$/.test(m.time ?? '') ? m.time : '21:00'
   return new Date(`${m.date}T${time}:00+03:00`)
 }
 const order = (m: Match) => `${m.date}T${m.time ?? ''}`

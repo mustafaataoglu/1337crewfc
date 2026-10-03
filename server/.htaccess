@@ -1,4 +1,5 @@
 DirectoryIndex index.php index.html
+AddType text/calendar .ics
 Options -Indexes
 
 # Sistem, veri (oylar, anahtar, loglar) ve eski site dışarıya kapalı
@@ -13,7 +14,7 @@ RewriteRule ^(_sistem|_veri|_eski_site)(/|$) - [F,L]
 # Sayfa ve veri dosyaları tarayıcıda saklanmasın (her açılışta sunucuya sorulsun);
 # adında sürüm parmak izi olan JS/CSS dosyaları ise uzun süre önbellekte kalabilir
 <IfModule mod_headers.c>
-  <FilesMatch "^(index\.(html|php)|veri\.json|durum-sync\.json|surum\.txt)$">
+  <FilesMatch "^(index\.(html|php)|veri\.json|durum-sync\.json|surum\.txt|takvim\.ics)$">
     Header set Cache-Control "no-cache, must-revalidate"
     Header set X-LiteSpeed-Cache-Control "no-cache"
   </FilesMatch>

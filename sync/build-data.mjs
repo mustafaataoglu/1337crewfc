@@ -72,7 +72,8 @@ let matches = raw.matches.map(m => {
   const o = usHome ? m.home : m.away, t = usHome ? m.away : m.home
   const done = m.status === 'done' && o.score != null
   return {
-    id: m.slug, season: m.season, seasonShort: short(m.season), date: m.date, time: m.time,
+    // id: adres (paylaşılan bağlantılar için okunur); eid: kalıcı kimlik (oylar, tahminler, takvim saat değişince kaybolmasın)
+    id: m.slug, ...(m.eid ? { eid: m.eid } : {}), season: m.season, seasonShort: short(m.season), date: m.date, time: m.time,
     status: done ? 'done' : 'upcoming', comp: compOf(m), compLabel: m.compLabel ?? '', week: m.week,
     home: { name: m.home.name, code: m.home.code, score: m.home.score ?? null, logoPath: m.home.logo },
     away: { name: m.away.name, code: m.away.code, score: m.away.score ?? null, logoPath: m.away.logo },
@@ -383,6 +384,33 @@ const OUT = new URL('./veri.json', OUTDIR)
 const prev = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : null
 const out = { updatedAt: prev?.hash === hash ? prev.updatedAt : new Date().toISOString(), hash, ...body }
 if (prev?.hash !== hash) writeFileSync(OUT, JSON.stringify(out))
+
+// Takvim aboneliği (webcal://1337crewfc.com/data/takvim.ics): bütün maçlar; saat ya da skor değişince telefon takvimi de güncellenir.
+// İçerik yalnızca maç bilgisinden üretilir (sabit DTSTAMP), değişmedikçe dosya aynı kalır.
+{
+  const kac = s => String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
+  // 75 baytı aşan satırlar katlanır (RFC 5545)
+  const katla = line => { const out = []; let cur = ''; for (const ch of line) { if (Buffer.byteLength(cur + ch) > 74) { out.push(cur); cur = ' ' + ch } else cur += ch } out.push(cur); return out.join('\r\n') }
+  const utc = (m, ekDk = 0) => {
+    const saat = /^\d\d:\d\d$/.test(m.time ?? '') ? m.time : '21:00'
+    const d = new Date(new Date(`${m.date}T${saat}:00+03:00`).getTime() + ekDk * 60e3)
+    return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  }
+  const olaylar = [...matches].sort((a, b) => a.date.localeCompare(b.date)).map(m => {
+    const skor = m.status === 'done' && m.home.score != null ? ` ${m.home.score}-${m.away.score}` : ''
+    return [
+      'BEGIN:VEVENT', `UID:${m.eid ?? m.id}@1337crewfc.com`, 'DTSTAMP:20260101T000000Z', `DTSTART:${utc(m)}`, `DTEND:${utc(m, 100)}`,
+      `SUMMARY:${kac(`${m.home.name}${skor ? skor : ' -'} ${m.away.name}`)}`,
+      `DESCRIPTION:${kac(`${m.compLabel}${m.week ? ` · ${m.week}. hafta` : ''}\nhttps://1337crewfc.com/#mac/${m.id}`)}`,
+      `URL:https://1337crewfc.com/#mac/${encodeURIComponent(m.id)}`, 'END:VEVENT',
+    ]
+  })
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//1337 Crew FC//Fikstur//TR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'X-WR-CALNAME:1337 Crew FC', 'X-WR-TIMEZONE:Europe/Istanbul', 'REFRESH-INTERVAL;VALUE=DURATION:PT6H', 'X-PUBLISHED-TTL:PT6H',
+    ...olaylar.flat(), 'END:VCALENDAR'].map(katla).join('\r\n') + '\r\n'
+  const TAKVIM = new URL('./takvim.ics', OUTDIR)
+  if (!existsSync(TAKVIM) || readFileSync(TAKVIM, 'utf8') !== ics) writeFileSync(TAKVIM, ics)
+}
 const syncStats = existsSync(here('./sync-stats.json')) ? JSON.parse(readFileSync(here('./sync-stats.json'), 'utf8')) : {}
 const DURUM = new URL('./durum-sync.json', OUTDIR)
 const yazar = { yeni: yazarDurum.yazildi, yukseltilen: yazarDurum.yukseltilen, model: yazarDurum.model, gemini: !!process.env.GEMINI_API_KEY, openrouter: !!process.env.OPENROUTER_API_KEY, durdu: yazarDurum.durdu, tukenen: yazarDurum.tukenen, atlanan: yazarDurum.atlanan, dogrulama: yazarDurum.dogrulama, bekleyen: yazarDurum.bekleyen, hatalar: yazarDurum.hata.slice(0, 5) }

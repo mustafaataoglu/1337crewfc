@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Lock, Share2 } from 'lucide-react'
 import type { Pos } from '@/types'
 import { played, upcoming, fmtDate, playerBySlug, POS_LABEL } from '@/lib/site'
 import { Avatar } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { deviceId } from '@/lib/cihaz'
 import { oneri, ortak11, oy11, sirali, type Slot, type Sonuc, type Yer } from '@/lib/oneri'
+import { EFSANE } from '@/lib/dizilis'
+import { kadroGorseli, gorselPaylas } from '@/lib/paylas'
 
 // Sahada ne gösteriliyor: önerilen 11, bir dizilişi seçenlerin ortak 11'i ya da tek bir oy
 type Gorunum = { tip: 'oneri' } | { tip: 'ortak'; f: string } | { tip: 'oy'; i: number }
@@ -38,9 +40,11 @@ function Saha({ slots, dizilis, F, payda }: { slots: Yer[]; dizilis: string; F: 
 
 // Taraftar oylamasının sonuçları. Oylar anonimdir; oylama sürerken sonuçları bu maça oy veren görür
 // (önde giden kopyalanmasın), maç saatinde oylama kapanınca herkes görür.
-export default function VotePanel({ F, gonderim = 0 }: { F: Record<string, Slot[]>; gonderim?: number }) {
-  // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin
-  const options = [...(upcoming[0] ? [upcoming[0]] : []), ...played.slice(0, 3)]
+export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Record<string, Slot[]>; gonderim?: number; efsane?: boolean }) {
+  // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin. Tüm zamanların 11'i tek bir oylama.
+  const options = efsane
+    ? [{ id: EFSANE, label: "Tüm zamanların 11'i" }]
+    : [...(upcoming[0] ? [upcoming[0]] : []), ...played.slice(0, 3)].map(m => ({ id: m.id, label: `${m.home.name} – ${m.away.name} · ${fmtDate(m.date)}` }))
   const [mac, setMac] = useState(options[0]?.id)
   const [res, setRes] = useState<Sonuc | null>(null)
   const [kapandi, setKapandi] = useState(false)
@@ -83,14 +87,29 @@ export default function VotePanel({ F, gonderim = 0 }: { F: Record<string, Slot[
     if (innerWidth < 1024) requestAnimationFrame(() => sahaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
 
-  const macSecici = (
+  const macSecici = options.length > 1 && (
     <>
       <label htmlFor="panel-mac" className="sr-only">Maç</label>
       <select id="panel-mac" value={mac} onChange={e => setMac(e.target.value)} className="w-full h-10 px-2 rounded-lg border bg-background text-[14px] font-semibold">
-        {options.map(m => <option key={m.id} value={m.id}>{m.home.name} – {m.away.name} · {fmtDate(m.date)}</option>)}
+        {options.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
       </select>
     </>
   )
+  const [paylasiliyor, setPaylasiliyor] = useState(false)
+  const paylas = async () => {
+    if (!oner || !res) return
+    setPaylasiliyor(true)
+    try {
+      const blob = await kadroGorseli({
+        baslik: efsane ? "Taraftarın tüm zamanlar 11'i" : 'Taraftarın önerdiği 11',
+        alt: `${options.find(o => o.id === mac)?.label ?? ''} · ${res.toplam} oy`.replace(/^ · /, ''),
+        dizilis: oner.f, slots: F[oner.f],
+        oyuncular: oner.slots.map(c => (c ? { isim: shortName(c.slug), alt: `%${pct(c.n ?? 0, res.toplam)}` } : null)),
+        yedekler: oner.yedek.map(y => shortName(y.slug)),
+      })
+      await gorselPaylas(blob, efsane ? '1337-taraftar-tum-zamanlar.png' : '1337-taraftarin-11i.png', '1337 Crew FC · 1337crewfc.com')
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)) } finally { setPaylasiliyor(false) }
+  }
 
   if (!res) {
     return (
@@ -175,6 +194,11 @@ export default function VotePanel({ F, gonderim = 0 }: { F: Record<string, Slot[
                     })}
                   </ol>
                 </div>
+              )}
+              {saha.tip === 'oneri' && (
+                <button onClick={paylas} disabled={paylasiliyor} className="mt-3 px-3 py-2 rounded-lg border font-data font-bold uppercase tracking-wider text-[14px] flex items-center gap-2 disabled:opacity-50">
+                  <Share2 className="w-4 h-4" /> {paylasiliyor ? 'Hazırlanıyor…' : "Taraftarın 11'ini paylaş"}
+                </button>
               )}
               {saha.tip === 'oy' && <button onClick={() => goster({ tip: 'oneri' })} className="mt-2 text-[14px] font-semibold underline underline-offset-2">Önerilen 11'e dön</button>}
             </div>

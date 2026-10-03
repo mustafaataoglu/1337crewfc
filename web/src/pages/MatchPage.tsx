@@ -3,6 +3,7 @@ import type { Nav } from '@/App'
 import type { Match } from '@/types'
 import { data, fmtDate, matchById, ours, theirs, playerBySlug } from '@/lib/site'
 import { Avatar, Crest, JerseyBadge, MatchRow, ResultChip, SectionTitle, TeamBadge, VideoCard, kitNote } from '@/components/bits'
+import { TahminFormu, TakvimButonlari, TaraftarKarsilastir, TaraftarMVP } from '@/components/taraftar'
 
 function report(m: Match) {
   const o = ours(m), t = theirs(m)
@@ -78,6 +79,8 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
             {kitNote(m) && <p className="mt-2 text-[15px] font-semibold">{kitNote(m)}</p>}
           </section>
         )}
+        <div className="mt-4"><TakvimButonlari m={m} /></div>
+        <div className="mt-6"><TahminFormu m={m} /></div>
         <section className="mt-6">
           <SectionTitle>Maç önü</SectionTitle>
           <div className="grid sm:grid-cols-3 gap-3">
@@ -96,6 +99,9 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
           {m.lineup.subs.length > 0 && <Lineup title="Yedekler" slugs={m.lineup.subs} m={m} nav={nav} />}
         </section>
       )}
+
+      {done && <TaraftarMVP m={m} nav={nav} />}
+      {done && <TaraftarKarsilastir m={m} nav={nav} />}
 
       {h2h.length > 0 && (
         <section className="mt-8">

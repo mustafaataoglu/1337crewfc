@@ -14,7 +14,10 @@ export default function PlayerPage({ slug, nav }: { slug: string; nav: Nav }) {
 
   return (
     <div className="max-w-3xl">
-      <button onClick={() => nav.go({ page: 'kadro' })} className="flex items-center gap-1 text-[14px] font-semibold mb-3"><ArrowLeft className="w-4 h-4" /> Kadro</button>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <button onClick={() => nav.go({ page: 'kadro' })} className="flex items-center gap-1 text-[14px] font-semibold"><ArrowLeft className="w-4 h-4" /> Kadro</button>
+        <button onClick={() => nav.go({ page: 'karsilastir', a: p.slug })} className="px-3 py-1.5 rounded-lg border font-data font-bold uppercase tracking-wider text-[13px]">Karşılaştır</button>
+      </div>
       <section className="rounded-xl bg-clubink text-[#f5f2e6] p-5 flex items-center gap-4 relative overflow-hidden">
         <span aria-hidden className="absolute right-3 -bottom-8 font-display text-[150px] leading-none text-white/[0.06] select-none num">{p.no}</span>
         <Avatar p={p} size={88} />

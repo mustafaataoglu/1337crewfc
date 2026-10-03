@@ -5,7 +5,7 @@
 //                                                       bu maça oy vermiş cihaz (X-Cihaz başlığı) görür, böylece önde giden
 //                                                       kopyalanmaz. Maç saatinde oylama kapanınca herkese açıktır.
 //                                                       Takım paneli anahtarı (X-Panel-Anahtar) her zaman açar.
-require dirname(__DIR__) . '/_sistem/guncelle.php';
+require dirname(__DIR__) . '/_sistem/taraftar.php';
 crew_hata_kaydi();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -24,13 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mac = (string)($g['mac'] ?? '');
 }
 if (!preg_match('/^[A-Za-z0-9._-]{5,120}$/', $mac)) cevap(['ok' => false, 'hata' => 'Geçersiz maç'], 400);
-$m = null;
-foreach ($veri['matches'] as $x) if ($x['id'] === $mac) { $m = $x; break; }
+// 'tum-zamanlar': tüm zamanların 11'i — maça bağlı değil, hep açık, eski oyuncular da seçilebilir
+$efsane = $mac === 'tum-zamanlar';
+$m = $efsane ? ['id' => $mac, 'status' => 'upcoming', 'date' => '2099-01-01', 'time' => '00:00'] : null;
+if (!$efsane) foreach ($veri['matches'] as $x) if ($x['id'] === $mac) { $m = $x; break; }
 if (!$m) cevap(['ok' => false, 'hata' => 'Maç bulunamadı'], 404);
-$dosya = "$dizin/" . md5($mac) . '.json';
+// Kalıcı kimlikle kaydedilir: maç saati değişince adres değişse de oylar kaybolmaz
+$dosya = $efsane ? "$dizin/" . md5($mac) . '.json' : crew_mac_dosyasi($dizin, $m);
 // Maç saatinde (İstanbul) oylama kapanır
 $saat = new DateTime($m['date'] . ' ' . ($m['time'] ?: '21:00'), new DateTimeZone('Europe/Istanbul'));
-$kapandi = new DateTime('now', new DateTimeZone('Europe/Istanbul')) >= $saat || $m['status'] === 'done';
+$kapandi = !$efsane && (new DateTime('now', new DateTimeZone('Europe/Istanbul')) >= $saat || $m['status'] === 'done');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($kapandi) cevap(['ok' => false, 'hata' => 'Bu maç için oylama kapandı'], 409);
@@ -42,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $SLOT = ['4-2-3-1' => [1, 4, 5, 1], '4-3-3' => [1, 4, 3, 3], '4-4-2' => [1, 4, 4, 2], '3-5-2' => [1, 3, 5, 2], '3-4-3' => [1, 3, 4, 3], '5-3-2' => [1, 5, 3, 2]];
     if (!isset($SLOT[$dizilis])) cevap(['ok' => false, 'hata' => 'Geçersiz diziliş'], 400);
     $kadro = [];
-    foreach ($veri['players'] as $p) if (empty($p['former'])) $kadro[$p['slug']] = $p['pos'];
+    foreach ($veri['players'] as $p) if ($efsane || empty($p['former'])) $kadro[$p['slug']] = $p['pos'];
     $xi = is_array($g['xi'] ?? null) ? $g['xi'] : [];
     $secim = [];
     $sira = []; // dizilişteki slot sırasıyla oyuncular (sahada nereye konduğu)
@@ -60,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // IPv6 adresleri /64 ağına göre say (aynı cihaz her istekte farklı adres alabilir)
     $adres = (string)($_SERVER['REMOTE_ADDR'] ?? '');
     if (strpos($adres, ':') !== false) $adres = implode(':', array_slice(explode(':', (string)@inet_ntop((string)@inet_pton($adres))), 0, 4));
-    $ip = hash('sha256', $adres . '|' . $mac);
+    $ip = hash('sha256', $adres . '|' . ($m['eid'] ?? $mac));
     $kilit = fopen("$dosya.lock", 'c');
     flock($kilit, LOCK_EX);
     $oylar = json_decode((string)@file_get_contents($dosya), true) ?: [];
