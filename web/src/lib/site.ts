@@ -27,8 +27,12 @@ export const theirs = (m: Match) => (m.us === 'home' ? m.away : m.home)
 export const played = data.matches.filter(m => m.status === 'done').sort((a, b) => order(b).localeCompare(order(a)))
 // Yaklaşan: henüz oynanmamış ve başlama saatinden en fazla 2 saat geçmiş maçlar (skor girilene kadar takılı kalmasın)
 export const upcoming = data.matches.filter(m => m.status !== 'done' && kickoff(m).getTime() > Date.now() - 2 * 3600e3).sort((a, b) => order(a).localeCompare(order(b)))
-export const matchById = (id: string) => data.matches.find(m => m.id === id)
-export const playerBySlug = (s: string) => data.players.find(p => p.slug === s)
+/** Oylama ve tahminin açık olduğu maç: henüz başlamamış ilk maç (başlamış maç skor girilene kadar "yaklaşan"da kalır) */
+export const acikMac = () => upcoming.find(m => kickoff(m).getTime() > Date.now())
+// Eski adresler (saat değişince değişen maç adresi, oyuncunun eski hesabı) güncel kayda yönlenir
+export const matchById = (id: string) => { const g = data.macTakma?.[id] ?? id; return data.matches.find(m => m.id === g || m.eid === g) }
+export const playerBySlug = (s: string) => { const g = data.oyuncuTakma?.[s] ?? s; return data.players.find(p => p.slug === g) }
+export const guncelSlug = (s: string) => data.oyuncuTakma?.[s] ?? s
 /** Ortak oyuncu listesi: güncel kadro (Kadro, Senin 11'in) ve eski oyuncular (arşiv, tüm zamanlar) */
 export const squad = data.players.filter(p => !p.former)
 export const formerPlayers = data.players.filter(p => p.former).sort((a, b) => b.career.m - a.career.m)

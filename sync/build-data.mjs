@@ -368,6 +368,17 @@ for (const m of matches) for (const s of [m.home, m.away]) {
   s.logo = s.code === '1337' ? undefined : logos.get(s.logoPath)
   delete s.logoPath
 }
+// Takma adlar: oyuncunun eski hesap adresleri (geri dönen oyuncu yeni hesap açınca adresi değişir) ve maçların eski adresleri
+// (maç adresi tarih-saati içerir, saat değişince değişir). Oylar ve paylaşılan bağlantılar eski adresle de doğru kişiye/maça gider.
+const oyuncuTakma = {}
+for (const p of players) for (const s of p.accountSlugs ?? []) if (s !== p.slug) oyuncuTakma[s] = p.slug
+const GECMIS = here('./mac-gecmisi.json')
+const gecmis = existsSync(GECMIS) ? JSON.parse(readFileSync(GECMIS, 'utf8')) : {}
+const gecmisOnce = JSON.stringify(gecmis)
+for (const m of matches) if (m.eid) { const l = (gecmis[m.eid] ??= []); if (!l.includes(m.id)) l.push(m.id) }
+if (JSON.stringify(gecmis) !== gecmisOnce) writeFileSync(GECMIS, JSON.stringify(gecmis, null, 1))
+const macTakma = {}
+for (const m of matches) for (const s of (m.eid && gecmis[m.eid]) || []) if (s !== m.id) macTakma[s] = m.id
 for (const p of players) {
   if (p.photoPath) p.photo = S3 + p.photoPath
   delete p.photoPath
@@ -376,7 +387,7 @@ for (const p of players) {
 }
 
 const gallery = JSON.parse(readFileSync(here('./gallery/galeri.json'), 'utf8'))
-const body = { club, table, matches, players, extraVideos: extra, feed, gallery }
+const body = { club, table, matches, players, extraVideos: extra, feed, gallery, oyuncuTakma, macTakma }
 const hash = createHash('sha1').update(JSON.stringify(body)).digest('hex').slice(0, 12)
 const OUTDIR = here('../web/public/data/')
 mkdirSync(OUTDIR, { recursive: true })

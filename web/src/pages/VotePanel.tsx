@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Lock, Share2 } from 'lucide-react'
 import type { Pos } from '@/types'
-import { played, upcoming, fmtDate, playerBySlug, POS_LABEL } from '@/lib/site'
+import { played, upcoming, acikMac, fmtDate, playerBySlug, POS_LABEL } from '@/lib/site'
 import { Avatar } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { deviceId } from '@/lib/cihaz'
@@ -44,8 +44,8 @@ export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Reco
   // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin. Tüm zamanların 11'i tek bir oylama.
   const options = efsane
     ? [{ id: EFSANE, label: "Tüm zamanların 11'i" }]
-    : [...(upcoming[0] ? [upcoming[0]] : []), ...played.slice(0, 3)].map(m => ({ id: m.id, label: `${m.home.name} – ${m.away.name} · ${fmtDate(m.date)}` }))
-  const [mac, setMac] = useState(options[0]?.id)
+    : [...upcoming.slice(0, 2), ...played.slice(0, 3)].map(m => ({ id: m.id, label: `${m.home.name} – ${m.away.name} · ${fmtDate(m.date)}` }))
+  const [mac, setMac] = useState(efsane ? EFSANE : (acikMac()?.id ?? options[0]?.id))
   const [res, setRes] = useState<Sonuc | null>(null)
   const [kapandi, setKapandi] = useState(false)
   const [kilit, setKilit] = useState<number | null>(null) // kilitliyse şimdiye kadarki oy sayısı
@@ -120,7 +120,7 @@ export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Reco
         {kilit !== null && (
           <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
             <Lock className="w-4 h-4 mt-0.5 shrink-0" />
-            <p className="text-[14px]"><b className="num">{kilit} oy</b> verildi. Oyunu gönderince sonuçları, önerilen 11'i ve yedekleri görürsün.</p>
+            <p className="text-[14px]"><b className="num">{kilit} oy</b> verildi. Sonuçlar oyunu gönderince açılır.</p>
           </div>
         )}
         {err && <p className="text-[14px] text-loss">{err}</p>}
@@ -243,7 +243,7 @@ export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Reco
 
             {votes.length > 0 && (
               <div>
-                <div className="eyebrow mb-2">Tüm oylar · {votes.length}</div>
+                <div className="eyebrow mb-2">{votes.length < res.toplam ? `Son ${votes.length} oy` : `Tüm oylar · ${votes.length}`}</div>
                 <ol className="flex flex-col divide-y border rounded-lg overflow-hidden">
                   {(hepsi ? votes : votes.slice(0, 8)).map((v, i) => {
                     const secili = gorunum.tip === 'oy' && gorunum.i === i
@@ -260,7 +260,7 @@ export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Reco
                   })}
                 </ol>
                 {votes.length > 8 && (
-                  <button onClick={() => setHepsi(!hepsi)} className="mt-2 text-[14px] font-semibold underline underline-offset-2">{hepsi ? 'Daha az göster' : `Tümünü göster (${votes.length})`}</button>
+                  <button onClick={() => setHepsi(!hepsi)} className="mt-2 text-[14px] font-semibold underline underline-offset-2">{hepsi ? 'Daha az göster' : `${votes.length < res.toplam ? 'Son' : 'Tümünü göster'} ${votes.length < res.toplam ? `${votes.length} oyu göster` : `(${votes.length})`}`}</button>
                 )}
               </div>
             )}

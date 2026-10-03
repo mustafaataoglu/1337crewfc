@@ -100,6 +100,7 @@ export default function MatchPage({ id, nav }: { id: string; nav: Nav }) {
         </section>
       )}
 
+      {done && !m.forfeit && <div className="mt-8"><TahminFormu m={m} /></div>}
       {done && <TaraftarMVP m={m} nav={nav} />}
       {done && <TaraftarKarsilastir m={m} nav={nav} />}
 

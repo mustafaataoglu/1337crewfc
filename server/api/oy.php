@@ -27,7 +27,8 @@ if (!preg_match('/^[A-Za-z0-9._-]{5,120}$/', $mac)) cevap(['ok' => false, 'hata'
 // 'tum-zamanlar': tüm zamanların 11'i — maça bağlı değil, hep açık, eski oyuncular da seçilebilir
 $efsane = $mac === 'tum-zamanlar';
 $m = $efsane ? ['id' => $mac, 'status' => 'upcoming', 'date' => '2099-01-01', 'time' => '00:00'] : null;
-if (!$efsane) foreach ($veri['matches'] as $x) if ($x['id'] === $mac) { $m = $x; break; }
+// maç adresi, kalıcı kimlik ya da eski adresle (saat değişmeden önceki) bulunur
+if (!$efsane) $m = crew_mac($mac);
 if (!$m) cevap(['ok' => false, 'hata' => 'Maç bulunamadı'], 404);
 // Kalıcı kimlikle kaydedilir: maç saati değişince adres değişse de oylar kaybolmaz
 $dosya = $efsane ? "$dizin/" . md5($mac) . '.json' : crew_mac_dosyasi($dizin, $m);
@@ -50,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $secim = [];
     $sira = []; // dizilişteki slot sırasıyla oyuncular (sahada nereye konduğu)
     foreach ($xi as $s) {
-        $o = (string)($s['oyuncu'] ?? '');
+        $o = is_string($s['oyuncu'] ?? null) ? crew_oyuncu($s['oyuncu']) : '';
         $gr = (string)($s['g'] ?? '');
         if (!isset($kadro[$o]) || !in_array($gr, ['K', 'S', 'O', 'F'], true) || isset($secim[$o])) cevap(['ok' => false, 'hata' => 'Geçersiz oyuncu seçimi'], 400);
         $secim[$o] = $gr;
@@ -69,9 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $oylar = json_decode((string)@file_get_contents($dosya), true) ?: [];
     $c = hash('sha256', $cihaz);
     // Aynı ağdan en fazla 25 farklı cihaz (mobil operatörlerde çok kişi aynı IP'yi paylaşır)
-    $ayniIp = 0;
-    foreach ($oylar as $k => $o) if (($o['ip'] ?? '') === $ip && $k !== $c) $ayniIp++;
-    if ($ayniIp >= 25) { flock($kilit, LOCK_UN); fclose($kilit); cevap(['ok' => false, 'hata' => 'Bu ağdan çok fazla oy geldi'], 429); }
+    // Tüm zamanların 11'i hiç kapanmadığı için sınır son 24 saate bakar (yoksa bir ağ kalıcı olarak kilitlenirdi)
+    if (crew_ag_dolu($oylar, $ip, $c, $efsane ? 86400 : 0)) { flock($kilit, LOCK_UN); fclose($kilit); cevap(['ok' => false, 'hata' => 'Bu ağdan çok fazla oy geldi'], 429); }
     $oylar[$c] = ['dizilis' => $dizilis, 'xi' => $secim, 'sira' => $sira, 'ip' => $ip, 'zaman' => date('c')];
     // Önce geçici dosyaya yaz, sonra yerine koy: yazma yarıda kalırsa eski oylar kaybolmaz
     $yazildi = file_put_contents("$dosya.yeni", json_encode($oylar)) !== false && rename("$dosya.yeni", $dosya);
@@ -92,9 +92,11 @@ $sonuc = ['toplam' => count($oylar), 'dizilisler' => [], 'oyuncular' => [], 'mev
 foreach ($oylar as $o) {
     $sonuc['dizilisler'][$o['dizilis']] = ($sonuc['dizilisler'][$o['dizilis']] ?? 0) + 1;
     // Her dizilişte her slota kimin konduğu (taraftarın 11'ini sahada çizmek için)
-    foreach ($o['sira'] ?? [] as $i => $slug) $sonuc['slotlar'][$o['dizilis']][$i][$slug] = ($sonuc['slotlar'][$o['dizilis']][$i][$slug] ?? 0) + 1;
+    $o['sira'] = array_map('crew_oyuncu', $o['sira'] ?? array_keys($o['xi']));
+    $o['xi'] = array_combine(array_map('crew_oyuncu', array_keys($o['xi'])), array_values($o['xi']));
+    foreach ($o['sira'] as $i => $slug) $sonuc['slotlar'][$o['dizilis']][$i][$slug] = ($sonuc['slotlar'][$o['dizilis']][$i][$slug] ?? 0) + 1;
     // Tek tek oylar: kim verdiği yok, sadece diziliş, 11 ve saat
-    $sonuc['oylar'][] = ['dizilis' => $o['dizilis'], 'zaman' => $o['zaman'] ?? '', 'sira' => $o['sira'] ?? array_keys($o['xi'])];
+    $sonuc['oylar'][] = ['dizilis' => $o['dizilis'], 'zaman' => $o['zaman'] ?? '', 'sira' => $o['sira']];
     foreach ($o['xi'] as $slug => $gr) {
         $sonuc['oyuncular'][$slug] = ($sonuc['oyuncular'][$slug] ?? 0) + 1;
         $sonuc['mevkiler'][$gr][$slug] = ($sonuc['mevkiler'][$gr][$slug] ?? 0) + 1;

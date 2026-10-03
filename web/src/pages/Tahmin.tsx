@@ -1,9 +1,9 @@
 import type { Nav } from '@/App'
-import { upcoming } from '@/lib/site'
+import { acikMac } from '@/lib/site'
 import { TaraftarSekme, TahminFormu, TahminLigi } from '@/components/taraftar'
 
 export default function Tahmin({ nav }: { nav: Nav }) {
-  const next = upcoming[0]
+  const next = acikMac()
   return (
     <div>
       <TaraftarSekme aktif="tahmin" nav={nav} />

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, Share2, X } from 'lucide-react'
 import type { Player, Pos } from '@/types'
-import { data, squad, fmtDate, upcoming, kickoff, POS_LABEL } from '@/lib/site'
+import { data, squad, fmtDate, acikMac, kickoff, guncelSlug, POS_LABEL } from '@/lib/site'
 import { Avatar, SectionTitle } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { hungarian } from '@/lib/assign'
@@ -36,7 +36,7 @@ function load(mod: Mod): Saved | null {
     const s = JSON.parse(r) as Saved
     if (!F[s.f] || !Array.isArray(s.xi) || s.xi.length !== F[s.f].length) return null
     const inPool = new Set(HAVUZ[mod].map(p => p.slug))
-    s.xi = s.xi.map(x => (x && inPool.has(x) ? x : null))
+    s.xi = s.xi.map(x => (x ? guncelSlug(x) : null)).map(x => (x && inPool.has(x) ? x : null))
     return s
   } catch { return null }
 }
@@ -52,8 +52,10 @@ const anchorsOf = (f: string, xi: (string | null)[], prev: Record<string, Anchor
 
 export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
   const efsane = mod === 'efsane'
-  const next = efsane ? undefined : upcoming[0]
+  const next = efsane ? undefined : acikMac()
   const macId = efsane ? EFSANE : next?.id
+  // 'Oy verildi' bilgisi kalıcı maç kimliğiyle tutulur: saat değişince adres değişse de bilinir
+  const oyAnahtari = efsane ? EFSANE : next ? (next.eid ?? next.id) : undefined
   const havuz = HAVUZ[mod]
   const saved = useMemo(() => load(mod), [mod])
   const [f, setF] = useState(saved?.f ?? '4-2-3-1')
@@ -62,7 +64,7 @@ export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
   // böylece dizilişler arasında gidip gelince kadro kaymaz ve eski haline döner.
   const [anchors, setAnchors] = useState<Record<string, Anchor>>(() => anchorsOf(saved?.f ?? '4-2-3-1', saved?.xi ?? autoPick('4-2-3-1', havuz), saved?.anchors))
   // "Oy verildi" bilgisi maça özel: önceki maça verilen oy sıradaki maçı kilitlemesin
-  const [sent, setSent] = useState(!!saved?.sent && !!macId && saved?.mac === macId)
+  const [sent, setSent] = useState(!!saved?.sent && !!oyAnahtari && saved?.mac === oyAnahtari)
   const [pick, setPick] = useState<number | null>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
   // Telefonda oyuncu listesi sahanın altında açılır: görünür olsun diye oraya kaydır
@@ -86,8 +88,8 @@ export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
   }
   // Kurulan kadro her değişiklikte bu tarayıcıya kaydedilir; sayfa yenilenince kaybolmaz.
   useEffect(() => {
-    try { localStorage.setItem(KEY[mod], JSON.stringify({ f, xi, anchors, sent, mac: macId })) } catch { /* depolama kapalı */ }
-  }, [mod, f, xi, anchors, sent, macId])
+    try { localStorage.setItem(KEY[mod], JSON.stringify({ f, xi, anchors, sent, mac: oyAnahtari })) } catch { /* depolama kapalı */ }
+  }, [mod, f, xi, anchors, sent, oyAnahtari])
 
   const choose = (slug: string) => {
     if (pick === null) return
@@ -184,7 +186,6 @@ export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
           </button>
         </div>
         {err && <p className="text-[14px] text-loss mt-2 font-semibold">{err}</p>}
-        <p className="text-[13px] text-muted-foreground mt-2">Her cihaz {efsane ? 'bir' : 'maç başına bir'} oy verir; tekrar gönderirsen oyun güncellenir.{efsane ? '' : ' Oylama maç saatinde kapanır.'}</p>
       </div>
 
       <div className="min-w-0">

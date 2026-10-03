@@ -7,14 +7,30 @@ require dirname(__DIR__) . '/_sistem/taraftar.php';
 crew_hata_kaydi();
 $dizin = crew_tur_dizini('tahmin');
 
-/** Takma ad: 2-20 karakter, harf/rakam/boşluk/._- ; küfür içermez */
+/**
+ * Takma ad: 2-20 karakter; yalnızca Türkçe/Latin harf, rakam, boşluk ve . _ - ' (Kiril, tam genişlik gibi benzer görünen
+ * harfler girmez); küfür içermez. Türkçe büyük harfler (İ, I, Ş…) mbstring'e güvenmeden elle küçültülür; rakamla
+ * yazılmış biçimler (s1k, 4mk) de denetlenir. Kısa kökler yalnızca tam kelime olarak aranır: "Beşiktaş", "Işık", "Pıçak" geçer.
+ */
 function crew_takma_ad(string $ad): ?string {
     $ad = trim(preg_replace('/\s+/u', ' ', $ad));
     $n = preg_match_all('/./u', $ad);
-    if ($n < 2 || $n > 20 || !preg_match('/^[\p{L}\p{N} ._-]+$/u', $ad)) return null;
-    $k = strtr(function_exists('mb_strtolower') ? mb_strtolower($ad, 'UTF-8') : strtolower($ad), ['ı' => 'i', 'ş' => 's', 'ğ' => 'g', 'ü' => 'u', 'ö' => 'o', 'ç' => 'c', ' ' => '', '.' => '', '_' => '', '-' => '']);
-    foreach (['amk', 'aq', 'sik', 'yarrak', 'orospu', 'pic', 'pezevenk', 'gavat', 'ibne', 'got', 'amcik', 'kahpe', 'siktir', 'yavsak', 'serefsiz', 'admin', 'yonetici'] as $y) {
-        if (strpos($k, $y) !== false) return null;
+    if ($n < 2 || $n > 20 || !preg_match("/^[A-Za-z0-9ÇĞİÖŞÜçğıöşüÂâÎîÛûÊê ._'-]+$/u", $ad)) return null;
+    $k = strtr($ad, ['İ' => 'i', 'I' => 'ı', 'Ş' => 'ş', 'Ğ' => 'ğ', 'Ü' => 'ü', 'Ö' => 'ö', 'Ç' => 'ç', 'Â' => 'a', 'Î' => 'i', 'Û' => 'u', 'Ê' => 'e']);
+    $k = strtolower($k); // kalan büyük harfler yalnızca ASCII
+    $leet = fn(string $w) => strtr($w, ['1' => 'i', '4' => 'a', '0' => 'o', '3' => 'e', '5' => 's', '7' => 't']);
+    // Kısa kökler Türkçe harfleriyle, tam kelime olarak: "şık", "sık", "Pıçak", "Götze" masumdur; "SİK", "s1k" değildir
+    foreach (preg_split('/[ ._\'-]+/', $k, -1, PREG_SPLIT_NO_EMPTY) as $w) {
+        // büyük I hem ı hem i olabilir (ADMIN, PIÇ): ikisi de denenir
+        foreach ([$w, $leet($w), strtr($w, ['ı' => 'i']), $leet(strtr($w, ['ı' => 'i']))] as $v) {
+            if (preg_match('/^(sik|sikim|sikiş|sikis|siker|amk|amq|aq|piç|pic|piçler|göt|got|götü|gotu|götveren|gotveren|ibne|ibneler|admin|yönetici|yonetici|moderatör|moderator)$/u', $v)) return null;
+        }
+    }
+    // Uzun kökler: Türkçe harfler sadeleştirilip bitişik yazılmış haliyle de (o r o s p u) aranır
+    $sade = strtr($k, ['ı' => 'i', 'ş' => 's', 'ğ' => 'g', 'ü' => 'u', 'ö' => 'o', 'ç' => 'c', 'â' => 'a', 'î' => 'i', 'û' => 'u', 'ê' => 'e']);
+    $bitisik = preg_replace('/[ ._\'-]+/', '', $sade);
+    foreach ([$bitisik, $leet($bitisik)] as $v) {
+        if (preg_match('/(orospu|orosbu|yarrak|pezevenk|kahpe|serefsiz|yavsak|amcik|gavat|siktir|sikerim|sikeyim|sikik|ananiz)/', $v)) return null;
     }
     return $ad;
 }
@@ -85,6 +101,11 @@ $tahminler = json_decode((string)@file_get_contents($dosya), true) ?: [];
 $cihaz = crew_cihaz($_SERVER['HTTP_X_CIHAZ'] ?? '');
 $benim = $cihaz && isset($tahminler[$cihaz]) ? ['ev' => $tahminler[$cihaz]['ev'], 'dep' => $tahminler[$cihaz]['dep'], 'ad' => $tahminler[$cihaz]['ad']] : null;
 $cevap = ['ok' => true, 'basladi' => $basladi, 'toplam' => count($tahminler), 'benim' => $benim];
+// Biten maçta bu cihazın aldığı puan (tam skor 3, doğru sonuç 1)
+if ($benim && ($m['status'] ?? '') === 'done' && empty($m['forfeit']) && is_numeric($m['home']['score'] ?? null) && is_numeric($m['away']['score'] ?? null)) {
+    $h = (int)$m['home']['score']; $a = (int)$m['away']['score'];
+    $cevap['puan'] = ($benim['ev'] === $h && $benim['dep'] === $a) ? 3 : ($sonucu($benim['ev'], $benim['dep']) === $sonucu($h, $a) ? 1 : 0);
+}
 // Dağılım: tahmin verene ya da maç başlayınca (önceden görülürse çoğunluğa uyulur)
 if ($benim || $basladi) {
     $sonuc = ['G' => 0, 'B' => 0, 'M' => 0];

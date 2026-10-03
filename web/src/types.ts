@@ -92,4 +92,8 @@ export interface SiteData {
   extraVideos: Video[]
   gallery: { file: string; kind: 'foto' | 'forma'; date: string; w: number; h: number; src: string }[]
   feed: FeedItem[]
+  /** eski oyuncu adresi → güncel adres */
+  oyuncuTakma?: Record<string, string>
+  /** maçın eski adresi (saat değişmeden önceki) → güncel adres */
+  macTakma?: Record<string, string>
 }

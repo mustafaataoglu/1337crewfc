@@ -51,15 +51,17 @@ export function oneri(res: Sonuc, F: Record<string, Slot[]>): { f: string; nF: n
 
   // Oyuncunun sahadaki ortalama noktası (taraftarların koyduğu slotların ortalaması)
   const nokta: Record<string, { x: number; y: number; n: number }> = {}
-  for (const v of res.oylar ?? []) {
-    const F2 = F[v.dizilis]
+  for (const [f2, slotlar] of Object.entries(res.slotlar ?? {})) {
+    const F2 = F[f2]
     if (!F2) continue
-    v.sira.forEach((slug, i) => {
-      const s = F2[i]
-      if (!s || !slug) return
-      const p = (nokta[slug] ??= { x: 0, y: 0, n: 0 })
-      p.x += s.x; p.y += s.y; p.n++
-    })
+    for (const [i, kisiler] of Object.entries(slotlar)) {
+      const s = F2[Number(i)]
+      if (!s) continue
+      for (const [slug, n] of Object.entries(kisiler)) {
+        const p = (nokta[slug] ??= { x: 0, y: 0, n: 0 })
+        p.x += s.x * n; p.y += s.y * n; p.n += n
+      }
+    }
   }
 
   // Her mevkinin kontenjanı ve adayları: (oyuncu, mevki, oy) en çoktan aza; oyuncu tek mevkiye girer

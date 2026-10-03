@@ -22,7 +22,7 @@ const gonder = async (url: string, govde: object) => {
 
 /** Taraftar sayfalarının üst sekmeleri */
 export function TaraftarSekme({ aktif, nav }: { aktif: 'oyla' | 'tahmin' | 'efsane'; nav: Nav }) {
-  const S = [['oyla', "Senin 11'in"], ['tahmin', 'Skor tahmini'], ['efsane', "Tüm zamanların 11'i"]] as const
+  const S = [['oyla', "Senin 11'in"], ['tahmin', 'Skor tahmini'], ['efsane', 'Tüm zamanlar']] as const
   return (
     <div className="flex gap-1 p-1 rounded-lg bg-muted mb-5 w-fit max-w-full overflow-x-auto" role="tablist" aria-label="Taraftar">
       {S.map(([k, l]) => (
@@ -34,78 +34,99 @@ export function TaraftarSekme({ aktif, nav }: { aktif: 'oyla' | 'tahmin' | 'efsa
 }
 
 // ---------- skor tahmini
-type TahminCevap = { ok: boolean; basladi: boolean; toplam: number; benim: { ev: number; dep: number; ad: string } | null; dagilim?: { ev: number; beraber: number; dep: number; skorlar: Record<string, number> }; hata?: string }
+type TahminCevap = { ok: boolean; basladi: boolean; toplam: number; benim: { ev: number; dep: number; ad: string } | null; puan?: number; dagilim?: { ev: number; beraber: number; dep: number; skorlar: Record<string, number> }; hata?: string }
+const adDuzelt = (s: string) => s.replace(/\s+/g, ' ').trim()
 
 function Sayac({ deger, set, etiket }: { deger: number; set: (n: number) => void; etiket: string }) {
   return (
-    <div className="flex items-center gap-2" role="group" aria-label={etiket}>
-      <button onClick={() => set(Math.max(0, deger - 1))} aria-label={`${etiket} azalt`} className="w-10 h-10 rounded-lg border grid place-items-center"><Minus className="w-4 h-4" /></button>
-      <span className="font-display text-[44px] leading-none w-12 text-center num" aria-live="polite">{deger}</span>
-      <button onClick={() => set(Math.min(30, deger + 1))} aria-label={`${etiket} artır`} className="w-10 h-10 rounded-lg border grid place-items-center"><Plus className="w-4 h-4" /></button>
+    <div className="flex items-center gap-1" role="group" aria-label={etiket}>
+      <button onClick={() => set(Math.max(0, deger - 1))} aria-label={`${etiket} azalt`} className="w-9 h-9 rounded-lg border grid place-items-center shrink-0"><Minus className="w-4 h-4" /></button>
+      <span className="font-display text-[40px] leading-none w-10 text-center num" aria-live="polite">{deger}</span>
+      <button onClick={() => set(Math.min(30, deger + 1))} aria-label={`${etiket} artır`} className="w-9 h-9 rounded-lg border grid place-items-center shrink-0"><Plus className="w-4 h-4" /></button>
     </div>
   )
 }
 
-/** Maç önü skor tahmini; tahmin verince (ya da maç başlayınca) taraftarın tahmin dağılımı görünür */
+/** Skor tahmini: maç saatine kadar açık; tahmin verince (ya da maç başlayınca) taraftarın tahmin dağılımı, maç bitince alınan puan */
 export function TahminFormu({ m }: { m: Match }) {
   const [c, setC] = useState<TahminCevap | null>(null)
   const [ev, setEv] = useState(1), [dep, setDep] = useState(1)
   const [ad, setAd] = useState(() => { try { return localStorage.getItem(AD_KEY) ?? '' } catch { return '' } })
-  const [durum, setDurum] = useState<'bos' | 'gonderiliyor' | 'kaydedildi'>('bos')
+  const [durum, setDurum] = useState<'bos' | 'gonderiliyor'>('bos')
   const [err, setErr] = useState<string | null>(null)
+  // Açık sayfada da maç saatinde kapansın
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t) }, [])
   const yukle = useCallback(() => ilk<TahminCevap>(`api/tahmin.php?mac=${encodeURIComponent(m.id)}`).then(j => {
     if (!j.ok) { setErr(j.hata ?? 'Tahminler alınamadı'); return }
     setC(j)
-    if (j.benim) { setEv(j.benim.ev); setDep(j.benim.dep); if (!ad) setAd(j.benim.ad) }
-  }).catch(() => setErr('Sunucuya ulaşılamadı')), [m.id]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (j.benim) { setEv(j.benim.ev); setDep(j.benim.dep); setAd(a => a || j.benim!.ad) }
+  }).catch(() => setErr('Sunucuya ulaşılamadı')), [m.id])
   useEffect(() => { yukle() }, [yukle])
-  const basladi = c?.basladi ?? Date.now() >= kickoff(m).getTime()
+  const basladi = !!c?.basladi || now >= kickoff(m).getTime() || m.status === 'done'
+  // Maç saati açık sayfada gelince dağılım için bir kez yeniden çek
+  useEffect(() => { if (basladi && c && !c.basladi) yukle() }, [basladi]) // eslint-disable-line react-hooks/exhaustive-deps
   const kaydet = async () => {
+    const temiz = adDuzelt(ad)
     setDurum('gonderiliyor'); setErr(null)
     try {
-      await gonder('api/tahmin.php', { mac: m.id, ev, dep, ad: ad.trim() })
-      try { localStorage.setItem(AD_KEY, ad.trim()) } catch { /* depolama kapalı */ }
-      setDurum('kaydedildi'); await yukle()
-    } catch (e) { setDurum('bos'); setErr(e instanceof Error ? e.message : String(e)) }
+      await gonder('api/tahmin.php', { mac: m.id, ev, dep, ad: temiz })
+      setAd(temiz)
+      try { localStorage.setItem(AD_KEY, temiz) } catch { /* depolama kapalı */ }
+      await yukle()
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e))
+      if (/başladı|kapandı/i.test(String(e))) yukle()
+    } finally { setDurum('bos') }
   }
+  // Oynanmış eski maçlarda tahmin yoksa bölüm gösterilmez
+  if (m.status === 'done' && c && c.toplam === 0) return null
   const d = c?.dagilim
   // dağılım ev sahibine göre gelir; 1337'nin bakışıyla göster
   const biz = d ? (m.us === 'home' ? d.ev : d.dep) : 0, onlar = d ? (m.us === 'home' ? d.dep : d.ev) : 0
-  const degisti = !c?.benim || c.benim.ev !== ev || c.benim.dep !== dep || c.benim.ad !== ad.trim()
+  const degisti = !c?.benim || c.benim.ev !== ev || c.benim.dep !== dep || c.benim.ad !== adDuzelt(ad)
+  const kapanis = kickoff(m).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
 
   return (
-    <section className="rounded-xl border bg-card p-5">
+    <section className="rounded-xl border bg-card p-4 sm:p-5">
       <div className="flex items-baseline justify-between gap-2 mb-3">
         <h3 className="font-display text-[24px] leading-none">Skor tahmini</h3>
         {c && <span className="font-data text-[14px] text-muted-foreground num">{c.toplam} tahmin</span>}
       </div>
       {!basladi ? (
         <>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <div className="flex flex-col items-center gap-2 min-w-0"><span className="font-display text-[18px] text-center leading-tight">{m.home.name}</span><Sayac deger={ev} set={n => { setEv(n); setDurum('bos') }} etiket={`${m.home.name} golü`} /></div>
-            <span className="font-display text-[28px] text-muted-foreground">–</span>
-            <div className="flex flex-col items-center gap-2 min-w-0"><span className="font-display text-[18px] text-center leading-tight">{m.away.name}</span><Sayac deger={dep} set={n => { setDep(n); setDurum('bos') }} etiket={`${m.away.name} golü`} /></div>
+          <div className="grid grid-cols-2 gap-3 text-center">
+            <span className="font-display text-[17px] leading-tight min-w-0 break-words">{m.home.name}</span>
+            <span className="font-display text-[17px] leading-tight min-w-0 break-words">{m.away.name}</span>
           </div>
-          <div className="flex gap-2 mt-4 flex-wrap">
+          <div className="flex items-center justify-between gap-1 mt-2">
+            <Sayac deger={ev} set={setEv} etiket={`${m.home.name} golü`} />
+            <span className="font-display text-[28px] text-muted-foreground" aria-hidden>–</span>
+            <Sayac deger={dep} set={setDep} etiket={`${m.away.name} golü`} />
+          </div>
+          <div className="flex gap-2 mt-4">
             <label htmlFor={`ad-${m.id}`} className="sr-only">Takma ad</label>
-            <input id={`ad-${m.id}`} value={ad} onChange={e => { setAd(e.target.value); setDurum('bos') }} maxLength={20} placeholder="Takma adın (tahmin ligi için)" autoComplete="nickname"
-              className="flex-1 min-w-[180px] h-11 px-3 rounded-lg border bg-background" />
-            <button onClick={kaydet} disabled={durum === 'gonderiliyor' || ad.trim().length < 2 || !degisti}
-              className="px-4 h-11 rounded-lg bg-club text-clubink font-data font-bold uppercase tracking-wider text-[14px] disabled:opacity-60 flex items-center gap-2">
-              {durum === 'gonderiliyor' ? 'Kaydediliyor…' : !degisti ? <><Check className="w-4 h-4" /> Tahminin kayıtlı</> : c?.benim ? 'Tahmini güncelle' : 'Tahmin et'}
+            <input id={`ad-${m.id}`} value={ad} onChange={e => setAd(e.target.value)} maxLength={20} placeholder="Takma ad" autoComplete="nickname"
+              className="flex-1 min-w-0 h-11 px-3 rounded-lg border bg-background" />
+            <button onClick={kaydet} disabled={durum === 'gonderiliyor' || adDuzelt(ad).length < 2 || !degisti}
+              className="shrink-0 px-3 h-11 rounded-lg bg-club text-clubink font-data font-bold uppercase tracking-wider text-[14px] disabled:opacity-60 flex items-center gap-1.5">
+              {durum === 'gonderiliyor' ? 'Kaydediliyor…' : !degisti ? <><Check className="w-4 h-4" /> Kayıtlı</> : c?.benim ? 'Güncelle' : 'Tahmin et'}
             </button>
           </div>
-          <p className="text-[13px] text-muted-foreground mt-2">Tam skor 3 puan, doğru sonuç 1 puan. Tahminler maç saatinde kapanır.</p>
+          <p className="text-[13px] text-muted-foreground mt-2 num">Son tahmin: {kapanis} · tam skor 3, doğru sonuç 1 puan</p>
         </>
       ) : c?.benim ? (
-        <p className="text-[15px]">Tahminin: <b className="num">{m.home.name} {c.benim.ev}–{c.benim.dep} {m.away.name}</b>. Tahminler kapandı.</p>
-      ) : <p className="text-[15px] text-muted-foreground">Tahminler maç saatinde kapandı.</p>}
+        <p className="text-[15px]">
+          Tahminin: <b className="num">{m.home.name} {c.benim.ev}–{c.benim.dep} {m.away.name}</b>
+          {c.puan !== undefined && <> · <b className="num">{c.puan} puan</b></>}
+        </p>
+      ) : <p className="text-[15px] text-muted-foreground">Tahminler kapandı.</p>}
       {err && <p className="text-[14px] text-loss mt-2 font-semibold">{err}</p>}
       {d && c && c.toplam > 0 && (
         <div className="mt-4 pt-4 border-t">
           <div className="eyebrow mb-2">Taraftar ne diyor</div>
           {([['1337 kazanır', biz], ['Berabere', d.beraber], [`${theirs(m).name} kazanır`, onlar]] as const).map(([l, n]) => (
-            <div key={l} className="grid grid-cols-[minmax(0,140px)_minmax(0,1fr)_48px] items-center gap-3 text-[14px] mb-1.5">
+            <div key={l} className="grid grid-cols-[minmax(0,130px)_minmax(0,1fr)_44px] items-center gap-2 text-[14px] mb-1.5">
               <span className="truncate">{l}</span>
               <span className="h-2.5 rounded-full bg-muted overflow-hidden"><span className="block h-full bg-club" style={{ width: `${pct(n, c.toplam)}%` }} /></span>
               <span className="text-right num font-semibold">%{pct(n, c.toplam)}</span>
@@ -133,7 +154,7 @@ export function TahminLigi() {
         {l && <span className="font-data text-[14px] text-muted-foreground num">{l.oyuncu} kişi</span>}
       </div>
       {err && <p className="px-5 pb-5 text-loss">{err}</p>}
-      {l && !l.liste.length && <p className="px-5 pb-5 text-muted-foreground">Sonuçlanan maç olunca liste burada oluşur.</p>}
+      {l && !l.liste.length && <p className="px-5 pb-5 text-muted-foreground">Henüz puanlanan tahmin yok.</p>}
       {l && l.liste.length > 0 && (
         <ol>
           {l.liste.map(r => (
@@ -174,7 +195,7 @@ export function TaraftarMVP({ m, nav }: { m: Match; nav: Nav }) {
     try { await gonder('api/mvp.php', { mac: m.id, oyuncu: secim }); await yukle() } catch (e) { setErr(e instanceof Error ? e.message : String(e)) } finally { setGonderiliyor(false) }
   }
   const sonuc = c.oyuncular ? Object.entries(c.oyuncular).sort((a, b) => b[1] - a[1]) : []
-  const kapanis = new Date(c.kapanis).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+  const kapanis = new Date(c.kapanis).toLocaleString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
   return (
     <section className="mt-8">
       <div className="flex items-baseline justify-between gap-2 mb-3">
@@ -197,7 +218,7 @@ export function TaraftarMVP({ m, nav }: { m: Match; nav: Nav }) {
           </div>
           <div className="flex items-center gap-3 mt-3 flex-wrap">
             <button onClick={oyla} disabled={!secim || gonderiliyor} className="px-5 py-2.5 rounded-lg bg-club text-clubink font-data font-bold uppercase tracking-wider text-[14px] disabled:opacity-60">{gonderiliyor ? 'Gönderiliyor…' : 'Oyumu ver'}</button>
-            <span className="text-[13px] text-muted-foreground">Oylama {kapanis}'de kapanır. Oy verince sonuçlar açılır.</span>
+            <span className="text-[13px] text-muted-foreground num">Oylama kapanışı: {kapanis}</span>
           </div>
         </div>
       ) : (
@@ -221,7 +242,7 @@ export function TaraftarMVP({ m, nav }: { m: Match; nav: Nav }) {
               })}
             </ol>
           )}
-          <p className="text-[13px] text-muted-foreground mt-3">{c.acik ? `Oylama ${kapanis}'de kapanır.` : 'Oylama kapandı.'}</p>
+          <p className="text-[13px] text-muted-foreground mt-3 num">{c.acik ? `Oylama kapanışı: ${kapanis}` : 'Oylama kapandı.'}</p>
         </div>
       )}
       {err && <p className="text-[14px] text-loss mt-2 font-semibold">{err}</p>}
