@@ -152,5 +152,19 @@
   "zaman": "2026-10-03T15:44:25.847Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Cicek-Spor-2025-12-08T230000000Z:b7697e38a0": {
+  "metin": "EfendiLig Kupası 3. haftasında 1337 Crew FC, 8 Aralık 2025 Pazartesi günü iç sahada Çiçek Spor'a 3-5 mağlup oldu. Ev sahibi takımın gollerini Altay Tuğberk Yücel, Kemal Orkun Gündoğdu ve Kemal Sezer Şahin kaydetti. Mücadelede 1337 Crew FC adına asisti Yasin Enes Aksu yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-03T16:10:22.882Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Bordreaux-JB-2025-12-01T210000000Z:6dfa2e6857": {
+  "metin": "1337 Crew FC, EfendiLig 2025-2026 Sezonu 9. haftasında 1 Aralık 2025 Pazartesi günü evinde oynadığı maçta Bordreaux JB ile 2-2 berabere kaldı. Mücadelede 1337 Crew FC'nin iki golünü Altay Tuğberk Yücel atarken, asistleri Mustafa Ataoğlu ve Yavuz Uzun yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-03T16:11:03.965Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
