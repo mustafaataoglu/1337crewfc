@@ -1,7 +1,10 @@
 <?php
 // Senin 11'in oylaması.
 // POST: {mac, dizilis, xi:[{slot,g,oyuncu}], cihaz}  -> cihaz başına maç başına tek oy (tekrar gönderim günceller)
-// GET ?mac=..&anahtar=..                              -> takım paneli sonuçları (panel anahtarı gerekir)
+// GET ?mac=..                                         -> sonuçlar. Oylar anonimdir; ama oylama sürerken sonuçları yalnızca
+//                                                       bu maça oy vermiş cihaz (X-Cihaz başlığı) görür, böylece önde giden
+//                                                       kopyalanmaz. Maç saatinde oylama kapanınca herkese açıktır.
+//                                                       Takım paneli anahtarı (X-Panel-Anahtar) her zaman açar.
 require dirname(__DIR__) . '/_sistem/guncelle.php';
 crew_hata_kaydi();
 header('Content-Type: application/json; charset=utf-8');
@@ -25,11 +28,12 @@ $m = null;
 foreach ($veri['matches'] as $x) if ($x['id'] === $mac) { $m = $x; break; }
 if (!$m) cevap(['ok' => false, 'hata' => 'Maç bulunamadı'], 404);
 $dosya = "$dizin/" . md5($mac) . '.json';
+// Maç saatinde (İstanbul) oylama kapanır
+$saat = new DateTime($m['date'] . ' ' . ($m['time'] ?: '21:00'), new DateTimeZone('Europe/Istanbul'));
+$kapandi = new DateTime('now', new DateTimeZone('Europe/Istanbul')) >= $saat || $m['status'] === 'done';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Maç saatinde (İstanbul) oylama kapanır
-    $saat = new DateTime($m['date'] . ' ' . ($m['time'] ?: '21:00'), new DateTimeZone('Europe/Istanbul'));
-    if (new DateTime('now', new DateTimeZone('Europe/Istanbul')) >= $saat || $m['status'] === 'done') cevap(['ok' => false, 'hata' => 'Bu maç için oylama kapandı'], 409);
+    if ($kapandi) cevap(['ok' => false, 'hata' => 'Bu maç için oylama kapandı'], 409);
 
     $cihaz = (string)($g['cihaz'] ?? '');
     if (!preg_match('/^[A-Za-z0-9-]{8,64}$/', $cihaz)) cevap(['ok' => false, 'hata' => 'Geçersiz cihaz'], 400);
@@ -73,10 +77,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     cevap(['ok' => true, 'toplam' => count($oylar)]);
 }
 
-// Sonuçlar: panel anahtarı gerekir
-$anahtar = (string)@file_get_contents(crew_veri_dizini() . '/panel-anahtari.txt');
-if ($anahtar === '' || !hash_equals(trim($anahtar), (string)($_SERVER['HTTP_X_PANEL_ANAHTAR'] ?? $_GET['anahtar'] ?? ''))) cevap(['ok' => false, 'hata' => 'Anahtar geçersiz'], 403);
+// Sonuçlar: oylama kapandıysa herkese; sürüyorsa yalnızca bu maça oy vermiş cihaza ya da takım paneli anahtarına
 $oylar = json_decode((string)@file_get_contents($dosya), true) ?: [];
+$anahtar = trim((string)@file_get_contents(crew_veri_dizini() . '/panel-anahtari.txt'));
+$verilen = (string)($_SERVER['HTTP_X_PANEL_ANAHTAR'] ?? '');
+$panel = $anahtar !== '' && $verilen !== '' && hash_equals($anahtar, $verilen);
+$cihaz = (string)($_SERVER['HTTP_X_CIHAZ'] ?? '');
+$oyVerdi = preg_match('/^[A-Za-z0-9-]{8,64}$/', $cihaz) && isset($oylar[hash('sha256', $cihaz)]);
+if (!$kapandi && !$oyVerdi && !$panel) cevap(['ok' => false, 'kilitli' => true, 'toplam' => count($oylar), 'hata' => 'Sonuçlar oy verince açılır']);
 $sonuc = ['toplam' => count($oylar), 'dizilisler' => [], 'oyuncular' => [], 'mevkiler' => [], 'slotlar' => [], 'oylar' => []];
 foreach ($oylar as $o) {
     $sonuc['dizilisler'][$o['dizilis']] = ($sonuc['dizilisler'][$o['dizilis']] ?? 0) + 1;
@@ -92,4 +100,4 @@ foreach ($oylar as $o) {
 usort($sonuc['oylar'], fn($a, $b) => strcmp($b['zaman'], $a['zaman']));
 $sonuc['oylar'] = array_slice($sonuc['oylar'], 0, 100);
 if (!$sonuc['slotlar']) $sonuc['slotlar'] = new stdClass();
-cevap(['ok' => true, 'sonuc' => $sonuc]);
+cevap(['ok' => true, 'kapandi' => $kapandi, 'sonuc' => $sonuc]);

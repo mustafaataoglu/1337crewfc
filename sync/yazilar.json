@@ -107,7 +107,9 @@
  "rapor:1337-Crew-FC-GoodFellas-FC-2026-02-03T220000000Z:bd7f1eeaf9": {
   "metin": "1337 Crew FC ev sahibi 1337 iç sahada GoodFellas FC'ya karşı 0-4 skorla mağlubiyetle maçı bitirdi. GoodFellas FC, 14. hafta EfendiLig 2025-2026 sezonu maçında 4 golü elde etti.",
   "model": "openrouter/free",
-  "zaman": "2026-10-02T20:20:38.961Z"
+  "zaman": "2026-10-02T20:20:38.961Z",
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.8-flash"
  },
  "rapor:Son-Baski-FK-1337-Crew-FC-2026-02-17T230000000Z:12dd538f8f": {
   "metin": "EfendiLig 2025-2026 Sezonu 15. haftasında, 17 Şubat 2026 Salı günü deplasmanda Son Baskı FK ile karşılaşan 1337 Crew FC, sahadan 4-2'lik mağlubiyetle ayrıldı. Mücadelede 1337 Crew FC'nin gollerini Altay Tuğberk Yücel ve Kemal Sezer Şahin atarken, Mustafa Duman bir asist kaydetti.",
@@ -135,6 +137,20 @@
   "model": "gemini-3.8-flash",
   "zaman": "2026-10-03T14:48:26.067Z",
   "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Calypso-33-2025-12-24T210000000Z:58e7e18644": {
+  "metin": "EfendiLig 2025-2026 Sezonu 11. haftasında 24 Aralık 2025 Çarşamba günü evinde Calypso 33 ile karşılaşan 1337 Crew FC, mücadeleden 1-1'lik beraberlikle ayrıldı. 1337 Crew FC'nin golünü Kemal Sezer Şahin'in asistinde Altay Tuğberk Yücel kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-03T15:43:31.666Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:Buyuk-Avlu-1337-Crew-FC-2025-12-16T210000000Z:49e49766d0": {
+  "metin": "EfendiLig 2025-2026 Sezonu'nun 10. haftasında 16 Aralık 2025 Salı günü deplasmanda Büyük Avlu ile karşılaşan 1337 Crew FC, maçtan 2-1'lik mağlubiyetle ayrıldı. Karşılaşmada 1337 Crew FC'nin golünü Yasin Enes Aksu'nun asistinde Kemal Sezer Şahin kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-03T15:44:25.847Z",
+  "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
  }
 }
