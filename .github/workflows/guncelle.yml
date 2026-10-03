@@ -2,7 +2,9 @@ name: Veriyi güncelle ve siteyi derle
 
 on:
   schedule:
-    - cron: '*/15 * * * *'   # 15 dakikada bir EfendiLig + YouTube kontrolü
+    # 15 dakikada bir EfendiLig + YouTube kontrolü. Saat başı gibi yoğun dakikalarda GitHub zamanlanmış
+    # çalışmaları erteleyip atlıyor; bu yüzden kalabalık olmayan dakikalar seçildi.
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
       tam:

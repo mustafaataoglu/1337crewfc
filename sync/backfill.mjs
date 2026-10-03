@@ -47,7 +47,9 @@ const sig = JSON.stringify([club.season?.stats, club.season?.rank, club.recentMa
 const changed = FULL || sig !== state.sig
 console.log(FULL ? 'Tam senkron' : changed ? 'Değişiklik var, ayrıntılar tazeleniyor' : 'Değişiklik yok')
 
-const seasons = (await get('/seasons', { fresh: FULL })) ?? []
+let seasons = (await get('/seasons', { fresh: FULL })) ?? []
+// Yeni sezon açıldıysa (kulübün sezonu listede yoksa) sezon listesi beklemeden tazelenir
+if (club.season?.id && !seasons.some(s => s._id === club.season.id)) seasons = (await get('/seasons', { fresh: true })) ?? seasons
 const out = { fetchedAt: new Date().toISOString(), seasons: [], matches: [], players: [], club }
 const curSeasonId = club.season?.id
 const recentCut = Date.now() - 21 * 864e5
