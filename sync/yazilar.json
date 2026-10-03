@@ -201,5 +201,19 @@
   "zaman": "2026-10-03T18:02:32.160Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-GoodFellas-FC-2025-10-07T230000000Z:b72628eb0e": {
+  "metin": "EfendiLig Kupası 1. haftasında 7 Ekim 2025 Salı günü iç sahada GoodFellas FC ile karşılaşan 1337 Crew FC, mücadeleden 1-3 mağlup ayrıldı. Ev sahibi ekibin maçtaki tek golünü Kemal Orkun Gündoğdu'nun asistinde Kemal Sezer Şahin kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T19:11:54.138Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Spartakistanbul-2025-09-29T230000000Z:967ab9374a": {
+  "metin": "EfendiLig 2025-2026 Sezonu'nun 3. haftasında 29 Eylül 2025 Pazartesi günü oynanan maçta 1337 Crew FC, iç sahada Spartakistanbul'u 7-3 mağlup etti. Ev sahibi takımın gollerini Alper Çelik (2), Kemal Sezer Şahin (2), Kemal Orkun Gündoğdu, Oğuzhan Göktepe ve Orhun Mete Çevik kaydetti. Mücadelede Kemal Sezer Şahin, Bahadır Oğuz, Kemal Orkun Gündoğdu, Mustafa Ataoğlu ve Yasin Enes Aksu asist yapan isimler oldu.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-03T19:12:08.175Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
