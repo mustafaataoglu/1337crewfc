@@ -2,8 +2,8 @@ name: Veriyi güncelle ve siteyi derle
 
 on:
   schedule:
-    # 15 dakikada bir EfendiLig + YouTube kontrolü. Saat başı gibi yoğun dakikalarda GitHub zamanlanmış
-    # çalışmaları erteleyip atlıyor; bu yüzden kalabalık olmayan dakikalar seçildi.
+    # 15 dakikada bir EfendiLig + YouTube kontrolü. GitHub zamanlanmış çalışmaları yoğunlukta erteleyip atlıyor
+    # (şu an 3-5 saatte bir geliyor); maç günleri güncelliği sync/pencere.mjs'deki maç penceresi döngüsü sağlar.
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
@@ -11,21 +11,27 @@ on:
         description: 'Tam senkron (tüm ayrıntıları tazele)'
         type: boolean
         default: false
+      dongu:
+        description: 'Maç penceresi döngüsünün kendi başlattığı çalışma'
+        type: boolean
+        default: false
   push:
     branches: [main]
-    paths: ['web/**', 'server/**', 'sync/*.mjs', 'sync/gallery/**', '.github/workflows/**']
+    paths: ['web/**', 'server/**', 'sync/*.mjs', 'sync/*.sh', 'sync/gallery/**', '.github/workflows/**']
 
+# Kod dağıtımları (push) veri döngüsünü beklemesin: ayrı kuyruk
 concurrency:
-  group: guncelle
+  group: guncelle-${{ github.event_name == 'push' && 'kod' || 'veri' }}
   cancel-in-progress: false
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   guncelle:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,48 +64,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
         working-directory: web
 
-      - name: EfendiLig ve YouTube senkronu
-        run: node sync/backfill.mjs ${{ inputs.tam && '--tam' || '' }}
-
-      - name: Site verisini üret
+      - name: Güncelle
+        timeout-minutes: 40
         env:
           YAZAR_YAYINDA: '1'
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node sync/build-data.mjs
+          TAM: ${{ inputs.tam && '--tam' || '' }}
+          ZORLA_PING: ${{ (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dongu)) && '1' || '0' }}
+        run: bash sync/tur.sh
 
-      - name: Siteyi derle
-        run: pnpm build
-        working-directory: web
-
-      - name: Sunucu dosyalarını ekle, sürüm üret
-        run: node sync/paketle.mjs
-
-      - name: Değiştiyse kaydet
-        id: kaydet
-        run: |
-          git config user.name "1337crewfc-bot"
-          git config user.email "1337crewfc-bot@users.noreply.github.com"
-          git add -A site web/public/data sync/youtube.json sync/yazilar.json sync/mac-gecmisi.json
-          if git diff --cached --quiet; then
-            echo "Değişiklik yok"
-            echo "degisti=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "degisti=1" >> "$GITHUB_OUTPUT"
-            git commit -m "Otomatik güncelleme: $(cat site/surum.txt)"
-            # Bu arada başka bir commit geldiyse üstüne al; üretilen dosyalar çakışırsa bizimkini kullan
-            git pull --rebase -X theirs origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
-            git push
-          fi
-
-      # Ziyaretçi beklemeden siteye haber ver: site yeni sürümü hemen indirir
-      - name: Siteyi güncelle
-        if: steps.kaydet.outputs.degisti == '1' || github.event_name != 'schedule'
-        run: |
-          sleep 15
-          for i in 1 2 3; do
-            sonuc=$(curl -s --max-time 120 https://1337crewfc.com/api/guncelle.php || true)
-            echo "$sonuc"
-            echo "$sonuc" | grep -qE '"sonuc": ?"(guncellendi|guncel)"' && break
-            sleep 70
-          done
+      # Maç günü: maçtan 4 saat önce ile 6 saat sonrası arasında 10 dakikada bir tur (kod dağıtımlarında çalışmaz)
+      - name: Maç penceresi
+        if: ${{ !cancelled() && github.event_name != 'push' }}
+        env:
+          YAZAR_YAYINDA: '1'
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: node sync/pencere.mjs

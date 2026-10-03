@@ -16,7 +16,7 @@ const STATE_FILE = here('./cache/state.json')
 const state = existsSync(STATE_FILE) ? JSON.parse(readFileSync(STATE_FILE, 'utf8')) : {}
 const FULL = process.argv.includes('--tam') || !state.lastFull || Date.now() - state.lastFull > 24 * 3600e3
 
-async function get(p, { fresh = false } = {}) {
+async function get(p, { fresh = false, kritik = false } = {}) {
   const file = new URL(p.replace(/[^a-zA-Z0-9_-]/g, '_') + '.json', CACHE)
   if (!fresh && existsSync(file)) { stats.onbellek++; return JSON.parse(readFileSync(file, 'utf8')) }
   for (let i = 0; i < 8; i++) {
@@ -27,7 +27,10 @@ async function get(p, { fresh = false } = {}) {
       if (r.status === 429 || /too many/i.test(j.message ?? '')) { console.log('429, 2 dk bekleniyor:', p); await sleep(120000); continue }
       await sleep(1200)
       if (j.success !== false && j.data != null) writeFileSync(file, JSON.stringify(j.data))
-      else if (existsSync(file)) return JSON.parse(readFileSync(file, 'utf8'))
+      else {
+        if (kritik) stats.hatalar.push(`${p}: ${j.message ?? 'başarısız yanıt'}`)
+        if (existsSync(file)) return JSON.parse(readFileSync(file, 'utf8'))
+      }
       return j.data
     } catch (e) {
       await sleep(4000)
@@ -41,7 +44,7 @@ async function get(p, { fresh = false } = {}) {
 }
 
 // 1) Kulüp özeti her seferinde taze; imzası değiştiyse ayrıntıları tazele
-const club = await get('/clubs/1337-Crew-FC/detail', { fresh: true })
+const club = await get('/clubs/1337-Crew-FC/detail', { fresh: true, kritik: true })
 if (!club) throw new Error('Kulüp verisi alınamadı')
 const sig = JSON.stringify([club.season?.stats, club.season?.rank, club.recentMatches?.map(m => [m.slug, m.home?.score, m.away?.score, m.status]), club.upcomingMatches?.map(m => [m.slug, m.date, m.time]), club.squad?.map(s => s.playerId)])
 const changed = FULL || sig !== state.sig
@@ -49,7 +52,8 @@ console.log(FULL ? 'Tam senkron' : changed ? 'Değişiklik var, ayrıntılar taz
 
 let seasons = (await get('/seasons', { fresh: FULL })) ?? []
 // Yeni sezon açıldıysa (kulübün sezonu listede yoksa) sezon listesi beklemeden tazelenir
-if (club.season?.id && !seasons.some(s => s._id === club.season.id)) seasons = (await get('/seasons', { fresh: true })) ?? seasons
+const yeniSezon = !!club.season?.id && !seasons.some(s => s._id === club.season.id)
+if (yeniSezon) seasons = (await get('/seasons', { fresh: true })) ?? seasons
 const out = { fetchedAt: new Date().toISOString(), seasons: [], matches: [], players: [], club }
 const curSeasonId = club.season?.id
 const recentCut = Date.now() - 21 * 864e5
@@ -58,16 +62,24 @@ const sezonTaze = !state.lastSeasonList || Date.now() - state.lastSeasonList > 3
 
 for (const s of seasons) {
   const isCur = s._id === curSeasonId
-  const res = await get(`/matches?season=${s._id}&limit=500`, { fresh: isCur && (changed || sezonTaze) })
+  const url = `/matches?season=${s._id}&limit=500`
+  let res = await get(url, { fresh: isCur && (changed || sezonTaze), kritik: isCur })
+  // Geçmiş sezonda sonucu girilmemiş maç kaldıysa (geç girilen ya da düzeltilen sonuç) tam senkronda ve yeni sezon açılınca liste tazelenir
+  const bugun = new Date().toISOString().slice(0, 10)
+  if (!isCur && (FULL || yeniSezon) && (res?.matches ?? []).some(m => (m.home?.clubId === CLUB || m.away?.clubId === CLUB) && m.status !== 'done' && m.date < bugun)) res = await get(url, { fresh: true })
   const list = (res?.matches ?? []).filter(m => m.home?.clubId === CLUB || m.away?.clubId === CLUB)
   out.seasons.push({ id: s._id, slug: s.slug, name: s.name, start: s.startDate, matchCount: list.length })
   for (const m of list) {
     let d = null
     if (m.status === 'done') {
-      // Yakın tarihli maçların detayı (video, MVP) sonradan dolabilir: değişiklikte ya da video yoksa tazele
+      // Yakın tarihli maçların detayı (video, kadro, MVP) sonradan dolabilir: değişiklikte, video yoksa ya da ilk 72 saatte
+      // kadro/MVP eksikse tazele (video kadrodan önce girilince kadro ve MVP 24 saat gecikmesin)
       const recent = new Date(m.date).getTime() > recentCut
       const cached = await get(`/matches/${m.slug}`)
-      d = recent && (changed || !cached?.VideoUrl) ? await get(`/matches/${m.slug}`, { fresh: true }) : cached
+      const bizimKadro = m.home?.clubId === CLUB ? cached?.HomeTeamSquad : cached?.AwayTeamSquad
+      const ilk72 = Date.now() - new Date(`${m.date}T${m.time || '21:00'}:00+03:00`).getTime() < 72 * 3600e3
+      const eksik = !cached?.VideoUrl || (ilk72 && (!cached?.MvpPlayerName || !bizimKadro?.length))
+      d = recent && (changed || eksik) ? await get(`/matches/${m.slug}`, { fresh: true }) : cached
     }
     out.matches.push({
       eid: m.id, slug: m.slug, season: s.name, seasonId: s._id, date: m.date, time: m.time, status: m.status,
@@ -81,9 +93,26 @@ for (const s of seasons) {
   }
 }
 
-// 2) Güncel kadro kariyerleri: değişiklikte tazele
+// 1b) Gol ve asistler yalnızca oyuncu kariyerlerinde: son 48 saatte biten, 1337'nin gol attığı bir maçta kariyerlerdeki goller
+//     skoru tutmuyorsa (goller skordan sonra girildi), o maçın kadrosundaki oyuncuların kariyerleri saatte bir tazelenir
+const golTazele = new Set()
+if (!changed && (!state.golTazeleZaman || Date.now() - state.golTazeleZaman > 3600e3)) {
+  const idSlug = new Map((club.squad ?? []).map(s => [s.playerId, s.slug]))
+  for (const m of out.matches) {
+    if (m.status !== 'done' || !m.lineup) continue
+    if (Date.now() - new Date(`${m.date}T${m.time || '21:00'}:00+03:00`).getTime() > 48 * 3600e3) continue
+    const bizim = m.home.id === CLUB ? m.home.score : m.away.score
+    if (!bizim) continue
+    const kadro = [...m.lineup.xi, ...m.lineup.subs].map(id => idSlug.get(id)).filter(Boolean)
+    let gol = 0
+    for (const sl of kadro) { const c = await get(`/players/${sl}/career`); for (const se of c?.seasons ?? []) for (const r of se.matches ?? []) if (r.matchId === m.eid) gol += r.goals ?? 0 }
+    if (gol < bizim) kadro.forEach(sl => golTazele.add(sl))
+  }
+}
+
+// 2) Güncel kadro kariyerleri: değişiklikte (ya da gol bekleyen maçın kadrosundaysa) tazele
 for (const p of club.squad ?? []) {
-  const c = await get(`/players/${p.slug}/career`, { fresh: changed })
+  const c = await get(`/players/${p.slug}/career`, { fresh: changed || golTazele.has(p.slug) })
   out.players.push({ slug: p.slug, name: p.name, no: p.jerseyNumber, pos: p.position?.code, captain: !!p.captain, career: c })
 }
 
@@ -133,6 +162,10 @@ out.youtube = yt
 
 writeFileSync(here('./backfill.json'), JSON.stringify(out))
 // Bu çalışmada istek hatası olduysa imzayı kaydetme: bir sonraki çalışma ayrıntıları yeniden tazelesin
-writeFileSync(STATE_FILE, JSON.stringify({ sig: stats.hatalar.length ? state.sig : sig, lastFull: FULL && !stats.hatalar.length ? Date.now() : state.lastFull, lastSeasonList: (changed || sezonTaze) && !stats.hatalar.length ? Date.now() : state.lastSeasonList, lastRun: Date.now() }))
+const tutarsiz = (club.recentMatches ?? []).some(rm => { const m = out.matches.find(x => x.slug === rm.slug); return !m || m.status !== rm.status || m.home.score !== rm.home?.score || m.away.score !== rm.away?.score })
+  || (club.upcomingMatches ?? []).some(um => { const m = out.matches.find(x => x.slug === um.slug); return !m || m.date !== um.date || m.time !== um.time })
+if (tutarsiz) console.log('Kulüp özeti ile sezon listesi tutmuyor: sonraki turda yeniden çekilecek')
+const tamam = !stats.hatalar.length && !tutarsiz
+writeFileSync(STATE_FILE, JSON.stringify({ golTazeleZaman: golTazele.size ? Date.now() : state.golTazeleZaman, sig: !tamam ? state.sig : sig, lastFull: FULL && !stats.hatalar.length ? Date.now() : state.lastFull, lastSeasonList: (changed || sezonTaze) && tamam ? Date.now() : state.lastSeasonList, lastRun: Date.now() }))
 writeFileSync(here('./sync-stats.json'), JSON.stringify({ ...stats, degisiklik: changed, tam: FULL }))
 console.log('maç', out.matches.length, 'oyuncu', out.players.length, 'eski', out.former.length, 'istek', stats.istek, 'önbellek', stats.onbellek, 'hata', stats.hatalar.length)

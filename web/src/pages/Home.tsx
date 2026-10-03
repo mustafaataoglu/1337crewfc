@@ -73,8 +73,10 @@ export default function Home({ nav }: { nav: Nav }) {
                 </div>
               )}
               <div className="flex flex-wrap gap-2 justify-center">
-                <button onClick={() => nav.go({ page: 'oyla' })} className="px-4 py-2.5 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px]">Senin 11'ini kur</button>
-                <button onClick={() => nav.go({ page: 'tahmin' })} className="px-4 py-2.5 rounded-lg border border-clubink/40 font-data font-bold uppercase tracking-wider text-[14px]">Skor tahmini</button>
+                {!(cd && cd.d + cd.h + cd.m + cd.s === 0) && <>
+                  <button onClick={() => nav.go({ page: 'oyla' })} className="px-4 py-2.5 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px]">Senin 11'ini kur</button>
+                  <button onClick={() => nav.go({ page: 'tahmin' })} className="px-4 py-2.5 rounded-lg border border-clubink/40 font-data font-bold uppercase tracking-wider text-[14px]">Skor tahmini</button>
+                </>}
                 <button onClick={() => nav.openMatch(next.id)} className="px-4 py-2.5 rounded-lg border border-clubink/40 font-data font-bold uppercase tracking-wider text-[14px]">Maç önü analizi</button>
               </div>
             </div>

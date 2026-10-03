@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Lock, Share2 } from 'lucide-react'
 import type { Pos } from '@/types'
-import { played, upcoming, acikMac, fmtDate, playerBySlug, POS_LABEL } from '@/lib/site'
+import { data, played, upcoming, acikMac, kickoff, fmtDate, playerBySlug, POS_LABEL } from '@/lib/site'
 import { Avatar } from '@/components/bits'
 import { cn } from '@/lib/utils'
 import { deviceId } from '@/lib/cihaz'
@@ -44,7 +44,8 @@ export default function VotePanel({ F, gonderim = 0, efsane = false }: { F: Reco
   // Sıradaki maç ve son oynanan 3 maç: oylama kapandıktan sonra da sonuçlar görülebilsin. Tüm zamanların 11'i tek bir oylama.
   const options = efsane
     ? [{ id: EFSANE, label: "Tüm zamanların 11'i" }]
-    : [...upcoming.slice(0, 2), ...played.slice(0, 3)].map(m => ({ id: m.id, label: `${m.home.name} – ${m.away.name} · ${fmtDate(m.date)}` }))
+    : [...new Set([acikMac(), ...data.matches.filter(m => m.status !== 'done' && kickoff(m).getTime() <= Date.now()).sort((a, b) => kickoff(b).getTime() - kickoff(a).getTime()).slice(0, 1), ...upcoming.slice(0, 2), ...played.slice(0, 3)])]
+        .filter((m): m is NonNullable<typeof m> => !!m).map(m => ({ id: m.id, label: `${m.home.name} – ${m.away.name} · ${fmtDate(m.date)}` }))
   const [mac, setMac] = useState(efsane ? EFSANE : (acikMac()?.id ?? options[0]?.id))
   const [res, setRes] = useState<Sonuc | null>(null)
   const [kapandi, setKapandi] = useState(false)

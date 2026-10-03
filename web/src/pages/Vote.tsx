@@ -64,7 +64,9 @@ export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
   // böylece dizilişler arasında gidip gelince kadro kaymaz ve eski haline döner.
   const [anchors, setAnchors] = useState<Record<string, Anchor>>(() => anchorsOf(saved?.f ?? '4-2-3-1', saved?.xi ?? autoPick('4-2-3-1', havuz), saved?.anchors))
   // "Oy verildi" bilgisi maça özel: önceki maça verilen oy sıradaki maçı kilitlemesin
-  const [sent, setSent] = useState(!!saved?.sent && !!oyAnahtari && saved?.mac === oyAnahtari)
+  const [sentMac, setSentMac] = useState<string | undefined>(saved?.sent ? saved.mac : undefined)
+  const sent = !!oyAnahtari && sentMac === oyAnahtari
+  const setSent = (v: boolean) => setSentMac(v ? oyAnahtari : undefined)
   const [pick, setPick] = useState<number | null>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
   // Telefonda oyuncu listesi sahanın altında açılır: görünür olsun diye oraya kaydır
@@ -88,8 +90,8 @@ export default function Vote({ mod = 'mac' }: { mod?: Mod }) {
   }
   // Kurulan kadro her değişiklikte bu tarayıcıya kaydedilir; sayfa yenilenince kaybolmaz.
   useEffect(() => {
-    try { localStorage.setItem(KEY[mod], JSON.stringify({ f, xi, anchors, sent, mac: oyAnahtari })) } catch { /* depolama kapalı */ }
-  }, [mod, f, xi, anchors, sent, oyAnahtari])
+    try { localStorage.setItem(KEY[mod], JSON.stringify({ f, xi, anchors, sent: !!sentMac, mac: sentMac })) } catch { /* depolama kapalı */ }
+  }, [mod, f, xi, anchors, sentMac])
 
   const choose = (slug: string) => {
     if (pick === null) return

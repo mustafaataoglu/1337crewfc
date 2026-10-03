@@ -156,7 +156,10 @@ for (const m of matches) {
 // ---- oyuncular
 const cur = raw.club.season ?? { id: null, label: '', rank: null, totalTable: [], stats: {} }
 // Sadece Crew formasıyla oynanan maçlar sayılır (kariyer başka kulüpleri de içerebilir)
-const crewSlugs = new Set(raw.matches.map(m => m.slug.toLowerCase()))
+const crewSlugs = new Set(raw.matches.flatMap(m => [m.slug.toLowerCase(), ...(m.eid ? [m.eid] : [])]))
+const crewEid = new Set(raw.matches.map(m => m.eid).filter(Boolean))
+// kariyer satırının maç anahtarı: kalıcı kimlik (varsa), yoksa adres
+const satirAnahtari = r => (r.matchId && crewEid.has(r.matchId) ? r.matchId : (r.slug ?? '').toLowerCase())
 const mvpCount = {}, mvpNow = {}
 for (const m of raw.matches) if (m.mvp?.club === CLUB && m.mvp.slug) {
   mvpCount[m.mvp.slug] = (mvpCount[m.mvp.slug] ?? 0) + 1
@@ -165,7 +168,7 @@ for (const m of raw.matches) if (m.mvp?.club === CLUB && m.mvp.slug) {
 // Hesap slug'ı -> EfendiLig oyuncu kimlikleri (maç kadrolarındaki kimliklerle eşlemek için)
 const idsOf = {}
 for (const [id, sl] of Object.entries(raw.idMap ?? {})) (idsOf[sl] ??= []).push(id)
-const rawBySlug = new Map(raw.matches.map(m => [m.slug.toLowerCase(), m]))
+const rawBySlug = new Map(raw.matches.flatMap(m => [[m.slug.toLowerCase(), m], ...(m.eid ? [[m.eid, m]] : [])]))
 // ---- ORTAK OYUNCU LİSTESİ: güncel kadro + eski oyuncular, mükerrer hesaplar birleştirilir
 const POS = { K: 'K', S: 'S', OS: 'O', O: 'O', F: 'F' }
 const tokens = n => norm(n).length ? (n ?? '').split(String.fromCharCode(32)).map(norm).filter(Boolean) : []
@@ -194,7 +197,7 @@ const players = people.map(p => {
       const label = short(se.label ?? se.seasonSlug ?? '')
       const line = bySeasonMap.get(label) ?? { label, m: 0, g: 0, a: 0, start: se.year ?? Number(label.slice(0, 4)) }
       for (const r of se.matches ?? []) {
-        const key = (r.slug ?? '').toLowerCase()
+        const key = satirAnahtari(r)
         if (r.played && !crewSlugs.has(key)) other.add(key)
         if (!r.played || !crewSlugs.has(key) || countedMatch.has(key)) continue
         countedMatch.add(key)
@@ -209,7 +212,7 @@ const players = people.map(p => {
   // Kariyer satırı olmayan ama ilk 11'de yer aldığı Crew maçları (EfendiLig bazı eski maçlarda satır üretmemiş)
   const myIds = new Set(p.accounts.flatMap(a => idsOf[a.slug] ?? []))
   for (const rm of raw.matches) {
-    const key = rm.slug.toLowerCase()
+    const key = rm.eid ?? rm.slug.toLowerCase() // kariyer satırlarıyla aynı anahtar (çift sayılmasın)
     if (countedMatch.has(key) || !rm.lineup?.xi?.some(id => myIds.has(id))) continue
     countedMatch.add(key)
     const label = short(rm.season)
@@ -247,9 +250,9 @@ for (const rm of raw.matches) {
   if (m && rm.lineup) m.lineup = { xi: rm.lineup.xi.map(idToPerson).filter(Boolean), subs: rm.lineup.subs.map(idToPerson).filter(Boolean) }
 }
 // ---- maç başına gol ve asist (oyuncu kariyerlerindeki maç satırlarından)
-const bySlug = new Map(matches.map(m => [m.id.toLowerCase(), m]))
+const bySlug = new Map(matches.flatMap(m => [[m.id.toLowerCase(), m], ...(m.eid ? [[m.eid, m]] : [])]))
 for (const p of [...raw.players, ...(raw.former ?? [])]) for (const se of p.career?.seasons ?? []) for (const pm of se.matches ?? []) {
-  const m = bySlug.get((pm.slug ?? '').toLowerCase()); if (!m) continue
+  const m = (pm.matchId && bySlug.get(pm.matchId)) || bySlug.get((pm.slug ?? '').toLowerCase()); if (!m) continue
   const pl = players.find(x => x.accountSlugs.includes(p.slug))
   if (!pl || !pm.played) continue
   if (pm.goals && !(m.scorers ??= []).some(x => x.slug === pl.slug)) m.scorers.push({ slug: pl.slug, name: pl.name, n: pm.goals })
