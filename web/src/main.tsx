@@ -38,13 +38,17 @@ try {
   const y = sessionStorage.getItem('1337-kaydirma')
   if (y) { sessionStorage.removeItem('1337-kaydirma'); setTimeout(() => window.scrollTo(0, Number(y)), 600) }
 } catch { /* depolama kapalı */ }
+// Ürün seçimi, sipariş formu ya da yönetim düzenlemesi sürerken yenilenmez; o sayfadan çıkınca yenilenir.
+let bekleyen = false
 async function kontrol() {
   const s = await surumAl()
   if (!ilkSurum) { ilkSurum = s; return }
   if (s && s !== ilkSurum) {
+    if (/^#(magaza\/(sepet|urun\/)|yonetim)/.test(location.hash)) { bekleyen = true; return }
     try { sessionStorage.setItem('1337-kaydirma', String(window.scrollY)) } catch { /* depolama kapalı */ }
     location.reload()
   }
 }
 setInterval(kontrol, 3 * 60 * 1000)
 document.addEventListener('visibilitychange', () => { if (!document.hidden) kontrol() })
+addEventListener('hashchange', () => { if (bekleyen) kontrol() })
