@@ -56,7 +56,7 @@ function crew_durum_yaz(array $ek = []): array {
     $durum = array_merge($eski, ['hata' => null], [
         'surum' => trim((string)@file_get_contents(crew_kok() . '/surum.txt')),
         'php' => PHP_VERSION,
-        'eklentiler' => ['zip' => class_exists('ZipArchive'), 'curl' => function_exists('curl_init'), 'url_fopen' => (bool)ini_get('allow_url_fopen')],
+        'eklentiler' => ['zip' => class_exists('ZipArchive'), 'curl' => function_exists('curl_init'), 'url_fopen' => (bool)ini_get('allow_url_fopen'), 'gd' => function_exists('imagecreatefromstring')],
         'sync' => json_decode((string)@file_get_contents(crew_kok() . '/data/durum-sync.json'), true),
         'oySayisi' => $oy,
         'phpHatalari' => array_values($satirlar),

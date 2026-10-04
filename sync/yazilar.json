@@ -313,5 +313,19 @@
   "zaman": "2026-10-04T18:35:55.988Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "rapor:Selimiye-Veteranlar-1337-Crew-FC-2024-05-15T210000000Z:5b37ffb7e8": {
+  "metin": "EfendiLig Kupası 2. haftasında 1337 Crew FC, 15 Mayıs 2024 Çarşamba günü deplasmanda Selimiye Veteranlar ile karşılaştı. Mücadele, ev sahibi Selimiye Veteranlar'ın 2-0'lık galibiyetiyle sonuçlandı ve 1337 Crew FC sahadan mağlubiyetle ayrıldı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-04T20:42:16.511Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Selimiye-Veteranlar-2024-05-06T230000000Z:e57fcf449f": {
+  "metin": "EfendiLig Kupası 1. haftasında 1337 Crew FC, 6 Mayıs 2024 Pazartesi günü evinde Selimiye Veteranlar ile karşılaştı ve sahadan 6-5 galip ayrıldı. Mücadelede 1337 Crew FC'nin gollerini Yunus Emre Gümüş (2), Mustafa Ataoğlu ve Selçuk Özaydın kaydederken, asistleri Selçuk Özaydın ve Uğur Kemerkaya yaptı.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-04T20:43:13.407Z",
+  "dogrulayan": "gemini-3.8-flash",
+  "dogrulandi": true
  }
 }
