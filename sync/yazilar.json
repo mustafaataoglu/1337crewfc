@@ -257,5 +257,19 @@
   "zaman": "2026-10-03T23:42:35.764Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Buyuk-Avlu-2025-04-16T210000000Z:90bdcf3f0d": {
+  "metin": "Aman Ali Rıza Bey ATK Ligi'nin 1. haftasında 16 Nisan 2025 Çarşamba günü Büyük Avlu'yu ağırlayan 1337 Crew FC, sahadan 2-3'lük mağlubiyetle ayrıldı. İç sahada oynanan mücadelede 1337 Crew FC'nin gollerini Bahadır Oğuz ve Uğur Kemerkaya kaydetti.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-04T02:53:14.182Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Cicek-Spor-2025-03-05T210000000Z:e4fdf31579": {
+  "metin": "1337 Crew FC, EfendiLig Kupası Final Yolu 3. hafta maçında 5 Mart 2025 Çarşamba günü evinde Çiçek Spor'u konuk etti. Karşılaşmada 1337, Yasin Kayran'ın attığı golle 1-3'lük skorla mağlubiyetle sonuçlandırdı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-04T02:53:21.076Z",
+  "dogrulayan": "qwen/qwen3.8-27b:free",
+  "dogrulandi": true
  }
 }
