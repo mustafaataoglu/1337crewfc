@@ -341,5 +341,19 @@
   "zaman": "2026-10-04T20:46:47.874Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Keyfekeder-FC-2024-04-02T223000000Z:f9a2b20231": {
+  "metin": "1337 Crew FC, Play-Off 7. haftasında 2 Nisan 2024 Salı günü sahasında Keyfekeder FC ile 3-3 berabere kaldı. Ev sahibi ekibin gollerini Yunus Emre Gümüş (2) ve Uğur Kemerkaya kaydederken, asistleri Gürhan Ulutaş ile Kemal Orkun Gündoğdu yaptı.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-04T21:53:21.018Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2024-03-27T223000000Z:c68b2fcaaf": {
+  "metin": "Play-Off 6. haftasında 27 Mart 2024 Çarşamba günü The Wall SK deplasmanına çıkan 1337 Crew FC, sahadan 2-2'lik beraberlikle ayrıldı. 1337 Crew FC'nin maçtaki iki golünü de Uğur Kemerkaya kaydetti.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-04T21:54:16.278Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
