@@ -51,8 +51,12 @@ function magaza_calistir(callable $fn): void {
     }
 }
 
-/** JSON istek gövdesi (en fazla 64 KB) */
+/**
+ * JSON istek gövdesi (en fazla 64 KB). Yalnızca application/json kabul edilir: tarayıcı başka bir siteden bu türü
+ * önce izin sormadan gönderemez, böylece yabancı sayfalar ziyaretçilerinin tarayıcısıyla sipariş açamaz.
+ */
 function magaza_govde(): array {
+    if (stripos(trim((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json') !== 0) magaza_hata('Geçersiz istek', 415);
     $ham = (string)file_get_contents('php://input', false, null, 0, 65537);
     $g = strlen($ham) > 65536 ? null : json_decode($ham, true, 16);
     if (!is_array($g)) magaza_hata('Geçersiz istek');

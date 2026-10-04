@@ -327,5 +327,19 @@
   "zaman": "2026-10-04T20:43:13.407Z",
   "dogrulayan": "gemini-3.8-flash",
   "dogrulandi": true
+ },
+ "rapor:Football-Brothers-United-1337-Crew-FC-2024-04-30T210000000Z:cebbe4f630": {
+  "metin": "1337 Crew FC, Play-Off 9. haftasında 30 Nisan 2024 Salı günü deplasmanda Football Brothers United ile karşılaştı. Mücadele ev sahibi Football Brothers United'ın 6-0'lık galibiyetiyle sona erdi ve 1337 Crew FC sahadan mağlubiyetle ayrıldı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-04T20:46:01.045Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:Atletico-Hybrid-1337-Crew-FC-2024-04-16T210000000Z:1e085bfc0e": {
+  "metin": "1337 Crew FC, Play-Off 8. haftasında 16 Nisan 2024 Salı günü deplasmanda Atletico Hybrid ile karşılaştı. Mücadele ev sahibi Atletico Hybrid'in 5-2'lik galibiyetiyle sonuçlandı ve 1337 Crew FC sahadan mağlubiyetle ayrıldı. 1337 Crew FC'nin gollerini Gökhan Kalyoncu ve Mustafa Buğra Eren kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-04T20:46:47.874Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
