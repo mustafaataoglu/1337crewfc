@@ -285,5 +285,19 @@
   "zaman": "2026-10-04T09:34:50.072Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Buyuk-Avlu-2024-11-19T210000000Z:ed57ee43a0": {
+  "metin": "EfendiLig Kupası'nın 2. haftasında 19 Kasım 2024 Salı günü oynanan maçta 1337 Crew FC, ev sahibi olarak Büyük Avlu ile karşılaştı. İç sahada oynanan mücadeleden 1337 Crew FC, 0-6'lık skorla mağlubiyetle ayrıldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-04T14:57:52.241Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:AC-Nevizade-1337-Crew-FC-2024-10-14T210000000Z:aedfe921d3": {
+  "metin": "EfendiLig Kupası 1. haftasında 1337 Crew FC, 14 Ekim 2024 Pazartesi günü deplasmanda AC Nevizade ile karşılaştı. Mücadeleyi 6-1'lik skorla kaybeden 1337 Crew FC'nin golünü Barış Kocatürk'ün asistinde Yasin Kayran attı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-04T14:58:54.612Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
