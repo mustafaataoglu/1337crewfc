@@ -271,5 +271,19 @@
   "zaman": "2026-10-04T02:53:21.076Z",
   "dogrulayan": "qwen/qwen3.8-27b:free",
   "dogrulandi": true
+ },
+ "rapor:AKUT-Futbol-1337-Crew-FC-2025-02-03T210000000Z:de48bcdd1e": {
+  "metin": "EfendiLig Kupası Final Yolu 1. haftasında 3 Şubat 2025 Pazartesi günü AKUT Futbol deplasmanına çıkan 1337 Crew FC, sahadan 1-2'lik galibiyetle ayrıldı. 1337 Crew FC'nin gollerini Murat Güldür ve Yasin Kayran kaydederken, Ali Buğra Barçın bir asistle skora katkı sağladı.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-04T09:33:34.545Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2024-12-17T230000000Z:3225397940": {
+  "metin": "EfendiLig Kupası 3. haftasında 17 Aralık 2024 Salı günü The Wall SK'ye konuk olan 1337 Crew FC, mücadeleden 4-3'lük mağlubiyetle ayrıldı. 1337 Crew FC'nin üç golünü de Yasin Kayran atarken, asistleri Mustafa Buğra Eren, Oğuz Uzun ve Orhun Mete Çevik yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-04T09:34:50.072Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
