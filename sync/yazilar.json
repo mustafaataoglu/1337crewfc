@@ -299,5 +299,19 @@
   "zaman": "2026-10-04T14:58:54.612Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:Spartakistanbul-1337-Crew-FC-2024-05-27T210000000Z:72fe1223c3": {
+  "metin": "1337 Crew FC, EfendiLig Kupası 5. haftasında 27 Mayıs 2024 Pazartesi günü deplasmanda Spartakistanbul ile karşılaştı. Ev sahibi Spartakistanbul'un 2-1'lik üstünlüğüyle biten maçta 1337 Crew FC sahadan mağlubiyetle ayrıldı. Takımın tek golünü Barış Kocatürk kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-04T18:34:55.850Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-The-Wall-SK-2024-05-21T230000000Z:9c04fe6529": {
+  "metin": "1337 Crew FC, EfendiLig Kupası'nın 3. haftasında 21 Mayıs 2024 Salı günü evinde The Wall SK ile 2-2 berabere kaldı. Karşılaşmada 1337 Crew FC'nin gollerini Selçuk Özaydın ve Uğur Kemerkaya atarken, asistleri Selçuk Özaydın ile Yasin Kayran yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-04T18:35:55.988Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
