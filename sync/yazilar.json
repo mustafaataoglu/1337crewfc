@@ -383,5 +383,19 @@
   "zaman": "2026-10-05T05:47:47.111Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-GoodFellas-FC-2024-02-12T220000000Z:2233f671f1": {
+  "metin": "EfendiLig 2023-2024 Sezonu'nun 17. haftasında, 12 Şubat 2024 Pazartesi günü iç sahada GoodFellas FC ile karşılaşan 1337 Crew FC, mücadeleden 1-3'lük mağlubiyetle ayrıldı. 1337 Crew FC'nin maçtaki tek golünü Uğur Kemerkaya kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-05T12:42:42.962Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Atletico-Hybrid-2024-02-06T230000000Z:42a808e665": {
+  "metin": "EfendiLig 2023-2024 Sezonu 16. haftasında 1337 Crew FC, 6 Şubat 2024 Salı günü iç sahada Atletico Hybrid ile karşılaştı. Ev sahibi 1337 Crew FC, mücadeleyi 1-0'lık skorla kazandı. Maçtaki golü Selçuk Özaydın kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-05T12:44:13.450Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
