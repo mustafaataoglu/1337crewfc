@@ -355,5 +355,19 @@
   "zaman": "2026-10-04T21:54:16.278Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-AKUT-Futbol-2024-03-20T213000000Z:c1fa1b1e18": {
+  "metin": "Play-Off 5. haftasında 20 Mart 2024 Çarşamba günü evinde AKUT Futbol ile karşılaşan 1337 Crew FC, sahadan 5-0'lık galibiyetle ayrıldı. Mücadelede 1337 Crew FC'nin gollerini Yunus Emre Gümüş üç, Yasin Kayran ise iki golle kaydetti. Karşılaşmada Barış Kocatürk, Mustafa Buğra Eren ve Uğur Kemerkaya asist yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-05T00:14:27.537Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:Bordreaux-JB-1337-Crew-FC-2024-03-13T220000000Z:ca51db8c48": {
+  "metin": "Play-Off 4. haftasında 13 Mart 2024 Çarşamba günü Bordreaux JB'ye konuk olan 1337 Crew FC, sahadan 5-1'lik mağlubiyetle ayrıldı. 1337 Crew FC'nin tek golünü Mustafa Ataoğlu'nun asistinde Yasin Kayran kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-05T00:15:41.996Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
