@@ -369,5 +369,19 @@
   "zaman": "2026-10-05T00:15:41.996Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Selimiye-Veteranlar-2024-02-27T210000000Z:970c1192f5": {
+  "metin": "Play-Off 2. haftasında 27 Şubat 2024 Salı günü sahasında Selimiye Veteranlar'ı konuk eden 1337 Crew FC, mücadeleden 2-3 mağlup ayrıldı. Ev sahibi ekibin gollerini Bahadır Oğuz ve Yasin Kayran kaydederken, asistler Murat Güldür ile Mustafa Ataoğlu'ndan geldi.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-05T05:46:20.773Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-AC-Nevizade-2024-02-20T230000000Z:8a1b2b5dda": {
+  "metin": "Play-Off 1. haftasında 20 Şubat 2024 Salı günü iç sahada AC Nevizade ile karşılaşan 1337 Crew FC, sahadan 4-6'lık mağlubiyetle ayrıldı. 1337 Crew FC'nin gollerini Yasin Kayran (2), Ali Dilaver ve Kemal Orkun Gündoğdu kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-05T05:47:47.111Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
