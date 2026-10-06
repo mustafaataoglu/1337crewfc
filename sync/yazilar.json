@@ -446,5 +446,19 @@
   "zaman": "2026-10-06T20:09:16.439Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:AC-Nevizade-1337-Crew-FC-2023-11-27T220000000Z:f86af7b56a": {
+  "metin": "EfendiLig 2023-2024 Sezonu'nun 8. haftasında 1337 Crew FC, 27 Kasım 2023 Pazartesi günü deplasmanda AC Nevizade ile karşılaştı. Karşılaşma ev sahibi AC Nevizade'nin 1-0'lık üstünlüğüyle tamamlanırken 1337 Crew FC mücadeleden mağlubiyetle ayrıldı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-06T23:45:38.937Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Spartakistanbul-2023-11-20T220000000Z:28866968c4": {
+  "metin": "EfendiLig 2023-2024 Sezonu 7. haftasında 1337 Crew FC, 20 Kasım 2023 Pazartesi günü evinde Spartakistanbul ile karşılaştı. Mücadeleden 1-2 mağlup ayrılan 1337 Crew FC'nin golünü Mustafa Buğra Eren'in asistinde Gürhan Ulutaş kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-06T23:46:39.283Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
