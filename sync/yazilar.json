@@ -439,5 +439,12 @@
   "zaman": "2026-10-06T14:59:21.366Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Bordreaux-JB-2023-12-05T210000000Z:161c7153cf": {
+  "metin": "EfendiLig 2023-2024 Sezonu 9. haftasında 5 Aralık 2023 Salı günü oynanan maçta ev sahibi 1337 Crew FC, Bordreaux JB takımına 1-6 mağlup oldu. İç sahada gerçekleşen mücadelede 1337 Crew FC'nin tek golünü Mustafa Ataoğlu'nun asistinde Mustafa Buğra Eren kaydetti.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-06T20:09:16.439Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
