@@ -397,5 +397,19 @@
   "zaman": "2026-10-05T12:44:13.450Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:AKUT-Futbol-1337-Crew-FC-2024-01-30T210000000Z:5766c15698": {
+  "metin": "EfendiLig 2023-2024 Sezonu 15. haftasında 30 Ocak 2024 Salı günü deplasmanda AKUT Futbol ile karşılaşan 1337 Crew FC, sahadan 1-5 galip ayrıldı. 1337 Crew FC'nin gollerini Mustafa Buğra Eren (2), Gürhan Ulutaş, Orhun Mete Çevik ve Uğur Kemerkaya kaydederken; asistleri Erdal Gürses, Uğur Kemerkaya ve Yasin Kayran yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-06T01:34:46.178Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Son-Baski-FK-2024-01-23T230000000Z:d2bccfaf65": {
+  "metin": "EfendiLig 2023-2024 Sezonu 14. haftasında 23 Ocak 2024 Salı günü iç sahada Son Baskı FK ile karşılaşan 1337 Crew FC, mücadeleden 2-3 mağlup ayrıldı. Karşılaşmada 1337 Crew FC adına golleri Barış Kocatürk ve Yasin Kayran kaydederken, asistleri de Barış Kocatürk ile Yasin Kayran yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-06T01:35:45.796Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
