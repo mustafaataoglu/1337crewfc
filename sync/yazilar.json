@@ -530,5 +530,12 @@
   "zaman": "2026-10-07T18:29:31.011Z",
   "dogrulayan": "gemini-3.8-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-Football-Brothers-United-2022-04-06T210000000Z:32ed00c2b6": {
+  "metin": "6 Nisan 2022 Çarşamba günü EfendiLig Kupası'nda 1337 Crew FC, ev sahasında Football Brothers United karşısında 0-6 mağlup oldu. 1337 Crew FC gol atamadı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-07T18:41:50.975Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
