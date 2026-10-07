@@ -509,5 +509,11 @@
   "zaman": "2026-10-07T17:44:15.493Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:AKUT-Futbol-1337-Crew-2023-05-15T230000000Z:6e2508344e": {
+  "metin": "1337 Crew FC, EfendiLig Kupası'nın 2. haftasında 15 Mayıs 2023 Pazartesi günü deplasmanda AKUT Futbol'a konuk olduğu mücadeleyi 3-5 kazandı. Karşılaşmada 1337 Crew FC'nin gollerini Yunus Emre Gümüş (3) ve Yasin Kayran (2) atarken, asistleri Bahadır Oğuz, Yasin Kayran ve Yunus Emre Gümüş yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-07T17:58:21.604Z",
+  "dogrulandi": false
  }
 }
