@@ -502,5 +502,12 @@
   "zaman": "2026-10-07T16:58:23.669Z",
   "dogrulandi": true,
   "dogrulayan": "gemini-3.6-flash"
+ },
+ "rapor:1337-Crew-AKUT-Futbol-2023-05-08T210000000Z:4cc07a7694": {
+  "metin": "8 Mayıs 2023 Pazartesi, EfendiLig Kupası 1. hafta maçında 1337 Crew FC, AKUT Futbol'u 2-1 yendi. Murat Güldür ve Yasin Kayran gol attı. Maç 1337 iç sahasında oynandı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-07T17:44:15.493Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
