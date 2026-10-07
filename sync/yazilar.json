@@ -523,5 +523,12 @@
   "zaman": "2026-10-07T18:15:36.971Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:Football-Brothers-United-1337-Crew-2022-05-09T220000000Z:0d42537df9": {
+  "metin": "1337 Crew FC, EfendiLig Kupası (Final Yolu) 2. haftasında 9 Mayıs 2022 Pazartesi günü deplasmanda Football Brothers United ile karşılaştı. Rakibine 5-1 mağlup olan takımın tek golünü Yunus Emre Gümüş'ün asistinde Nazım Berk Kalyoncu kaydetti.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-07T18:29:31.011Z",
+  "dogrulayan": "gemini-3.8-flash",
+  "dogrulandi": true
  }
 }
