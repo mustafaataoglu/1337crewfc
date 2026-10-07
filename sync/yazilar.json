@@ -486,6 +486,13 @@
   "metin": "EfendiLig 2023-2024 Sezonu 3. haftasında 25 Ekim 2023 Çarşamba günü oynanan maçta 1337 Crew FC, deplasmanda The Wall SK'ye 4-2 mağlup oldu. Müsabakada 1337 Crew FC'nin gollerini Gürhan Ulutaş ve Selçuk Özaydın atarken, Mustafa Ataoğlu bir asist yaptı.",
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-07T09:24:04.468Z",
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
+ },
+ "rapor:1337-Crew-FC-Selimiye-Veteranlar-2023-10-17T220000000Z:6a6d91e1cd": {
+  "metin": "EfendiLig 2023-2024 Sezonu 2. haftasında 17 Ekim 2023 Salı günü Selimiye Veteranlar takımını konuk eden 1337 Crew FC, sahadan 2-2'lik beraberlikle ayrıldı. Ev sahibi ekibin gollerini Selçuk Özaydın ve Yasin Kayran kaydederken, Ali Dilaver de bir asistle skora katkı sağladı.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-07T16:40:29.489Z",
   "dogrulandi": false
  }
 }
