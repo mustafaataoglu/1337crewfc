@@ -514,6 +514,14 @@
   "metin": "1337 Crew FC, EfendiLig Kupası'nın 2. haftasında 15 Mayıs 2023 Pazartesi günü deplasmanda AKUT Futbol'a konuk olduğu mücadeleyi 3-5 kazandı. Karşılaşmada 1337 Crew FC'nin gollerini Yunus Emre Gümüş (3) ve Yasin Kayran (2) atarken, asistleri Bahadır Oğuz, Yasin Kayran ve Yunus Emre Gümüş yaptı.",
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-07T17:58:21.604Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
+ },
+ "onizleme:Buyuk-Avlu-1337-Crew-FC-2026-10-14T210000000Z:de2919f6d0": {
+  "metin": "EfendiLig 2026-2027 Sezonu 4. haftasında 1337 Crew FC, 14 Ekim 2026 Çarşamba günü saat 21:00'de deplasmanda ev sahibi Büyük Avlu ile karşılaşacak. Son maçında Baston Villa'ya 2-0 yenilen 1337 Crew FC, 2 maçta topladığı 1 puan ve -2 averajla ligin 11. sırasında bulunuyor. 2 maçta 1 puan ve -5 averajla 13. sırada yer alan Büyük Avlu ile daha önce oynanan kayıtlı 6 maçta ise 1337 Crew FC 1 beraberlik ve 5 mağlubiyet aldı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-07T18:15:36.971Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
