@@ -460,5 +460,19 @@
   "zaman": "2026-10-06T23:46:39.283Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Buyuk-Avlu-2023-11-15T220000000Z:bc1ab05659": {
+  "metin": "EfendiLig 2023-2024 Sezonu'nun 6. haftasında 15 Kasım 2023 Çarşamba günü Büyük Avlu'yu konuk eden 1337 Crew FC, sahadan 1-2 mağlup ayrıldı. Karşılaşmada 1337 Crew FC'nin tek golünü Yasin Kayran'ın asistinde Yunus Emre Gümüş attı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-07T02:46:03.449Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:Dikilitas-Galaxy-FC-1337-Crew-FC-2023-11-07T210000000Z:32b501f23a": {
+  "metin": "1337 Crew FC, 7 Kasım 2023 Salı günü Dikilitaş Galaxy FC ev sahibinde oynanan maçta 4-2 mağlup oldu. 1337'nin gollerini Selçuk Özaydın ve Yasin Kayran attı; asistlerini Oğuz Uzun yaptı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-07T02:49:36.001Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
