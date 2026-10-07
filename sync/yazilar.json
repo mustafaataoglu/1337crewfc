@@ -474,5 +474,18 @@
   "zaman": "2026-10-07T02:49:36.001Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Calypso-33-2023-10-30T230000000Z:a186159640": {
+  "metin": "EfendiLig 2023-2024 Sezonu 4. haftasında 1337 Crew FC, 30 Ekim 2023 Pazartesi günü evinde Calypso 33 ile karşılaştı. İç sahadaki mücadeleden 1-5 mağlup ayrılan 1337 Crew FC'nin maçtaki tek golünü Fehmi Altundağlı'nın asistinde Yasin Kayran attı.",
+  "model": "gemini-3.7-flash",
+  "zaman": "2026-10-07T09:21:18.140Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "rapor:The-Wall-SK-1337-Crew-FC-2023-10-25T210000000Z:f2767dacde": {
+  "metin": "EfendiLig 2023-2024 Sezonu 3. haftasında 25 Ekim 2023 Çarşamba günü oynanan maçta 1337 Crew FC, deplasmanda The Wall SK'ye 4-2 mağlup oldu. Müsabakada 1337 Crew FC'nin gollerini Gürhan Ulutaş ve Selçuk Özaydın atarken, Mustafa Ataoğlu bir asist yaptı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-07T09:24:04.468Z",
+  "dogrulandi": false
  }
 }
