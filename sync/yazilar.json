@@ -538,12 +538,6 @@
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
  },
- "rapor:Spartakistanbul-1337-Crew-2022-03-07T230000000Z:484f83eda5": {
-  "metin": "EfendiLig Kupası'nın 4. haftasında 7 Mart 2022 Pazartesi günü deplasmanda Spartakistanbul ile karşılaşan 1337 Crew FC, maçı 1-2 kazandı. Golleri Bulut Özer ve Yunus Emre Gümüş attı, asistleri Murat Bulut ve Nazım Berk Kalyoncu yaptı.",
-  "model": "openrouter/free",
-  "zaman": "2026-10-07T18:54:01.833Z",
-  "dogrulandi": false
- },
  "rapor:1337-Crew-The-Wall-SK-2022-02-07T220000000Z:4a961802a5": {
   "metin": "EfendiLig Kupası 3. hafta maçında 1337 Crew FC, 7 Şubat 2022 Pazartesi günü iç sahada The Wall SK ile 2-2 berabere kaldı. Ev sahibi takımın gollerini Aykut Çivek ve Yunus Emre Gümüş attı, asisti Selçuk Özaydın yaptı. Karşılaşmanın sonucu beraberlik olarak kaydedildi.",
   "model": "openrouter/free",
