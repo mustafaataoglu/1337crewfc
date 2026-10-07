@@ -556,7 +556,8 @@
   "metin": "1337 Crew FC, 3 Ocak 2022 Pazartesi günü kendi sahasında Son Baskı FK'yı konuk etti. Yunus Emre Gümüş iki gol atarken Mert Demir bir asist yaptı, ancak 1337 Crew FC 2-4 mağlup oldu.",
   "model": "openrouter/free",
   "zaman": "2026-10-07T19:54:31.579Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
  },
  "rapor:1337-Crew-Football-Brothers-United-2019-05-22T220000000Z:709f2c070a": {
   "metin": "1337 Crew FC, EfendiLig Kupası 1. haftasında 22 Mayıs 2019 Çarşamba günü 1337 iç sahasında Football Brothers United ile karşılaştı ve maçı 0-4 kaybetti. 1337 Crew FC gol atamadı.",
