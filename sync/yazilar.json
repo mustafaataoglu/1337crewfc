@@ -493,6 +493,13 @@
   "metin": "EfendiLig 2023-2024 Sezonu 2. haftasında 17 Ekim 2023 Salı günü Selimiye Veteranlar takımını konuk eden 1337 Crew FC, sahadan 2-2'lik beraberlikle ayrıldı. Ev sahibi ekibin gollerini Selçuk Özaydın ve Yasin Kayran kaydederken, Ali Dilaver de bir asistle skora katkı sağladı.",
   "model": "gemini-3.7-flash",
   "zaman": "2026-10-07T16:40:29.489Z",
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
+ },
+ "rapor:1337-Crew-Calypso-33-2023-05-22T220000000Z:399ed6c6eb": {
+  "metin": "EfendiLig Kupası 3. hafta maçı Pazartesi, 22 Mayıs 2023 tarihinde 1337 iç sahasında oynanarak 1337 Crew FC ev sahibi olarak Calypso 33 ile karşılaştı. Maç 0-2 sonucunda bitti ve 1337 Crew FC mağlubiyet yaşadı.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-07T16:58:23.669Z",
   "dogrulandi": false
  }
 }
