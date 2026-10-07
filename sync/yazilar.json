@@ -500,6 +500,7 @@
   "metin": "EfendiLig Kupası 3. hafta maçı Pazartesi, 22 Mayıs 2023 tarihinde 1337 iç sahasında oynanarak 1337 Crew FC ev sahibi olarak Calypso 33 ile karşılaştı. Maç 0-2 sonucunda bitti ve 1337 Crew FC mağlubiyet yaşadı.",
   "model": "openrouter/free",
   "zaman": "2026-10-07T16:58:23.669Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.6-flash"
  }
 }
