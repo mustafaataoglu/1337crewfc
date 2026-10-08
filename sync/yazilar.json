@@ -565,5 +565,12 @@
   "zaman": "2026-10-07T19:55:25.916Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "rapor:Spartakistanbul-1337-Crew-2022-03-07T230000000Z:484f83eda5": {
+  "metin": "EfendiLig Kupası'nın 4. haftasında 7 Mart 2022 Pazartesi günü Spartakistanbul deplasmanına çıkan 1337 Crew FC, sahadan 1-2'lik galibiyetle ayrıldı. 1337 Crew FC'nin gollerini Bulut Özer ve Yunus Emre Gümüş kaydederken, asistleri Murat Bulut ile Nazım Berk Kalyoncu yaptı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-08T01:21:24.467Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
