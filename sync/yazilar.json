@@ -517,13 +517,6 @@
   "dogrulandi": true,
   "dogrulayan": "openrouter/free"
  },
- "onizleme:Buyuk-Avlu-1337-Crew-FC-2026-10-14T210000000Z:de2919f6d0": {
-  "metin": "EfendiLig 2026-2027 Sezonu 4. haftasında 1337 Crew FC, 14 Ekim 2026 Çarşamba günü saat 21:00'de deplasmanda ev sahibi Büyük Avlu ile karşılaşacak. Son maçında Baston Villa'ya 2-0 yenilen 1337 Crew FC, 2 maçta topladığı 1 puan ve -2 averajla ligin 11. sırasında bulunuyor. 2 maçta 1 puan ve -5 averajla 13. sırada yer alan Büyük Avlu ile daha önce oynanan kayıtlı 6 maçta ise 1337 Crew FC 1 beraberlik ve 5 mağlubiyet aldı.",
-  "model": "gemini-3.6-flash",
-  "zaman": "2026-10-07T18:15:36.971Z",
-  "dogrulayan": "openrouter/free",
-  "dogrulandi": true
- },
  "rapor:Football-Brothers-United-1337-Crew-2022-05-09T220000000Z:0d42537df9": {
   "metin": "1337 Crew FC, EfendiLig Kupası (Final Yolu) 2. haftasında 9 Mayıs 2022 Pazartesi günü deplasmanda Football Brothers United ile karşılaştı. Rakibine 5-1 mağlup olan takımın tek golünü Yunus Emre Gümüş'ün asistinde Nazım Berk Kalyoncu kaydetti.",
   "model": "gemini-3.8-flash",
@@ -570,6 +563,13 @@
   "metin": "EfendiLig Kupası'nın 4. haftasında 7 Mart 2022 Pazartesi günü Spartakistanbul deplasmanına çıkan 1337 Crew FC, sahadan 1-2'lik galibiyetle ayrıldı. 1337 Crew FC'nin gollerini Bulut Özer ve Yunus Emre Gümüş kaydederken, asistleri Murat Bulut ile Nazım Berk Kalyoncu yaptı.",
   "model": "gemini-3.8-flash",
   "zaman": "2026-10-08T01:21:24.467Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
+ },
+ "onizleme:Buyuk-Avlu-1337-Crew-FC-2026-10-14T210000000Z:48d975d089": {
+  "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu 4. haftasında 12 Ekim 2026 Pazartesi günü saat 23:00'te deplasmanda Büyük Avlu ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC'nin rakibi Büyük Avlu ise 2 maçta 1 puan ve -5 averajla 13. sırada bulunuyor. İki takım arasındaki kayıtlı 6 maçta 1337 Crew FC galibiyet elde edemezken 1 karşılaşma beraberlikle bitti ve 5 maçı Büyük Avlu kazandı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-09T13:43:38.419Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  }
