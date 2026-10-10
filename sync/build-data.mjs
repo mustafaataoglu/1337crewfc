@@ -183,6 +183,17 @@ for (const a of accounts) {
   if (host) { host.accounts.push(a); if (host.former && !a.former) Object.assign(host, { slug: a.slug, name: a.name, no: a.no, pos: a.pos, captain: a.captain, former: false }); continue }
   people.push({ slug: a.slug, name: a.name, no: a.no, pos: a.pos, captain: a.captain, former: a.former, nowClub: a.nowClub, accounts: [a] })
 }
+// Kulübün elle eklediği oyuncular (EfendiLig kadrosunda olmayanlar): eski oyuncu olarak varsa güncel kadroya alınır,
+// hiç yoksa istatistiksiz yeni oyuncu olur. EfendiLig aynı kişiyi güncel kadroya ekleyince bu satır etkisiz kalır.
+const EK = here('./ek-oyuncular.json')
+for (const e of existsSync(EK) ? JSON.parse(readFileSync(EK, 'utf8')).oyuncular ?? [] : []) {
+  const host = people.find(p => sameperson(p.name, e.ad))
+  if (host) {
+    if (host.former) Object.assign(host, { former: false, nowClub: undefined, ...(e.no ? { no: e.no } : {}), ...(e.mevki ? { pos: e.mevki } : {}) })
+    continue
+  }
+  people.push({ slug: 'ek-' + e.ad.split(' ').map(t => norm(t).toLowerCase()).join('-'), name: e.ad, no: e.no ?? '', pos: e.mevki ?? 'O', captain: false, former: false, accounts: [] })
+}
 const players = people.map(p => {
   const bySeasonMap = new Map(), countedMatch = new Set()
   const tot = { m: 0, g: 0, a: 0, yc: 0, rc: 0, mvp: 0 }

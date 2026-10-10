@@ -17,7 +17,7 @@ on:
         default: false
   push:
     branches: [main]
-    paths: ['web/**', 'server/**', 'sync/*.mjs', 'sync/*.sh', 'sync/gallery/**', '.github/workflows/**']
+    paths: ['web/**', 'server/**', 'sync/*.mjs', 'sync/*.sh', 'sync/ek-oyuncular.json', 'sync/gallery/**', '.github/workflows/**']
 
 # Kod dağıtımları (push) veri döngüsünü beklemesin: ayrı kuyruk
 concurrency:

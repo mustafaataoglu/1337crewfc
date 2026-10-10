@@ -1,0 +1,12 @@
+{
+  "not": "Kulübün elle eklediği oyuncular (EfendiLig güncel kadrosunda olmayanlar). mevki: K kaleci, S defans, O orta saha, F forvet. no: forma numarası. EfendiLig aynı kişiyi kadroya ekleyince satır etkisiz kalır.",
+  "oyuncular": [
+    { "ad": "Ali Yüksel Yılmaz", "mevki": "O", "no": "51" },
+    { "ad": "Mourad Amanmuradov", "mevki": "O", "no": "80" },
+    { "ad": "Barkın Güdü" },
+    { "ad": "Bulut Özer" },
+    { "ad": "Mehmet Fettahoğlu", "mevki": "O", "no": "46" },
+    { "ad": "Koray Soykuvvet", "mevki": "O", "no": "34" },
+    { "ad": "Emre Kabaşabanoğlu", "mevki": "O", "no": "27" }
+  ]
+}
