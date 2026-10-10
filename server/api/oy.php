@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!preg_match('/^[A-Za-z0-9-]{8,64}$/', $cihaz)) cevap(['ok' => false, 'hata' => 'Geçersiz cihaz'], 400);
     $dizilis = (string)($g['dizilis'] ?? '');
     // Her dizilişte kaleci/defans/orta saha/forvet slot sayıları (arayüzdeki dizilişlerle aynı)
-    $SLOT = ['4-2-3-1' => [1, 4, 5, 1], '4-3-3' => [1, 4, 3, 3], '4-4-2' => [1, 4, 4, 2], '3-5-2' => [1, 3, 5, 2], '3-4-3' => [1, 3, 4, 3], '5-3-2' => [1, 5, 3, 2]];
+    $SLOT = ['4-2-3-1' => [1, 4, 5, 1], '4-3-3' => [1, 4, 3, 3], '4-4-2' => [1, 4, 4, 2], '4-1-2-1-2' => [1, 4, 4, 2], '3-5-2' => [1, 3, 5, 2], '3-4-3' => [1, 3, 4, 3], '5-3-2' => [1, 5, 3, 2]];
     if (!isset($SLOT[$dizilis])) cevap(['ok' => false, 'hata' => 'Geçersiz diziliş'], 400);
     $kadro = [];
     foreach ($veri['players'] as $p) if ($efsane || empty($p['former'])) $kadro[$p['slug']] = $p['pos'];
