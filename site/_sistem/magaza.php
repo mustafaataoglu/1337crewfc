@@ -200,6 +200,8 @@ function magaza_tohum(): array {
 function magaza_urunler(): array {
     $f = magaza_dizini() . '/urunler.json';
     if (!is_file($f)) magaza_kilitli(function () use ($f) { if (!is_file($f)) magaza_yaz(['urunler' => ['urunler' => magaza_tohum()]]); });
+    // Depodan gelen hazır içerik uygulanamazsa mağaza yine açılır; hata günlüğe düşer, sonraki istekte yeniden denenir
+    try { magaza_hazir_icerik(); } catch (Throwable $e) { error_log('magaza: hazır içerik uygulanamadı: ' . get_class($e) . ' ' . $e->getMessage()); }
     $u = magaza_oku('urunler')['urunler'] ?? [];
     usort($u, fn($a, $b) => ($a['sira'] ?? 0) <=> ($b['sira'] ?? 0));
     return $u;
@@ -376,6 +378,83 @@ function magaza_yonlendir($g, string $dosya) {
 }
 
 /**
+ * GD bu türü açıp JPEG yazabiliyorsa fotoğrafı en uzun kenarı 1600 px olacak şekilde küçültür, saydamlığı beyaza basar ve
+ * JPEG olarak $gecici'ye yazar (konum gibi bilgiler gider) → true. GD yoksa ya da türü desteklemiyorsa false (dosya olduğu gibi kullanılır).
+ */
+function magaza_resim_kodla(string $dosya, string $uzanti, int $en, int $boy, string $gecici): bool {
+    $gd = function_exists('imagecreatefromstring') && function_exists('imagetypes') && function_exists('imagejpeg')
+        && (imagetypes() & IMG_JPG) && (imagetypes() & ['jpg' => IMG_JPG, 'png' => IMG_PNG, 'webp' => IMG_WEBP][$uzanti]);
+    if (!$gd) return false;
+    if (!magaza_bellek_yeter($en * $boy * 5)) magaza_hata('Fotoğrafın çözünürlüğü çok yüksek');
+    $kaynak = @imagecreatefromstring((string)file_get_contents($dosya));
+    if (!$kaynak) magaza_hata('Bu fotoğraf açılamadı, başka bir fotoğraf dene');
+    if ($uzanti === 'jpg') $kaynak = magaza_yonlendir($kaynak, $dosya);
+    $ken = imagesx($kaynak); $kboy = imagesy($kaynak);
+    $o = min(1, 1600 / max($ken, $kboy));
+    $yen = max(1, (int)round($ken * $o)); $yboy = max(1, (int)round($kboy * $o));
+    $hedef = imagecreatetruecolor($yen, $yboy);
+    imagefilledrectangle($hedef, 0, 0, $yen - 1, $yboy - 1, imagecolorallocate($hedef, 255, 255, 255));
+    imagealphablending($hedef, true);
+    imagecopyresampled($hedef, $kaynak, 0, 0, 0, 0, $yen, $yboy, $ken, $kboy);
+    unset($kaynak);
+    $ok = @imagejpeg($hedef, $gecici, 82);
+    unset($hedef);
+    if (!$ok) { @unlink($gecici); throw new RuntimeException('jpeg yazılamadı'); }
+    return true;
+}
+
+/**
+ * Depoyla gelen bir defalık mağaza içerikleri (_sistem/magaza_icerik/<ad>.json + yanındaki fotoğraflar): ürünü adına göre
+ * bulup alanlarını ayarlar (yoksa ekler) ve fotoğrafları mağazaya kopyalar. Her içerik yalnızca bir kez uygulanır
+ * (uygulanan.json); sonra yönetim panelinden yapılan değişiklikler ezilmez.
+ */
+function magaza_hazir_icerik(): void {
+    $kok = __DIR__ . '/magaza_icerik';
+    $dosyalar = glob("$kok/*.json") ?: [];
+    if (!$dosyalar) return;
+    $bekler = fn(array $uyg) => array_values(array_filter($dosyalar, fn($f) => !isset($uyg[basename($f, '.json')])));
+    if (!$bekler(magaza_oku('uygulanan'))) return;
+    magaza_kilitli(function () use ($kok, $bekler) {
+        $uygulanan = magaza_oku('uygulanan');
+        $urunler = magaza_oku('urunler')['urunler'] ?? [];
+        foreach ($bekler($uygulanan) as $f) {
+            $c = json_decode((string)file_get_contents($f), true);
+            $y = is_array($c['urun'] ?? null) ? $c['urun'] : null;
+            if (!$y || !is_string($y['ad'] ?? null)) continue;
+            $bul = magaza_buyuk(trim((string)($y['bul'] ?? $y['ad'])));
+            $i = null;
+            foreach ($urunler as $k => $u) if (magaza_buyuk(trim((string)($u['ad'] ?? ''))) === $bul) $i = $k;
+            $resimler = [];
+            foreach ($y['resimler'] ?? [] as $r) {
+                $yol = "$kok/" . basename((string)$r);
+                $bilgi = @getimagesize($yol);
+                $uz = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'][$bilgi[2] ?? 0] ?? null;
+                if (!$bilgi || !$uz || $bilgi[0] * $bilgi[1] > 40000000) continue;
+                $d = magaza_dizini() . '/resim';
+                $gecici = "$d/." . bin2hex(random_bytes(8)) . '.yukleniyor';
+                try { $kodlandi = magaza_resim_kodla($yol, $uz, $bilgi[0], $bilgi[1], $gecici); } catch (Throwable $e) { @unlink($gecici); continue; }
+                if ($kodlandi) $uz = 'jpg';
+                elseif (!@copy($yol, $gecici)) continue;
+                $id = bin2hex(random_bytes(8)) . ".$uz";
+                if (magaza_yerine_koy($gecici, "$d/$id")) $resimler[] = $id; else @unlink($gecici);
+            }
+            $alan = array_intersect_key($y, array_flip(['ad', 'kategori', 'aciklama', 'fiyat', 'bedenler', 'satis', 'onSiparisBitis', 'teslimTahmini', 'baski', 'baskiUcret', 'yayinda']));
+            $simdi = date('c');
+            if ($i === null) {
+                $sira = 1 + array_reduce($urunler, fn($m, $u) => max($m, (int)($u['sira'] ?? 0)), 0);
+                $urunler[] = array_merge(['id' => magaza_urun_kimligi(), 'ad' => '', 'kategori' => 'Forma', 'aciklama' => '', 'fiyat' => 0, 'resimler' => [], 'bedenler' => [],
+                    'satis' => 'stok', 'onSiparisBitis' => null, 'teslimTahmini' => '', 'baski' => false, 'baskiUcret' => 0, 'yayinda' => false,
+                    'sira' => $sira, 'olusturma' => $simdi], $alan, ['resimler' => $resimler, 'guncelleme' => $simdi]);
+            } else {
+                $urunler[$i] = array_merge($urunler[$i], $alan, ['resimler' => $resimler ?: ($urunler[$i]['resimler'] ?? []), 'guncelleme' => $simdi]);
+            }
+            $uygulanan[basename($f, '.json')] = $simdi;
+            magaza_yaz(['urunler' => ['urunler' => array_values($urunler)], 'uygulanan' => $uygulanan]);
+        }
+    });
+}
+
+/**
  * Yüklenen fotoğraf ($_FILES['dosya']): en fazla 8 MB, JPEG/PNG/WebP, en fazla 40 megapiksel. GD varsa açılıp en uzun kenarı
  * 1600 px'e küçültülür, saydamlık beyaza basılır ve JPEG olarak yeniden kodlanır (konum gibi bilgiler gider).
  * GD yoksa olduğu gibi saklanır. Kimlik rastgeledir; dosya adı ve istemcinin bildirdiği tür kullanılmaz.
@@ -395,27 +474,8 @@ function magaza_resim_yukle(): string {
     if ($en < 1 || $boy < 1 || $en * $boy > 40000000) magaza_hata('Fotoğrafın çözünürlüğü çok yüksek');
     $d = magaza_dizini() . '/resim';
     $gecici = "$d/." . bin2hex(random_bytes(8)) . '.yukleniyor';
-    // GD bu türü açıp JPEG yazabiliyorsa yeniden kodlanır (ör. WebP desteği olmayan GD'de dosya olduğu gibi kalır)
-    $gd = function_exists('imagecreatefromstring') && function_exists('imagetypes') && function_exists('imagejpeg')
-        && (imagetypes() & IMG_JPG) && (imagetypes() & ['jpg' => IMG_JPG, 'png' => IMG_PNG, 'webp' => IMG_WEBP][$uzanti]);
-    if ($gd) {
-        if (!magaza_bellek_yeter($en * $boy * 5)) magaza_hata('Fotoğrafın çözünürlüğü çok yüksek');
-        $kaynak = @imagecreatefromstring((string)file_get_contents($tmp));
-        if (!$kaynak) magaza_hata('Bu fotoğraf açılamadı, başka bir fotoğraf dene');
-        if ($uzanti === 'jpg') $kaynak = magaza_yonlendir($kaynak, $tmp);
-        $ken = imagesx($kaynak); $kboy = imagesy($kaynak);
-        $o = min(1, 1600 / max($ken, $kboy));
-        $yen = max(1, (int)round($ken * $o)); $yboy = max(1, (int)round($kboy * $o));
-        $hedef = imagecreatetruecolor($yen, $yboy);
-        imagefilledrectangle($hedef, 0, 0, $yen - 1, $yboy - 1, imagecolorallocate($hedef, 255, 255, 255));
-        imagealphablending($hedef, true);
-        imagecopyresampled($hedef, $kaynak, 0, 0, 0, 0, $yen, $yboy, $ken, $kboy);
-        unset($kaynak);
-        $ok = @imagejpeg($hedef, $gecici, 82);
-        unset($hedef);
-        if (!$ok) { @unlink($gecici); throw new RuntimeException('jpeg yazılamadı'); }
-        $uzanti = 'jpg';
-    } elseif (!move_uploaded_file($tmp, $gecici)) throw new RuntimeException('yüklenen dosya taşınamadı');
+    if (magaza_resim_kodla($tmp, $uzanti, $en, $boy, $gecici)) $uzanti = 'jpg';
+    elseif (!move_uploaded_file($tmp, $gecici)) throw new RuntimeException('yüklenen dosya taşınamadı');
     $id = bin2hex(random_bytes(8)) . ".$uzanti";
     magaza_kilitli(function () use ($gecici, $d, $id) {
         if (!magaza_yerine_koy($gecici, "$d/$id")) { @unlink($gecici); throw new RuntimeException('fotoğraf yerine konamadı'); }

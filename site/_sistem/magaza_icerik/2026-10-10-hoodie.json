@@ -1,0 +1,18 @@
+{
+  "not": "Bir defalık içerik: Siyah kapüşonlu hoodie fiyat, beden/stok ve fotoğraflarla yayına alınır. Sunucu uyguladıktan sonra (uygulanan.json) bir daha çalışmaz; sonraki değişiklikler yönetim panelinden.",
+  "urun": {
+    "bul": "Siyah kapüşonlu hoodie",
+    "ad": "Siyah kapüşonlu hoodie",
+    "kategori": "Hoodie",
+    "aciklama": "1337 Crew FC siyah kapüşonlu hoodie. Önde altın sarısı arma, sırtta 1337CREW baskısı.",
+    "fiyat": 1500,
+    "satis": "stok",
+    "bedenler": [{ "ad": "M", "stok": 5 }, { "ad": "L", "stok": 4 }, { "ad": "XL", "stok": 2 }, { "ad": "XXL", "stok": 4 }],
+    "onSiparisBitis": null,
+    "teslimTahmini": "",
+    "baski": false,
+    "baskiUcret": 0,
+    "yayinda": true,
+    "resimler": ["hoodie_on.jpg", "hoodie_arka.jpg"]
+  }
+}
