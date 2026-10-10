@@ -29,16 +29,19 @@ function KapusonluCizim() {
   )
 }
 
-/** Ürünün kapak görseli; fotoğraf yoksa çizim. Kapsayıcının boyutunu doldurur (boyutu dışarıdan ver). */
-export function UrunGorsel({ u, i = 0, className }: { u: Pick<Urun, 'ad' | 'kategori' | 'resimler'>; i?: number; className?: string }) {
+/**
+ * Ürünün kapak görseli; fotoğraf yoksa çizim. Kapsayıcının boyutunu doldurur (boyutu dışarıdan ver).
+ * tam: fotoğraf kırpılmadan bütünüyle gösterilir (ürün sayfası galerisi); yoksa kutuyu doldurur (kartlar).
+ */
+export function UrunGorsel({ u, i = 0, className, tam = false }: { u: Pick<Urun, 'ad' | 'kategori' | 'resimler'>; i?: number; className?: string; tam?: boolean }) {
   const id = u.resimler[i]
   const kapusonlu = /hoodie|kap[uü]ş?on|sweat/i.test(`${u.kategori} ${u.ad}`)
   const acik = /deplasman|dış saha|beyaz/i.test(u.ad)
   return (
     // Siyah kapüşonlu çizimi koyu temada da açık zemin üstünde (açık temanın --muted rengi)
-    <div className={cn('relative overflow-hidden grid place-items-center', !id && (kapusonlu ? 'bg-[hsl(48_14%_89%)]' : acik ? 'bg-muted' : 'bg-club'), className)}>
+    <div className={cn('relative overflow-hidden grid place-items-center', !id ? (kapusonlu ? 'bg-[hsl(48_14%_89%)]' : acik ? 'bg-muted' : 'bg-club') : tam && 'bg-muted', className)}>
       {id
-        ? <img src={resimUrl(id)} alt={u.ad} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+        ? <img src={resimUrl(id)} alt={u.ad} loading="lazy" className={cn('absolute inset-0 w-full h-full', tam ? 'object-contain' : 'object-cover')} />
         : kapusonlu ? <KapusonluCizim /> : <FormaCizim acik={acik} />}
     </div>
   )

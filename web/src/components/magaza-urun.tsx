@@ -11,13 +11,13 @@ import { baskiIsim, baskiNumara, birimFiyat, fiyatYazi, gunYazi, sepeteEkle, use
 function Galeri({ u }: { u: Urun }) {
   const kutu = useRef<HTMLDivElement>(null)
   const [sira, setSira] = useState(0)
-  if (u.resimler.length <= 1) return <UrunGorsel u={u} className="aspect-square rounded-xl md:sticky md:top-20" />
+  if (u.resimler.length <= 1) return <UrunGorsel u={u} tam className="aspect-square rounded-xl md:sticky md:top-20" />
   const git = (i: number) => kutu.current?.scrollTo({ left: i * kutu.current.clientWidth, behavior: 'smooth' })
   return (
     <div className="min-w-0 md:sticky md:top-20">
       <div ref={kutu} onScroll={e => setSira(Math.round(e.currentTarget.scrollLeft / Math.max(1, e.currentTarget.clientWidth)))}
         className="flex overflow-x-auto snap-x snap-mandatory rounded-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {u.resimler.map((id, i) => <UrunGorsel key={`${i}-${id}`} u={u} i={i} className="w-full shrink-0 snap-center aspect-square" />)}
+        {u.resimler.map((id, i) => <UrunGorsel key={`${i}-${id}`} u={u} i={i} tam className="w-full shrink-0 snap-center aspect-square" />)}
       </div>
       <div className="flex justify-center">
         {u.resimler.map((id, i) => (
