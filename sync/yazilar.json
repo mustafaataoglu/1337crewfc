@@ -572,5 +572,12 @@
   "zaman": "2026-10-09T13:43:38.419Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "onizleme:1337-Crew-FC-Calypso-33-2026-10-20T230000000Z:ce7a8d468b": {
+  "metin": "EfendiLig 2026-2027 Sezonu 5. haftasında 1337 Crew FC, 20 Ekim 2026 Salı günü saat 23:00'te iç sahada Calypso 33 ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada bulunan 1337 Crew FC, son maçında Baston Villa'ya 2-0 mağlup oldu. 3 maçta 3 puan ve 0 averajla 7. sırada yer alan Calypso 33 ile daha önce oynanan kayıtlı 4 maçta 0 1337 galibiyeti, 1 beraberlik ve 3 Calypso 33 galibiyeti bulunuyor.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-12T20:09:33.107Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
