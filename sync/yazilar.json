@@ -573,17 +573,18 @@
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  },
- "onizleme:1337-Crew-FC-Calypso-33-2026-10-20T230000000Z:ce7a8d468b": {
-  "metin": "EfendiLig 2026-2027 Sezonu 5. haftasında 1337 Crew FC, 20 Ekim 2026 Salı günü saat 23:00'te iç sahada Calypso 33 ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada bulunan 1337 Crew FC, son maçında Baston Villa'ya 2-0 mağlup oldu. 3 maçta 3 puan ve 0 averajla 7. sırada yer alan Calypso 33 ile daha önce oynanan kayıtlı 4 maçta 0 1337 galibiyeti, 1 beraberlik ve 3 Calypso 33 galibiyeti bulunuyor.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-12T20:09:33.107Z",
-  "dogrulayan": "gemini-3.7-flash",
-  "dogrulandi": true
- },
  "rapor:Buyuk-Avlu-1337-Crew-FC-2026-10-14T210000000Z:c5d2ecd24b": {
   "metin": "EfendiLig 2026-2027 Sezonu 4. haftasında 12 Ekim 2026 Pazartesi günü deplasmanda Büyük Avlu ile karşılaşan 1337 Crew FC, sahadan 1-8 galip ayrıldı. Takımın gollerini ikişer gol atan Barış Aşkan, Kemal Sezer Şahin ve Mustafa Ataoğlu ile birer gol atan Altay Tuğberk Yücel ve Yasin Enes Aksu kaydederken asistleri Kemal Sezer Şahin, Maruf Ali ve Bahadır Oğuz yaptı. Karşılaşmanın en değerli oyuncusu Kemal Sezer Şahin seçildi.",
   "model": "gemini-3.8-flash",
   "zaman": "2026-10-13T18:33:07.973Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.7-flash"
+ },
+ "onizleme:1337-Crew-FC-Calypso-33-2026-10-20T230000000Z:761a11ea1e": {
+  "metin": "EfendiLig 2026-2027 Sezonu 5. haftasında 1337 Crew FC, 20 Ekim 2026 Salı günü saat 23:00'te iç sahada Calypso 33 ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 6. sırada bulunan 1337 Crew FC, son maçında Büyük Avlu'yu 1-8 mağlup etti. 3 maçta 3 puan ve 0 averajla 8. sırada yer alan Calypso 33 ile daha önce yapılan kayıtlı 4 maçta ise 1 beraberlik ve 3 Calypso 33 galibiyeti bulunuyor.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-13T23:05:08.175Z",
+  "dogrulayan": "gemini-3.7-flash",
+  "dogrulandi": true
  }
 }
