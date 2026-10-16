@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Nav } from '@/App'
 import { data } from '@/lib/site'
-import { MatchRow, SectionTitle } from '@/components/bits'
+import { MatchRow, SayfaLink, SectionTitle } from '@/components/bits'
 import { AboneButonlari } from '@/components/taraftar'
 import { cn } from '@/lib/utils'
 
@@ -28,6 +28,8 @@ export default function Fixtures({ nav }: { nav: Nav }) {
           </button>
         ))}
       </div>
+      <SayfaLink sayfa="arsiv" yol="" nav={nav}
+        className="inline-block text-[14px] text-muted-foreground mt-1">2019 öncesi maçlar: <span className="font-semibold text-foreground underline underline-offset-2">Arşiv</span></SayfaLink>
       <div className="flex flex-wrap items-center justify-between gap-3 mt-2 mb-4">
         <div className="flex gap-1 p-1 rounded-lg bg-muted">
           {([['all', 'Tümü'], ['league', 'Lig'], ['other', 'Kupa ve diğer']] as const).map(([k, l2]) => (

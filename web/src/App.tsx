@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Home as HomeIcon, CalendarDays, Users, BarChart3, PlaySquare, Vote as VoteIcon, ListOrdered, Shield, ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Crest } from '@/components/bits'
@@ -20,11 +20,15 @@ import Yonetim from '@/pages/Yonetim'
 import { useSepet, sepetAdet } from '@/lib/magaza'
 import { TaraftarSekme } from '@/components/taraftar'
 
+// Arşiv (eski blog) ayrı parça: her ziyaretçinin indirdiği ana dosya büyümesin
+const Arsiv = lazy(() => import('@/pages/Arsiv'))
+
 export type Route =
   | { page: 'home' | 'fikstur' | 'puan' | 'kadro' | 'istatistik' | 'video' | 'oyla' | 'tahmin' | 'efsane' | 'kulup' }
   | { page: 'karsilastir'; a?: string; b?: string }
   // Mağaza: '' liste, 'urun/<id>', 'sepet', 'siparis/<no>', 'takip'. Yönetim: '' siparişler, 'siparis/<no>', 'urunler', 'urun/<id|yeni>', 'uretim', 'ayarlar'
-  | { page: 'magaza' | 'yonetim'; yol: string }
+  // Arşiv: '' liste, '<yazı>', 's/<sayfa>'
+  | { page: 'magaza' | 'yonetim' | 'arsiv'; yol: string }
   | { page: 'mac'; id: string }
   | { page: 'oyuncu'; slug: string }
 
@@ -55,13 +59,13 @@ function fromHash(): Route {
   if (h.startsWith('mac/')) return { page: 'mac', id: h.slice(4) }
   if (h.startsWith('oyuncu/')) return { page: 'oyuncu', slug: h.slice(7) }
   if (h === 'karsilastir' || h.startsWith('karsilastir/')) { const [, a, b] = h.split('/'); return { page: 'karsilastir', a, b } }
-  for (const page of ['magaza', 'yonetim'] as const) if (h === page || h.startsWith(page + '/')) return { page, yol: h.slice(page.length + 1) }
+  for (const page of ['magaza', 'yonetim', 'arsiv'] as const) if (h === page || h.startsWith(page + '/')) return { page, yol: h.slice(page.length + 1) }
   return TOP.includes(h) ? ({ page: h } as Route) : { page: 'home' }
 }
 const toHash = (r: Route) =>
   r.page === 'home' ? '' : r.page === 'mac' ? `#mac/${encodeURIComponent(r.id)}` : r.page === 'oyuncu' ? `#oyuncu/${encodeURIComponent(r.slug)}`
     : r.page === 'karsilastir' ? `#karsilastir${r.a ? `/${encodeURIComponent(r.a)}${r.b ? `/${encodeURIComponent(r.b)}` : ''}` : ''}`
-    : r.page === 'magaza' || r.page === 'yonetim' ? `#${r.page}${r.yol ? `/${r.yol.split('/').map(encodeURIComponent).join('/')}` : ''}` : `#${r.page}`
+    : r.page === 'magaza' || r.page === 'yonetim' || r.page === 'arsiv' ? `#${r.page}${r.yol ? `/${r.yol.split('/').map(encodeURIComponent).join('/')}` : ''}` : `#${r.page}`
 
 export default function App() {
   const [route, setRoute] = useState<Route>(fromHash)
@@ -91,7 +95,7 @@ export default function App() {
   }, [])
 
   const active = route.page === 'mac' ? 'fikstur' : route.page === 'oyuncu' ? 'kadro' : route.page === 'karsilastir' ? 'istatistik'
-    : route.page === 'tahmin' || route.page === 'efsane' ? 'oyla' : route.page === 'yonetim' ? 'magaza' : route.page
+    : route.page === 'tahmin' || route.page === 'efsane' ? 'oyla' : route.page === 'yonetim' ? 'magaza' : route.page === 'arsiv' ? 'kulup' : route.page
   const sepetteki = sepetAdet(useSepet())
 
   return (
@@ -137,7 +141,12 @@ export default function App() {
         {route.page === 'efsane' && <><TaraftarSekme aktif="efsane" nav={nav} /><Vote key="efsane" mod="efsane" /></>}
         {route.page === 'tahmin' && <Tahmin nav={nav} />}
         {route.page === 'karsilastir' && <Karsilastir a={route.a} b={route.b} nav={nav} />}
-        {route.page === 'kulup' && <Club />}
+        {route.page === 'kulup' && <Club nav={nav} />}
+        {route.page === 'arsiv' && (
+          <Suspense fallback={<p role="status" className="text-[14px] text-muted-foreground py-6">Arşiv yükleniyor…</p>}>
+            <Arsiv yol={route.yol} nav={nav} />
+          </Suspense>
+        )}
         {route.page === 'magaza' && <Magaza yol={route.yol} nav={nav} />}
         {route.page === 'yonetim' && <Yonetim yol={route.yol} nav={nav} />}
         </ErrorBoundary>

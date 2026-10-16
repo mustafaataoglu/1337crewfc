@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type Dispatch, type MouseEvent, type ReactNode, type Ref, type SetStateAction } from 'react'
+import type { Nav } from '@/App'
 import type { Jersey, Match, Player, Result, Video } from '@/types'
 import { cn } from '@/lib/utils'
 import { data, fmtDate, initials, ours, theirs, yt, COMP_LABEL } from '@/lib/site'
-import { Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 
 export function ResultChip({ r, className }: { r: Result | null; className?: string }) {
   if (!r) return null
@@ -79,8 +80,8 @@ export function MatchRow({ m, onOpen }: { m: Match; onOpen: (id: string) => void
   )
 }
 
-export function VideoCard({ v, sub }: { v: Video; sub?: string }) {
-  const label = v.kind === 'highlight' ? 'ÖZET' : v.kind === 'part' ? 'PARÇA' : 'TAM MAÇ'
+export function VideoCard({ v, sub, label: etiket }: { v: Video; sub?: string; label?: string }) {
+  const label = etiket ?? (v.kind === 'highlight' ? 'ÖZET' : v.kind === 'part' ? 'PARÇA' : 'TAM MAÇ')
   return (
     <a href={yt(v.id)} target="_blank" rel="noreferrer" className="group block min-w-0">
       <span className="relative block aspect-video rounded-lg overflow-hidden bg-pitch">
@@ -128,4 +129,56 @@ export function kitNote(m: Match) {
   if (m.us === 'home' && o.jersey.kind === 'away') return `1337 Crew FC iç sahada oynamasına rağmen deplasman formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyor.`
   if (m.us === 'away' && o.jersey.kind === 'home') return `1337 Crew FC deplasmanda iç saha formasıyla (${o.jersey.colorName.toLowerCase()}) çıkıyor.`
   return null
+}
+
+/** Site içi bağlantı: gerçek adres (#magaza/..., #arsiv/...), tıklanınca sayfa yenilenmeden açılır; yeni sekmede de açılabilir */
+export function SayfaLink({ sayfa, yol, nav, className, children, label, id, ref }: {
+  sayfa: 'magaza' | 'yonetim' | 'arsiv'; yol: string; nav: Nav; className?: string; children: ReactNode; label?: string; id?: string; ref?: Ref<HTMLAnchorElement>
+}) {
+  const tikla = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+    e.preventDefault()
+    nav.go({ page: sayfa, yol })
+  }
+  return <a ref={ref} id={id} href={`#${sayfa}${yol ? '/' + yol : ''}`} onClick={tikla} aria-label={label} className={className}>{children}</a>
+}
+
+/** Büyük fotoğraf görünümü: Esc kapatır, oklar gezer; açılınca odak kapat düğmesine geçer, Tab pencerede kalır, kapanınca geri döner */
+export function Lightbox({ src, i, n, setI, altyazi, noReferrer }: {
+  src: string; i: number; n: number; setI: Dispatch<SetStateAction<number | null>>; altyazi?: string; noReferrer?: boolean
+}) {
+  const kapat = useRef<HTMLButtonElement>(null)
+  const kutu = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const onceki = document.activeElement as HTMLElement | null
+    kapat.current?.focus()
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setI(null)
+      if (e.key === 'ArrowRight') setI(j => (j === null ? j : (j + 1) % n))
+      if (e.key === 'ArrowLeft') setI(j => (j === null ? j : (j - 1 + n) % n))
+      if (e.key === 'Tab') {
+        const d = [...(kutu.current?.querySelectorAll<HTMLElement>('button') ?? [])]
+        if (!d.length) return
+        e.preventDefault()
+        const j = d.indexOf(document.activeElement as HTMLElement)
+        d[j < 0 ? (e.shiftKey ? d.length - 1 : 0) : (j + (e.shiftKey ? d.length - 1 : 1)) % d.length].focus()
+      }
+    }
+    addEventListener('keydown', onKey)
+    return () => { removeEventListener('keydown', onKey); document.body.style.overflow = ''; onceki?.focus() }
+  }, [n, setI])
+  return (
+    <div ref={kutu} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Fotoğraf" onClick={() => setI(null)}>
+      <img src={src} alt="" referrerPolicy={noReferrer ? 'no-referrer' : undefined} className="max-w-full max-h-[86vh] object-contain rounded" onClick={e => e.stopPropagation()} />
+      <div className="absolute bottom-[calc(16px+env(safe-area-inset-bottom))] inset-x-0 text-center text-white/80 text-[14px] font-data num">{i + 1} / {n}{altyazi ? ` · ${altyazi}` : ''}</div>
+      <button ref={kapat} type="button" aria-label="Kapat" onClick={() => setI(null)} className="absolute top-[calc(12px+env(safe-area-inset-top))] right-3 p-2 rounded-full bg-white/10 text-white"><X className="w-6 h-6" /></button>
+      {n > 1 && (
+        <>
+          <button type="button" aria-label="Önceki" onClick={e => { e.stopPropagation(); setI((i - 1 + n) % n) }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white"><ChevronLeft className="w-7 h-7" /></button>
+          <button type="button" aria-label="Sonraki" onClick={e => { e.stopPropagation(); setI((i + 1) % n) }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white"><ChevronRight className="w-7 h-7" /></button>
+        </>
+      )}
+    </div>
+  )
 }
