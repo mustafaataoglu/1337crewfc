@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Home as HomeIcon, CalendarDays, Users, BarChart3, PlaySquare, Vote as VoteIcon, ListOrdered, Shield, ShoppingBag } from 'lucide-react'
+import { Home as HomeIcon, CalendarDays, Users, BarChart3, PlaySquare, Vote as VoteIcon, ListOrdered, Shield, ShoppingBag, Archive } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Crest } from '@/components/bits'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -45,6 +45,7 @@ const TABS = [
   { page: 'kadro', label: 'Kadro', icon: Users },
   { page: 'istatistik', label: 'İstatistik', icon: BarChart3 },
   { page: 'video', label: 'Videolar', icon: PlaySquare },
+  { page: 'arsiv', label: 'Arşiv', icon: Archive },
   { page: 'oyla', label: 'Taraftar', icon: VoteIcon },
   { page: 'magaza', label: 'Mağaza', icon: ShoppingBag },
   { page: 'kulup', label: 'Kulüp', icon: Shield },
@@ -95,7 +96,7 @@ export default function App() {
   }, [])
 
   const active = route.page === 'mac' ? 'fikstur' : route.page === 'oyuncu' ? 'kadro' : route.page === 'karsilastir' ? 'istatistik'
-    : route.page === 'tahmin' || route.page === 'efsane' ? 'oyla' : route.page === 'yonetim' ? 'magaza' : route.page === 'arsiv' ? 'kulup' : route.page
+    : route.page === 'tahmin' || route.page === 'efsane' ? 'oyla' : route.page === 'yonetim' ? 'magaza' : route.page
   const sepetteki = sepetAdet(useSepet())
 
   return (
@@ -163,7 +164,7 @@ export default function App() {
             const I = t.icon
             return (
               <button key={t.page} onClick={() => go({ page: t.page, yol: '' } as Route)}
-                className={cn('flex-1 min-w-0 flex flex-col items-center gap-0.5 py-2 font-data font-semibold text-[9.5px] uppercase tracking-normal',
+                className={cn('flex-1 min-w-0 flex flex-col items-center gap-0.5 py-2 font-data font-semibold text-[9.5px] uppercase tracking-normal max-[359px]:tracking-tight',
                   active === t.page ? 'text-club' : 'text-[#f5f2e6]/65')}>
                 <I className="w-5 h-5" />
                 <span className="leading-none whitespace-nowrap">{t.label === 'İstatistik' ? 'İstat.' : t.label}</span>
