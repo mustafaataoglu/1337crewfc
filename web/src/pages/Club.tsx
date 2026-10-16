@@ -1,25 +1,14 @@
-import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useState } from 'react'
+import { Archive, ArrowRight, Trophy } from 'lucide-react'
+import type { Nav } from '@/App'
 import { data, fmtDate, squad, AYLAR } from '@/lib/site'
-import { Crest, SectionTitle } from '@/components/bits'
+import { Crest, Lightbox, SayfaLink, SectionTitle } from '@/components/bits'
 
-export default function Club() {
+export default function Club({ nav }: { nav: Nav }) {
   const c = data.club
   const photos = (data.gallery ?? []).filter(g => g.kind === 'foto').sort((a, b) => b.date.localeCompare(a.date))
   const kits = (data.gallery ?? []).filter(g => g.kind === 'forma')
   const [open, setOpen] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (open === null) return
-    document.body.style.overflow = 'hidden'
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(null)
-      if (e.key === 'ArrowRight') setOpen(i => (i === null ? i : (i + 1) % photos.length))
-      if (e.key === 'ArrowLeft') setOpen(i => (i === null ? i : (i - 1 + photos.length) % photos.length))
-    }
-    addEventListener('keydown', onKey)
-    return () => { removeEventListener('keydown', onKey); document.body.style.overflow = '' }
-  }, [open, photos.length])
 
   const seasons = new Set(data.matches.map(m => m.seasonShort)).size
 
@@ -38,6 +27,23 @@ export default function Club() {
             ))}
           </dl>
         </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="eyebrow flex items-center gap-1.5"><Archive className="w-4 h-4" aria-hidden /> Arşiv · 2010–2020</div>
+          <h2 className="font-display text-[24px] leading-tight mt-1">Eski blogdan maçlar ve hikâyeler</h2>
+          <p className="text-[14px] text-muted-foreground mt-1">Pazarligi, İstanbul Ligi ve Golden League yılları: maç yazıları, kadrolar, goller, fotoğraflar. Sitenin istatistiklerine katılmaz.</p>
+          <ul className="flex flex-col gap-1 mt-3 text-[14px] font-semibold">
+            {['2014 İlkbahar · İstanbul Ligi 1. Lig şampiyonu', '2014 Sonbahar · İstanbul Ligi Süper Lig şampiyonu'].map(t => (
+              <li key={t} className="flex items-center gap-2"><Trophy className="w-4 h-4 text-club shrink-0" aria-hidden />{t}</li>
+            ))}
+          </ul>
+        </div>
+        <SayfaLink sayfa="arsiv" yol="" nav={nav}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-clubink text-club font-data font-bold uppercase tracking-wider text-[14px] shrink-0">
+          Arşive git <ArrowRight className="w-4 h-4" aria-hidden />
+        </SayfaLink>
       </section>
 
       {kits.length > 0 && (
@@ -87,15 +93,7 @@ export default function Club() {
         </div>
       </section>
 
-      {open !== null && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" role="dialog" aria-label="Fotoğraf" onClick={() => setOpen(null)}>
-          <img src={photos[open].src} alt="" className="max-w-full max-h-[86vh] object-contain rounded" onClick={e => e.stopPropagation()} />
-          <div className="absolute bottom-[calc(16px+env(safe-area-inset-bottom))] inset-x-0 text-center text-white/80 text-[14px] font-data">{open + 1} / {photos.length} · {fmtDate(photos[open].date)}</div>
-          <button aria-label="Kapat" onClick={() => setOpen(null)} className="absolute top-[calc(12px+env(safe-area-inset-top))] right-3 p-2 rounded-full bg-white/10 text-white"><X className="w-6 h-6" /></button>
-          <button aria-label="Önceki" onClick={e => { e.stopPropagation(); setOpen((open - 1 + photos.length) % photos.length) }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white"><ChevronLeft className="w-7 h-7" /></button>
-          <button aria-label="Sonraki" onClick={e => { e.stopPropagation(); setOpen((open + 1) % photos.length) }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white"><ChevronRight className="w-7 h-7" /></button>
-        </div>
-      )}
+      {open !== null && photos[open] && <Lightbox src={photos[open].src} i={open} n={photos.length} setI={setOpen} altyazi={fmtDate(photos[open].date)} />}
     </div>
   )
 }

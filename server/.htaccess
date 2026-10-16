@@ -6,6 +6,11 @@ Options -Indexes
 RewriteEngine On
 RewriteRule ^(_sistem|_veri|_eski_site)(/|$) - [F,L]
 
+# Eski blog adresleri (/2012/05/<yazı>.html, /p/<sayfa>.html) site içi arşive yönlenir.
+# Hedefte sorgu olduğu için Blogger'ın ?m=1 gibi ekleri atılır (QSA yok).
+RewriteRule ^(20[0-2]\d)/(\d\d)/([A-Za-z0-9_-]+)\.html$ api/arsiv-yonlendir.php?yil=$1&ay=$2&ad=$3 [L]
+RewriteRule ^p/([A-Za-z0-9_-]+)\.html$ api/arsiv-yonlendir.php?sayfa=$1 [L]
+
 # Sunucunun LiteSpeed önbelleği kapalı: sayfa ve veri her zaman güncel gelsin
 <IfModule LiteSpeed>
   CacheLookup off

@@ -44,7 +44,7 @@ async function kontrol() {
   const s = await surumAl()
   if (!ilkSurum) { ilkSurum = s; return }
   if (s && s !== ilkSurum) {
-    if (/^#(magaza\/(sepet|urun\/)|yonetim)/.test(location.hash)) { bekleyen = true; return }
+    if (/^#(magaza\/(sepet|urun\/)|yonetim|arsiv\/)/.test(location.hash)) { bekleyen = true; return }
     try { sessionStorage.setItem('1337-kaydirma', String(window.scrollY)) } catch { /* depolama kapalı */ }
     location.reload()
   }

@@ -1,7 +1,8 @@
-import type { MouseEvent, ReactNode, Ref } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { ChevronLeft, Minus, Plus } from 'lucide-react'
 import type { Nav } from '@/App'
 import { cn } from '@/lib/utils'
+import { SayfaLink } from '@/components/bits'
 import type { Ton } from '@/lib/magaza'
 
 // Mağaza ekranlarının ortak parçaları: bağlantı, rozet, adet seçici, düğme biçimleri
@@ -18,12 +19,7 @@ export const KIRMIZI_DOLGU = 'bg-[rgb(179_54_43)] text-white'
 export function MagazaLink({ yol, nav, className, children, label, sayfa = 'magaza', ref }: {
   yol: string; nav: Nav; className?: string; children: ReactNode; label?: string; sayfa?: 'magaza' | 'yonetim'; ref?: Ref<HTMLAnchorElement>
 }) {
-  const tikla = (e: MouseEvent<HTMLAnchorElement>) => {
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
-    e.preventDefault()
-    nav.go({ page: sayfa, yol })
-  }
-  return <a ref={ref} href={`#${sayfa}${yol ? '/' + yol : ''}`} onClick={tikla} aria-label={label} className={className}>{children}</a>
+  return <SayfaLink ref={ref} sayfa={sayfa} yol={yol} nav={nav} label={label} className={className}>{children}</SayfaLink>
 }
 
 /** Ekranın üstündeki "‹ Mağaza" dönüş bağlantısı */
