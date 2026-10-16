@@ -54,11 +54,20 @@ jobs:
           key: efendilig-${{ github.run_id }}
           restore-keys: efendilig-
 
-      - name: Önbellek boşsa tohum veriyi kullan
+      # Actions önbelleği yoksa (silindi ya da 7 gün kullanılmadı) ham veri yedeği dalından (sync/yedekle.mjs), dal yoksa
+      # ya da alınamazsa tohum veriden doldur. Tohum veri yedekte olmayan dosyaları da tamamlar (var olanın üzerine yazmaz).
+      - name: Önbellek boşsa yedekten ya da tohum veriden doldur
         run: |
-          if [ ! -f sync/cache/state.json ] && [ -d sync/cache-seed ]; then
-            mkdir -p sync/cache && cp -n sync/cache-seed/* sync/cache/
-            echo "Tohum önbellek kullanıldı"
+          set -o pipefail
+          if [ ! -f sync/cache/state.json ]; then
+            mkdir -p sync/cache
+            if git fetch -q --depth=1 origin +refs/heads/efendilig-yedek:refs/remotes/origin/efendilig-yedek 2>/dev/null \
+              && git archive refs/remotes/origin/efendilig-yedek cache | tar -x --skip-old-files -C sync; then
+              echo "Önbellek yedek dalından yüklendi: $(ls sync/cache | wc -l) dosya"
+            else
+              echo "Yedek dalı yok ya da alınamadı, tohum önbellek kullanıldı"
+            fi
+            if [ -d sync/cache-seed ]; then cp -n sync/cache-seed/* sync/cache/ 2>/dev/null || true; fi
           fi
 
       - run: pnpm install --frozen-lockfile
@@ -73,6 +82,15 @@ jobs:
           TAM: ${{ inputs.tam && '--tam' || '' }}
           ZORLA_PING: ${{ (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dongu)) && '1' || '0' }}
         run: bash sync/tur.sh
+
+      # EfendiLig ham verisi ayrı 'efendilig-yedek' dalına (main zip'i büyümez). İşte bir kez, Güncelle başarılıysa; günde en
+      # çok bir commit (tam senkronda beklemez). Maç penceresi turları yedeklemez. Hata işi düşürmez.
+      - name: Ham veriyi yedekle
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          TAM: ${{ inputs.tam && '--tam' || '' }}
+        run: node sync/yedekle.mjs $TAM
 
       # Maç günü: maçtan 4 saat önce ile 6 saat sonrası arasında 10 dakikada bir tur (kod dağıtımlarında çalışmaz)
       - name: Maç penceresi
