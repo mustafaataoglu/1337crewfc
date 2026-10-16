@@ -2,3 +2,5 @@
 *.webp binary
 *.png binary
 *.jpg binary
+# Sunucu GitHub arşivinden yalnız site/'yi açar: görsellerin kaynak kopyası arşive ikinci kez girmesin
+web/public/efendilig export-ignore

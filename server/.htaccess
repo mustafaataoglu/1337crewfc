@@ -32,7 +32,9 @@ RewriteRule ^p/([A-Za-z0-9_-]+)\.html$ api/arsiv-yonlendir.php?sayfa=$1 [L]
   ExpiresActive On
   ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType text/css "access plus 1 year"
+  # Görseller (efendilig/ kopyaları adı değişmeden içerik değiştirmez) her site güncellemesinde yeniden indirilmesin
   ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
   ExpiresByType application/json "access plus 0 seconds"
   ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
