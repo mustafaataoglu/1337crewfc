@@ -7,6 +7,7 @@ import { createRequire } from 'node:module'
 const sharp = createRequire(new URL('../web/package.json', import.meta.url))('sharp')
 import { createHash } from 'node:crypto'
 import { raporYaz, onizlemeYaz, kaydet, durum as yazarDurum } from './yazar.mjs'
+import { S3, gorselleriAynala, gorselVerisi } from './gorseller.mjs'
 import { mkdirSync } from 'node:fs'
 
 // ---- forma renkleri: görseldeki baskın 1-2 renk ve Türkçe adı
@@ -24,7 +25,7 @@ async function jerseyInfo(path) {
 }
 async function jerseyInfoRaw(path) {
   try {
-    const buf = Buffer.from(await (await fetch(S3 + path)).arrayBuffer())
+    const buf = await gorselVerisi(path)
     const { data, info } = await sharp(buf).resize(48, 48, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
     const bins = new Map()
     for (let i = 0; i < data.length; i += info.channels) {
@@ -45,7 +46,6 @@ async function jerseyInfoRaw(path) {
 const raw = JSON.parse(readFileSync(here('./backfill.json'), 'utf8'))
 const search = raw.youtube ?? (existsSync(here('./ytsearch.json')) ? JSON.parse(readFileSync(here('./ytsearch.json'), 'utf8')) : [])
 const CLUB = '5cdbaeed0d916105e6b9cc9c'
-const S3 = 'https://s3-eu-west-1.amazonaws.com/efendilig/'
 const TODAY = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10)
 
 // ---- yardımcılar
@@ -354,17 +354,27 @@ for (const m of sira) {
 kaydet()
 console.log('yazar:', yazarDurum.yazildi, 'yeni yazı (yükseltilen:', yazarDurum.yukseltilen + ', eski maç denemesi:', yazarDurum.eski + ')', yazarDurum.model ?? '', yazarDurum.tukenen.length ? 'kotası dolan: ' + yazarDurum.tukenen.join(',') : '', yazarDurum.hata.slice(0, 3).join(' | '))
 
-// ---- görseller (prototipte gömülü; canlı sitede sunucuda önbellek)
+// ---- görseller: EfendiLig görselleri depoya kopyalanır (gorseller.mjs), veri.json'a göreli adres yazılır
+const formaOf = (m, side) => m.status === 'done' ? null : raw.matches.find(x => x.slug === m.id)?.[side]?.jersey
+const gorsel = await gorselleriAynala([
+  raw.club.club.logoUrl,
+  ...matches.flatMap(m => [m.home, m.away].filter(s => s.code !== '1337').map(s => s.logoPath)),
+  ...players.map(p => p.photoPath),
+  ...matches.flatMap(m => ['home', 'away'].map(side => formaOf(m, side)?.imageUrl)),
+])
+console.log('görseller:', gorsel.stat.gorsel, 'görsel,', gorsel.stat.indirilen, 'indirildi,', gorsel.stat.kucultulen, 'küçültüldü,', gorsel.stat.budanan, 'silindi,', gorsel.stat.bekleyen, 'silinmeyi bekliyor,', gorsel.stat.kb, 'KB')
+// Kopyalanamayan görseller GitHub Actions'ta uyarı olarak görünsün
+if (gorsel.stat.hata.length) console.log('::warning::görseller: inemeyen (uzak adres kaldı):', gorsel.stat.hata.join(' '))
+if (gorsel.stat.disarida.length) console.log('::warning::görseller: EfendiLig adresi tanınmadı, kopyalanmadı:', gorsel.stat.disarida.join(' '))
+for (const u of gorsel.stat.uyari) console.log('::warning::görseller:', u)
 const jCache = new Map()
 for (const m of matches) {
-  if (m.status === 'done') continue
-  const rm = raw.matches.find(x => x.slug === m.id)
   for (const side of ['home', 'away']) {
-    const j = rm?.[side]?.jersey
+    const j = formaOf(m, side)
     if (!j?.imageUrl) continue
     if (!jCache.has(j.imageUrl)) jCache.set(j.imageUrl, await jerseyInfo(j.imageUrl))
     const info = jCache.get(j.imageUrl)
-    if (info) m[side].jersey = { kind: j.name === 'Ev' ? 'home' : 'away', ...info }
+    if (info) m[side].jersey = { kind: j.name === 'Ev' ? 'home' : 'away', ...info, img: gorsel.adres(j.imageUrl) }
   }
 }
 console.log('formalar:', [...jCache.entries()].map(([k, v]) => k.split('/').pop() + '=' + v?.colorName + ' ' + v?.colors.join('/')).join(' | '))
@@ -374,11 +384,10 @@ for (const v of [...matches.flatMap(m => m.videos), ...extra]) {
   v.thumb = thumbs.get(v.id)
 }
 for (const f of feed) if (f.videoId) f.thumb = thumbs.get(f.videoId)
-const clubLogo = S3 + raw.club.club.logoUrl
-club.logo = clubLogo
+club.logo = gorsel.adres(raw.club.club.logoUrl)
 const logos = new Map()
 for (const m of matches) for (const s of [m.home, m.away]) {
-  if (s.logoPath && !logos.has(s.logoPath)) logos.set(s.logoPath, S3 + s.logoPath)
+  if (s.logoPath && !logos.has(s.logoPath)) logos.set(s.logoPath, gorsel.adres(s.logoPath))
   s.logo = s.code === '1337' ? undefined : logos.get(s.logoPath)
   delete s.logoPath
 }
@@ -394,7 +403,7 @@ if (JSON.stringify(gecmis) !== gecmisOnce) writeFileSync(GECMIS, JSON.stringify(
 const macTakma = {}
 for (const m of matches) for (const s of (m.eid && gecmis[m.eid]) || []) if (s !== m.id) macTakma[s] = m.id
 for (const p of players) {
-  if (p.photoPath) p.photo = S3 + p.photoPath
+  if (p.photoPath) p.photo = gorsel.adres(p.photoPath)
   delete p.photoPath
   delete p.accountSlugs
   delete p._log

@@ -15,14 +15,14 @@ node sync/build-data.mjs || { echo "Site verisi üretilemedi"; exit 1; }
 node sync/paketle.mjs || exit 1
 
 degisti=0
-git add -A site web/public/data sync/youtube.json sync/yazilar.json sync/mac-gecmisi.json
+git add -A site web/public/data web/public/efendilig sync/gorseller.json sync/youtube.json sync/yazilar.json sync/mac-gecmisi.json
 if git diff --cached --quiet; then
   echo "Değişiklik yok"
 else
   git fetch -q origin main
   # Bu tur sürerken yeni kod gönderildiyse, eski kodla derlenmiş site yeni dağıtımın üstüne yazılmasın:
   # tur bırakılır, sonraki tur yeni kodla yapar
-  if ! git diff --quiet "$BAS" origin/main -- web/src web/index.html web/package.json web/vite.config.ts web/tailwind.config.js server sync/backfill.mjs sync/build-data.mjs sync/yazar.mjs sync/paketle.mjs; then
+  if ! git diff --quiet "$BAS" origin/main -- web/src web/index.html web/package.json web/vite.config.ts web/tailwind.config.js server sync/backfill.mjs sync/build-data.mjs sync/gorseller.mjs sync/yazar.mjs sync/paketle.mjs; then
     echo "Bu arada kod değişti; bu turun sonucu kaydedilmedi"
     git reset -q --hard "$BAS"
     exit 0
