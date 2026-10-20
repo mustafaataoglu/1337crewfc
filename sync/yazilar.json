@@ -586,5 +586,12 @@
   "zaman": "2026-10-13T23:05:08.175Z",
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
+ },
+ "onizleme:Cicek-Spor-1337-Crew-FC-2026-11-04T210000000Z:f02b6b0ce8": {
+  "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 6. sırada yer alan 1337 Crew FC son maçında Büyük Avlu'yu 1-8 mağlup ederken, Çiçek Spor ise 3 maçta 0 puan ve -7 averajla 14. sırada bulunuyor. İki takım arasındaki kayıtlı 4 maçın tamamını Çiçek Spor kazandı.",
+  "model": "gemini-3.8-flash",
+  "zaman": "2026-10-20T20:06:56.649Z",
+  "dogrulayan": "gemini-3.8-flash",
+  "dogrulandi": true
  }
 }
