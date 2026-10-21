@@ -600,5 +600,11 @@
   "zaman": "2026-10-21T18:02:01.528Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:Buyuk-Avlu-1337-Crew-FC-2026-10-14T210000000Z:f3593a509d": {
+  "metin": "EfendiLig 2026-2027 Sezonu 4. haftasında, 12 Ekim 2026 Pazartesi günü deplasmanda Büyük Avlu ile karşılaşan 1337 Crew FC, sahadan 1-8'lik galibiyetle ayrıldı. 1337 Crew FC'nin gollerini ikişer gol kaydeden Barış Aşkan, Kemal Sezer Şahin ve Mustafa Ataoğlu ile birer gol atan Altay Tuğberk Yücel ve Yasin Enes Aksu kaydetti. Kemal Sezer Şahin, Maruf Ali, Bahadır Ceylan, Kerem Tutgun ve Yakup Mert Yılmazer'in asist yaptığı mücadelenin MVP'si Kemal Sezer Şahin seçildi.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-21T21:32:10.448Z",
+  "dogrulandi": false
  }
 }
