@@ -587,11 +587,18 @@
   "dogrulayan": "gemini-3.8-flash",
   "dogrulandi": true
  },
- "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:b4aec6aad5": {
-  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında 1337 Crew FC, 27 Ekim 2026 Salı günü saat 23:00'te iç sahada Bordreaux JB ile karşılaşacak. Son maçında Büyük Avlu karşısında 1-8 galip gelen ve ligde 3 maçta 3 puan ile +5 averajla 8. sırada yer alan 1337 Crew FC, 3 maçta 6 puan ve +14 averajla 2. sırada bulunan rakibini ağırlayacak. İki takım arasındaki kayıtlı 3 maçta 1337 Crew FC galibiyeti bulunmazken, Bordreaux JB 2 galibiyet elde etti ve 1 karşılaşma beraberlikle sonuçlandı.",
+ "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:408f469d3a": {
+  "metin": "EfendiLig 2026-2027 Sezonu'nun 3. haftasında 1337 Crew FC, 27 Ekim 2026 Salı günü saat 23:00'te ev sahibi olarak Bordreaux JB ile karşılaşacak. Son maçında Calypso 33'e 2-3 mağlup olan 1337 Crew FC, 3 maçta 3 puan ve +5 averajla 9. sırada yer alırken; rakip Bordreaux JB ise 4 maçta 8 puan ve +16 averajla 2. sırada bulunıyor. İki takım arasındaki kayıtlı 3 maçta 1337 Crew FC'nin galibiyeti bulunmazken, bu karşılaşmalarda 1 beraberlik ve 2 Bordreaux JB galibiyeti alındı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-21T13:04:26.887Z",
-  "dogrulayan": "gemini-3.8-flash",
+  "zaman": "2026-10-21T18:00:58.752Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Calypso-33-2026-10-20T230000000Z:e5c95fd6c5": {
+  "metin": "EfendiLig 2026-2027 Sezonu 5. haftasında, 20 Ekim 2026 Salı günü iç sahada Calypso 33'ü konuk eden 1337 Crew FC, karşılaşmadan 2-3 mağlup ayrıldı. Ev sahibi takımın gollerini Kemal Orkun Gündoğdu ve Yasin Enes Aksu kaydetti. Maçın MVP'si ise Calypso 33 oyuncusu Uğur Doğrusoy oldu.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-21T18:02:01.528Z",
+  "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  }
 }
