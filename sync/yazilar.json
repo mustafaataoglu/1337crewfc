@@ -1,11 +1,4 @@
 {
- "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:8aee22fd14": {
-  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında 1337 Crew FC, 7 Ekim 2026 Çarşamba günü saat 21:00'de iç sahada Bordreaux JB ile karşılaşacak. Ligde 2 maçta 1 puan ve -2 averajla 11. sırada yer alan 1337 Crew FC son maçında Baston Villa'ya 2-0 mağlup olurken, rakip Bordreaux JB ise 2 maçta 4 puan ve +10 averajla 1. sırada bulunuyor. İki takım arasındaki kayıtlı 3 maçta 1337 galibiyet alamazken 1 beraberlik ve 2 Bordreaux JB galibiyeti kaydedildi.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-02T21:29:37.763Z",
-  "dogrulandi": true,
-  "dogrulayan": "gemini-3.7-flash"
- },
  "rapor:baston-villa-1337-Crew-FC-2026-09-28T230000000Z:871d8f9077": {
   "metin": "EfendiLig 2026-2027 Sezonu 2. haftasında 1337 Crew FC, 28 Eylül 2026 tarihinde deplasmanda Baston Villa ile karşılaştı. Ev sahibi ekibin 2-0 kazandığı mücadelede 1337 Crew FC sahadan mağlubiyetle ayrıldı. Maçın MVP'si Baston Villa oyuncusu Mehdi Çapar oldu.",
   "model": "gemini-3.6-flash",
@@ -591,6 +584,13 @@
   "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 6. sırada yer alan 1337 Crew FC son maçında Büyük Avlu'yu 1-8 mağlup ederken, Çiçek Spor ise 3 maçta 0 puan ve -7 averajla 14. sırada bulunuyor. İki takım arasındaki kayıtlı 4 maçın tamamını Çiçek Spor kazandı.",
   "model": "gemini-3.8-flash",
   "zaman": "2026-10-20T20:06:56.649Z",
+  "dogrulayan": "gemini-3.8-flash",
+  "dogrulandi": true
+ },
+ "onizleme:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:b4aec6aad5": {
+  "metin": "EfendiLig 2026-2027 Sezonu 3. haftasında 1337 Crew FC, 27 Ekim 2026 Salı günü saat 23:00'te iç sahada Bordreaux JB ile karşılaşacak. Son maçında Büyük Avlu karşısında 1-8 galip gelen ve ligde 3 maçta 3 puan ile +5 averajla 8. sırada yer alan 1337 Crew FC, 3 maçta 6 puan ve +14 averajla 2. sırada bulunan rakibini ağırlayacak. İki takım arasındaki kayıtlı 3 maçta 1337 Crew FC galibiyeti bulunmazken, Bordreaux JB 2 galibiyet elde etti ve 1 karşılaşma beraberlikle sonuçlandı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-21T13:04:26.887Z",
   "dogrulayan": "gemini-3.8-flash",
   "dogrulandi": true
  }
