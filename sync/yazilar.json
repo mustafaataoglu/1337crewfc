@@ -573,13 +573,6 @@
   "dogrulayan": "gemini-3.7-flash",
   "dogrulandi": true
  },
- "onizleme:Cicek-Spor-1337-Crew-FC-2026-11-04T210000000Z:f02b6b0ce8": {
-  "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 6. sırada yer alan 1337 Crew FC son maçında Büyük Avlu'yu 1-8 mağlup ederken, Çiçek Spor ise 3 maçta 0 puan ve -7 averajla 14. sırada bulunuyor. İki takım arasındaki kayıtlı 4 maçın tamamını Çiçek Spor kazandı.",
-  "model": "gemini-3.8-flash",
-  "zaman": "2026-10-20T20:06:56.649Z",
-  "dogrulayan": "gemini-3.8-flash",
-  "dogrulandi": true
- },
  "rapor:1337-Crew-FC-Calypso-33-2026-10-20T230000000Z:e5c95fd6c5": {
   "metin": "EfendiLig 2026-2027 Sezonu 5. haftasında, 20 Ekim 2026 Salı günü iç sahada Calypso 33'ü konuk eden 1337 Crew FC, karşılaşmadan 2-3 mağlup ayrıldı. Ev sahibi takımın gollerini Kemal Orkun Gündoğdu ve Yasin Enes Aksu kaydetti. Maçın MVP'si ise Calypso 33 oyuncusu Uğur Doğrusoy oldu.",
   "model": "gemini-3.6-flash",
@@ -605,6 +598,7 @@
   "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 10. sırada yer alan 1337 Crew FC, son maçında Calypso 33 karşısında 2-3 mağlup oldu. 5 maçta 2 puan ve -4 averajla 13. sırada bulunan Çiçek Spor ile 1337 Crew FC arasında daha önce oynanan kayıtlı 4 maçın tamamını Çiçek Spor kazandı.",
   "model": "gemini-3.6-flash",
   "zaman": "2026-10-27T20:04:01.647Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "openrouter/free"
  }
 }
