@@ -602,10 +602,10 @@
   "dogrulandi": true
  },
  "rapor:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:2eddd0945b": {
-  "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu 3. hafta maçında Salı günü evinde Bordreaux JB'ye 0-4 kaybetti. Mağlubiyette 1337'in gol attıran oyuncusu bulunmadı. Bordreaux JB'nin Tevfikcan Kızılırmak oyuncusu maçın en değerli oyuncuları seçildi.",
-  "model": "openrouter/free",
-  "zaman": "2026-10-28T08:25:59.905Z",
-  "dogrulayan": "openrouter/free",
+  "metin": "EfendiLig 2026-2027 Sezonu'nun 3. haftasında, 27 Ekim 2026 Salı günü ev sahibi 1337 Crew FC iç sahada Bordreaux JB ile karşılaştı. 1337 Crew FC mücadeleden 0-4'lük mağlubiyetle ayrıldı. Maçın en değerli oyuncusu Bordreaux JB oyuncusu Tevfikcan Kızılırmak oldu.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-10-28T15:12:50.219Z",
+  "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  }
 }
