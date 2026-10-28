@@ -594,11 +594,18 @@
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  },
- "onizleme:Cicek-Spor-1337-Crew-FC-2026-11-04T210000000Z:6dc234804f": {
-  "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 3 maçta 3 puan ve +5 averajla 10. sırada yer alan 1337 Crew FC, son maçında Calypso 33 karşısında 2-3 mağlup oldu. 5 maçta 2 puan ve -4 averajla 13. sırada bulunan Çiçek Spor ile 1337 Crew FC arasında daha önce oynanan kayıtlı 4 maçın tamamını Çiçek Spor kazandı.",
+ "onizleme:Cicek-Spor-1337-Crew-FC-2026-11-04T210000000Z:3c7d2d4084": {
+  "metin": "EfendiLig 2026-2027 Sezonu 6. haftasında 1337 Crew FC, 4 Kasım 2026 Çarşamba günü saat 21:00'de deplasmanda Çiçek Spor ile karşılaşacak. Ligde 4 maçta 3 puan ve +1 averajla 11. sırada yer alan 1337 Crew FC, son maçında Bordreaux JB'ye 0-4 mağlup oldu. 5 maçta 2 puan ve -4 averajla 14. sırada bulunan Çiçek Spor ile daha önce oynanan kayıtlı 4 maçta 0 1337 galibiyeti ve 0 beraberlik alınırken, 4 karşılaşmayı da Çiçek Spor kazandı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-10-27T20:04:01.647Z",
-  "dogrulandi": true,
-  "dogrulayan": "openrouter/free"
+  "zaman": "2026-10-28T08:25:02.650Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
+ },
+ "rapor:1337-Crew-FC-Bordreaux-JB-2026-10-07T210000000Z:2eddd0945b": {
+  "metin": "1337 Crew FC, EfendiLig 2026-2027 Sezonu 3. hafta maçında Salı günü evinde Bordreaux JB'ye 0-4 kaybetti. Mağlubiyette 1337'in gol attıran oyuncusu bulunmadı. Bordreaux JB'nin Tevfikcan Kızılırmak oyuncusu maçın en değerli oyuncuları seçildi.",
+  "model": "openrouter/free",
+  "zaman": "2026-10-28T08:25:59.905Z",
+  "dogrulayan": "openrouter/free",
+  "dogrulandi": true
  }
 }
