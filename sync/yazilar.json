@@ -607,5 +607,12 @@
   "zaman": "2026-11-04T08:09:18.100Z",
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
+ },
+ "onizleme:1337-Crew-FC-Dikilitas-Galaxy-FC-2026-11-11T210000000Z:959815c785": {
+  "metin": "EfendiLig 2026-2027 Sezonu 7. haftasında 1337 Crew FC, 10 Kasım 2026 Salı günü saat 23:00'te evinde Dikilitaş Galaxy FC ile karşılaşacak. Son maçında Bordreaux JB'ye 0-4 yenilen 1337 Crew FC ligde 4 maçta topladığı 3 puan ve +1 averajla 11. sırada yer alırken, rakibi ise 5 maçta 7 puan ve +1 averajla 7. sırada bulunuyor. İki takım arasında daha önce oynanan kayıtlı 3 karşılaşmanın tamamını Dikilitaş Galaxy FC kazandı.",
+  "model": "gemini-3.6-flash",
+  "zaman": "2026-11-04T18:02:44.881Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
