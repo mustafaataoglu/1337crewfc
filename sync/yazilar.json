@@ -619,6 +619,7 @@
   "metin": "EfendiLig 2026-2027 Sezonu 8. haftasında 1337 Crew FC, 16 Kasım 2026 Pazartesi günü saat 23:00'te deplasmanda ev sahibi Fire Dryer FC ile karşılaşacak. 4 maçta 3 puanı ve +1 averajı olan 11. sıradaki 1337 Crew FC, son karşılaşmasında Bordreaux JB'ye 0-4 mağlup olmuştu. 5 maçta 6 puan ve -3 averajla 8. sırada yer alan Fire Dryer FC ile iki takım arasında oynanan kayıtlı 3 maçta 1 1337 galibiyeti, 1 beraberlik ve 1 Fire Dryer FC galibiyeti bulunuyor.",
   "model": "gemini-3.6-flash",
   "zaman": "2026-11-10T20:05:55.915Z",
-  "dogrulandi": false
+  "dogrulandi": true,
+  "dogrulayan": "gemini-3.6-flash"
  }
 }
