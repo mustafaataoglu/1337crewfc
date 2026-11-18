@@ -629,11 +629,11 @@
   "dogrulayan": "openrouter/free",
   "dogrulandi": true
  },
- "onizleme:1337-Crew-FC-Son-Baski-FK-2026-12-02T210000000Z:de7c188a6e": {
-  "metin": "EfendiLig 2026-2027 Sezonu 10. haftasında 1337 Crew FC, 2 Aralık 2026 Çarşamba günü saat 21:00'de sahasında Son Baskı FK ile karşılaşacak. Son maçında Dikilitaş Galaxy FC'yi 3-2 mağlup eden 1337 Crew FC, ligde 5 maçta topladığı 5 puan ve +2 averajla 11. sırada yer alıyor. 8 maçta 8 puan ve +1 averajla 6. sırada bulunan Son Baskı FK, iki takım arasında oynanan kayıtlı 5 karşılaşmanın tamamını kazandı.",
+ "onizleme:1337-Crew-FC-Son-Baski-FK-2026-12-02T210000000Z:7c4057b64d": {
+  "metin": "EfendiLig 2026-2027 Sezonu 10. haftasında 1337 Crew FC, 2 Aralık 2026 Çarşamba günü saat 21:00'de ev sahibi olarak Son Baskı FK ile karşılaşacak. Son maçında Fire Dryer FC'yi 1-5 mağlup eden 1337 Crew FC, ligde 6 maçta 7 puan ve +6 averajla 10. sırada yer alıyor. 8 maçta 8 puan ve +1 averajla 8. sırada bulunan Son Baskı FK ile daha önce oynanan kayıtlı 5 maçta 0 1337 galibiyeti ve 0 beraberlik alınırken, 5 karşılaşmayı da Son Baskı FK kazandı.",
   "model": "gemini-3.6-flash",
-  "zaman": "2026-11-16T23:19:24.048Z",
-  "dogrulayan": "openrouter/free",
+  "zaman": "2026-11-18T12:23:52.676Z",
+  "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
  }
 }
