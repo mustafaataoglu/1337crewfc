@@ -635,5 +635,12 @@
   "zaman": "2026-11-18T12:23:52.676Z",
   "dogrulayan": "gemini-3.6-flash",
   "dogrulandi": true
+ },
+ "rapor:Fire-Dryer-FC-1337-Crew-FC-2026-11-16T230000000Z:3386cfd403": {
+  "metin": "EfendiLig 2026-2027 Sezonu'nun 8. haftasında 16 Kasım 2026 Pazartesi günü 1337 Crew FC'nin deplasmanında oynanan maçta Fire Dryer FC, 1337 Crew FC'ye 1-5 yenildi. 1337 Crew FC'nin gollerini Mustafa Ataoğlu (2), Altay Tuğberk Yücel, Kemal Sezer Şahin ve Selçuk Özaydın kaydetti. Altay Tuğberk Yücel, gol atmasının yanı sıra maçın MVP'si seçildi.",
+  "model": "openrouter/free",
+  "zaman": "2026-11-19T02:05:53.792Z",
+  "dogrulayan": "gemini-3.6-flash",
+  "dogrulandi": true
  }
 }
